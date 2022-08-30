@@ -205,6 +205,8 @@ wire en_layer_b = ~status[65];
 wire en_sprites = ~status[66];
 wire en_layer_palette = ~status[67];
 wire en_sprite_palette = ~status[68];
+wire dbg_sprite_freeze = status[69];
+wire en_audio_filters = ~status[70];
 
 wire video_60hz = status[9:8] == 2'd3;
 wire video_57hz = status[9:8] == 2'd2;
@@ -241,6 +243,7 @@ localparam CONF_STR = {
     "P1O[67],Layer Palette,On,Off;",
     "P1O[68],Sprite Palette,On,Off;",
     "P1O[69],Sprite Freeze,Off,On;",
+    "P1O[70],Audio Filtering,On,Off;",
     "-;",
     "T[0],Reset;",
     "DEFMRA,/_Arcade/m72.mra;",
@@ -555,8 +558,9 @@ m72 m72(
     .en_sprites(en_sprites),
     .en_layer_palette(en_layer_palette),
     .en_sprite_palette(en_sprite_palette),
+    .en_audio_filters(en_audio_filters),
 
-    .sprite_freeze(status[69]),
+    .sprite_freeze(dbg_sprite_freeze),
 
     .video_50hz(video_50hz),
     .video_57hz(video_57hz),
