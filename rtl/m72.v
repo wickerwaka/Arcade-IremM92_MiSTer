@@ -62,6 +62,7 @@ module m72 (
     input en_sprites,
     input en_layer_palette,
     input en_sprite_palette,
+    input en_audio_filters,
 
     input sprite_freeze,
 
@@ -480,7 +481,7 @@ wire [7:0] snd_io_addr;
 wire [7:0] snd_io_data;
 wire snd_io_req;
 
-wire [15:0] ym_audio_l, ym_audio_r;
+wire [15:0] ym_audio;
 
 sound sound(
     .CLK_32M(CLK_32M),
@@ -502,8 +503,8 @@ sound sound(
     .MWR(MWR),
     .SND2(SND2),
 
-    .ym_audio_l(ym_audio_l),
-    .ym_audio_r(ym_audio_r),
+    .ym_audio_l(),
+    .ym_audio_r(ym_audio),
 
     .snd_io_addr(snd_io_addr),
     .snd_io_data(snd_io_data),
@@ -646,22 +647,86 @@ mcu mcu(
     .dbg_rom_addr(mcu_dbg_rom_addr)
 );
 
+wire [7:0] signed_mcu_sample = mcu_sample_data - 8'h80;
+reg [2:0] ce_filter_counter = 0;
+wire ce_filter = &ce_filter_counter;
+reg [15:0] filtered_mcu_sample;
+reg [15:0] filtered_ym_audio;
 
-reg [16:0] audio_l, audio_r;
+// 3.5Khz 2nd order low pass filter with additional 10dB attenuation
+IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00004185087102461337 * 0.31622776601), .coeff_x0(2), .coeff_x1(1), .coeff_x2(0), .coeff_y0(-1.99222499379830120247), .coeff_y1(0.99225510233860669818), .coeff_y2(0)) samples_lpf (
+	.clk(CLK_32M),
+	.reset(~reset_n),
 
-assign AUDIO_L = audio_l[16:1];
-assign AUDIO_R = audio_r[16:1];
+	.ce(ce_filter),
+	.sample_ce(1),
+
+	.cx(),
+	.cx0(),
+	.cx1(),
+	.cx2(),
+	.cy0(),
+	.cy1(),
+	.cy2(),
+
+	.input_l({signed_mcu_sample[7:0], 8'd0}),
+    .input_r(),
+	.output_l(filtered_mcu_sample),
+    .output_r()
+);
+
+
+// 9khz 1st order, 10khz 2nd order
+IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00000476166826258131), .coeff_x0(3), .coeff_x1(3), .coeff_x2(1), .coeff_y0(-2.96374831301152275032), .coeff_y1(2.92805248787211569450), .coeff_y2(-0.96430074919997255112)) music_lpf (
+	.clk(CLK_32M),
+	.reset(~reset_n),
+
+	.ce(ce_filter),
+	.sample_ce(1),
+
+	.cx(),
+	.cx0(),
+	.cx1(),
+	.cx2(),
+	.cy0(),
+	.cy1(),
+	.cy2(),
+
+	.input_l(ym_audio),
+    .input_r(),
+	.output_l(filtered_ym_audio),
+    .output_r()
+);
+
+reg [16:0] audio_out;
+
+assign AUDIO_L = audio_out[16:1];
+assign AUDIO_R = audio_out[16:1];
 
 always @(posedge CLK_32M) begin
-    bit [7:0] signed_sample;
-    bit [16:0] ext_sample;
-
-    signed_sample = mcu_sample_data - 8'h80; // convert unsigned to signed
-    ext_sample = { signed_sample[7], signed_sample[7:0], signed_sample[7:0] }; // extend to 17-bits
-
-    audio_l <= {ym_audio_l[15], ym_audio_l} + ext_sample;
-    audio_r <= {ym_audio_r[15], ym_audio_r} + ext_sample;
+    ce_filter_counter <= ce_filter_counter + 3'd1;
+  
+    if (en_audio_filters)
+        audio_out <= {filtered_ym_audio[15], filtered_ym_audio[15:0]} + {filtered_mcu_sample[15], filtered_mcu_sample[15:0]};
+    else
+        audio_out <= {ym_audio[15], ym_audio[15:0]} + {{signed_mcu_sample[7:0], 9'd0}};
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 reg [11:0] dbg_cpu_ext_addr;
 reg [15:0] dbg_cpu_ext_data;
