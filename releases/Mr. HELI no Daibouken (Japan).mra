@@ -1,25 +1,26 @@
 <misterromdescription>
     <name>Mr. HELI no Daibouken (Japan)</name>
-    <mameversion>0226</mameversion>
+    <mameversion>0245</mameversion>
     <setname>mrheli</setname>
     <parent>bchopper</parent>
     <year>1987</year>
     <manufacturer>Irem</manufacturer>
-    <category></category>
-    <rbf>m72</rbf>
+    <category>Shooter</category>
+    <rbf>IremM72</rbf>
 
+    <rotation>horizontal</rotation>
     <joystick>8-way</joystick>
     <num_buttons>2</num_buttons>
     <buttons default="B,A,R,L" names="Fire,Secondary,-,-,Start,Coin,P2 Start,Pause"></buttons>
-    <switches default="0c 0a">
-        <dip bits="0,1" ids="3,4,2,1" name="Crafts"></dip>
-        <dip bits="2" ids="Off,On" name="Attract mode sound"></dip>
-        <dip bits="3" ids="80/200/350,100/250/400" name="Bonus Life"></dip>
+    <switches default="00 02">
+        <dip bits="0,1" ids="3,2,4,1" name="Lives"></dip>
+        <dip bits="2" ids="Off,On" name="Demo Sounds"></dip>
+        <dip bits="3" ids="80K,100K" name="Bonus Life"></dip>
         <dip bits="4,7" ids="1C/1P,2C/1P,3C/1P,4C/1P,5C/1P,6C/1P,1C/2P,1C/3P,1C/4P,1C/5P,1C/6P,2C/3P,4C/2P,5C/3P,8C/3P,Free Play" name="Coin Mode"></dip>
         <dip bits="8" ids="Off,On" name="Flip Picture"></dip>
         <dip bits="9" ids="Cocktail,Upright" name="Cabinet type"></dip>
         <dip bits="11" ids="Normal,Hard" name="Difficulty"></dip>
-        <dip bits="12" ids="On,Off" name="Continues"></dip>
+        <dip bits="12" ids="Yes,No" name="Continues"></dip>
         <dip bits="13" ids="Off,On" name="Freeze Picture"></dip>
         <dip bits="14" ids="Off,On" name="No Death Mode"></dip>
         <dip bits="15" ids="Off,On" name="Diagnostic Test"></dip>

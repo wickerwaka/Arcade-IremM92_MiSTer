@@ -1,0 +1,75 @@
+<misterromdescription>
+    <name>Daiku no Gensan (Japan, M72 hardware)</name>
+    <mameversion>0240</mameversion>
+    <setname>dkgensanm72</setname>
+    <parent>hharry</parent>
+    <year>1990</year>
+    <manufacturer>Irem</manufacturer>
+    <category></category>
+    <rbf>m72</rbf>
+
+    <joystick>8-way</joystick>
+    <num_buttons>2</num_buttons>
+    <buttons default="B,A,R,L" names="Fire,Jump,-,-,Start,Coin,P2 Start,Pause"></buttons>
+    <switches default="00 00">
+        <dip bits="0,1" ids="3,2,4,5" name="Lives"></dip>
+        <dip bits="2,3" ids="Normal,Easy,Hard,Very Hard" name="Difficulty"></dip>
+        <dip bits="4,7" ids="1C/1P,2C/1P,3C/1P,4C/1P,5C/1P,6C/1P,1C/2P,1C/3P,1C/4P,1C/5P,1C/6P,2C/3P,4C/2P,5C/3P,8C/3P,Free Play" name="Coin Mode"></dip>
+        <dip bits="8" ids="Off,On" name="Flip Picture"></dip>
+        <dip bits="9" ids="Cocktail,Upright" name="Cabinet type"></dip>
+        <dip bits="11" ids="Off,On" name="Demo Sound"></dip>
+        <dip bits="12" ids="On,Off" name="Continues"></dip>
+        <dip bits="13" ids="Off,On" name="Freeze Picture"></dip>
+        <dip bits="15" ids="Off,On" name="Diagnostic Test"></dip>
+    </switches>
+
+    <rom index="0" zip="dkgensanm72.zip|hharry.zip" md5="None">
+        <!-- board type -->
+        <part>01</part>
+
+        <!-- maincpu -->
+        <part>00 08 00 00</part>
+        <interleave output="16">
+            <part name="ge72-l0.bin" crc="996396f0" map="01"/>
+            <part name="ge72-h0.bin" crc="a0ad992c" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="ge72-l3.bin" crc="23d303a5" map="01"/>
+            <part name="ge72-h3.bin" crc="d8b86005" map="10"/>
+        </interleave>
+
+        <!-- sprites -->
+        <part>00 08 00 00</part>
+        <interleave output="32">
+            <part name="hh_00.rom" crc="ec5127ef" map="0001" />
+            <part name="hh_10.rom" crc="def65294" map="0010" />
+            <part name="hh_20.rom" crc="bb0d6ad4" map="0100" />
+            <part name="hh_30.rom" crc="4351044e" map="1000" />
+        </interleave>
+
+        <!-- gfx2 -->
+        <part>00 04 00 00</part>
+        <interleave output="32">
+            <part name="ge72b-a0.bin" crc="f5f56b2a" map="0001" />
+            <part name="ge72-a1.bin"  crc="d194ea08" map="0010" />
+            <part name="ge72-a2.bin"  crc="2b06bcc3" map="0100" />
+            <part name="ge72-a3.bin"  crc="94b96bfa" map="1000" />
+        </interleave>
+
+        <!-- gfx3 -->
+        <part>00 04 00 00</part>
+        <interleave output="32">
+            <part name="ge72-b0.bin"  crc="208796b3" map="0001" />
+            <part name="ge72-b1.bin"  crc="b4a7f490" map="0010" />
+            <part name="ge72b-b2.bin" crc="34fe8f7f" map="0100" />
+            <part name="ge72b-b3.bin" crc="4b0e92f4" map="1000" />
+        </interleave>
+
+        <!-- mcu MISSING -->
+        <part>00 00 00 00</part>
+
+        <!-- samples -->
+        <part>00 02 00 00</part>
+        <part name="gen-vo.bin" crc="d8595c66"/>
+    </rom>
+</misterromdescription>

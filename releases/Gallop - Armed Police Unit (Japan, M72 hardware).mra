@@ -1,24 +1,28 @@
 <misterromdescription>
-    <name>Gallop - Armed Police Unit (Japan)</name>
-    <mameversion>0226</mameversion>
+    <name>Gallop - Armed Police Unit (Japan, M72 hardware)</name>
+    <mameversion>0245</mameversion>
     <setname>gallop</setname>
     <parent>cosmccop</parent>
     <year>1991</year>
-    <manufacturer>IREM</manufacturer>
+    <manufacturer>Irem</manufacturer>
     <category>Shooter</category>
-    <rbf>m72</rbf>
+    <rbf>IremM72</rbf>
+    <rotation>horizontal</rotation>
 
     <joystick>8-way</joystick>
     <num_buttons>2</num_buttons>
     <buttons default="B,A,R,L" names="Fire,Secondary,-,-,Start,Coin,P2 Start,Pause"></buttons>
-    <switches default="2f,08">
+    <switches default="00,06">
         <dip bits="0,1" ids="3,2,4,5" name="Lives"></dip>
-        <dip bits="2,3" ids="Very Easy,Easy,Normal,Hard" name="Difficulty"></dip>
-        <dip bits="5" ids="No,Yes" name="Allow Continue"></dip>
-        <dip bits="6" ids="Off,On" name="Attract Mode Sound"></dip>
+        <dip bits="2,3" ids="Normal,Easy,Hard,Very Easy" name="Difficulty"></dip>
+        <dip bits="5" ids="Yes,No" name="Allow Continue"></dip>
+        <dip bits="6" ids="Off,On" name="Demo Sounds"></dip>
+        <dip bits="7" ids="Off,On" name="Diagnostic Test"></dip>
         <dip bits="8" ids="Off,On" name="Flip Picture"></dip>
-        <dip bits="9,10" ids="Upright,Upright (2P),Cocktail" name="Cabinet type"></dip>
+        <dip bits="9,10" ids="Cocktail,Upright (2P),Upright (2P),Upright" name="Cabinet type"></dip>
+        <dip bits="12,15" ids="1C/1C,2C/1C,3C/1C,4C/1C,5C/1C,6C/1C,1C/2C,1C/3C,1C/4C,1C/5C,1C/6C,2C/3C,3C/2C,4C/3C,2C/1C,Free Play" name="Coin Mode"></dip>
     </switches>
+
     <!-- ROM data -->
     <rom index="0" zip="cosmccop.zip|gallop.zip" md5="none" type="merged|nonmerged">
         <part>01</part>

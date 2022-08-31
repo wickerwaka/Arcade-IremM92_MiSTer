@@ -1,19 +1,21 @@
 <misterromdescription>
     <name>R-Type (Japan prototype)</name>
-    <mameversion>0226</mameversion>
+    <mameversion>0245</mameversion>
     <setname>rtypejp</setname>
+    <parent>rtype</parent>
     <year>1987</year>
-    <manufacturer>IREM</manufacturer>
+    <manufacturer>Irem</manufacturer>
     <category>Shooter</category>
-    <rbf>m72</rbf>
+    <rbf>IremM72</rbf>
+    <rotation>horizontal</rotation>
 
     <joystick>8-way</joystick>
     <num_buttons>2</num_buttons>
     <buttons default="B,A,R,L" names="Fire,Pod Control,-,-,Start,Coin,P2 Start,Pause"></buttons>
     <switches default="0c 0a">
         <dip bits="0,1" ids="3,2,4,5" name="Crafts"></dip>
-        <dip bits="2" ids="Off,On" name="Attract mode sound"></dip>
-        <dip bits="3" ids="100K,50K" name="Extra Craft"></dip>
+        <dip bits="2" ids="Off,On" name="Demo Sounds"></dip>
+        <dip bits="3" ids="100K,50K" name="Bonus Life"></dip>
         <dip bits="4,7" ids="1C/1P,2C/1P,3C/1P,4C/1P,5C/1P,6C/1P,1C/2P,1C/3P,1C/4P,1C/5P,1C/6P,2C/3P,4C/2P,5C/3P,8C/3P,Free Play" name="Coin Mode"></dip>
         <dip bits="8" ids="Off,On" name="Flip Picture"></dip>
         <dip bits="9" ids="Cocktail,Upright" name="Cabinet type"></dip>
