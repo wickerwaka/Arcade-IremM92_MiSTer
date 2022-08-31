@@ -1,3 +1,23 @@
+//============================================================================
+//  Irem M72 for MiSTer FPGA - Z80-based sound system
+//
+//  Copyright (C) 2022 Martin Donlon
+//
+//  This program is free software; you can redistribute it and/or modify it
+//  under the terms of the GNU General Public License as published by the Free
+//  Software Foundation; either version 2 of the License, or (at your option)
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful, but WITHOUT
+//  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+//  more details.
+//
+//  You should have received a copy of the GNU General Public License along
+//  with this program; if not, write to the Free Software Foundation, Inc.,
+//  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//============================================================================
+
 module sound (
     input CLK_32M,
 
@@ -84,7 +104,7 @@ wire [7:0] z80_din = ( ~z80_M1_n & ~z80_IORQ_n ) ? {2'b11, ~snd_latch1_ready, SI
                      ( ~z80_RD_n ) ? ram_dout : 8'hff;
 wire [7:0] z80_dout;
 
-assign snd_io_addr = z80_addr;
+assign snd_io_addr = z80_addr[7:0];
 assign snd_io_req = ~z80_IORQ_n;
 assign snd_io_data = z80_dout;
 

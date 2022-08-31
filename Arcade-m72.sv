@@ -1,4 +1,7 @@
 //============================================================================
+//  Irem M72 for MiSTer FPGA
+//
+//  Copyright (C) 2022 Martin Donlon
 //
 //  This program is free software; you can redistribute it and/or modify it
 //  under the terms of the GNU General Public License as published by the Free
@@ -13,8 +16,8 @@
 //  You should have received a copy of the GNU General Public License along
 //  with this program; if not, write to the Free Software Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-//
 //============================================================================
+
 
 import m72_pkg::*;
 
@@ -178,6 +181,7 @@ assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
+assign CLK_VIDEO = CLK_32M;
 
 assign VGA_F1 = 0;
 assign VGA_SCALER = 0;
@@ -567,8 +571,30 @@ m72 m72(
     .video_60hz(video_60hz)
 );
 
+
+wire gamma_hsync, gamma_vsync, gamma_hblank, gamma_vblank;
+wire [7:0] gamma_r, gamma_g, gamma_b;
+gamma_fast video_gamma
+(
+    .clk_vid(CLK_VIDEO),
+    .ce_pix(ce_pix),
+    .gamma_bus(gamma_bus),
+    .HSync(HSync),
+    .VSync(VSync),
+    .HBlank(HBlank),
+    .VBlank(VBlank),
+    .DE(),
+    .RGB_in({R, G, B}),
+    .HSync_out(gamma_hsync),
+    .VSync_out(gamma_vsync),
+    .HBlank_out(gamma_hblank),
+    .VBlank_out(gamma_vblank),
+    .DE_out(),
+    .RGB_out({gamma_r, gamma_g, gamma_b})
+);
+
 wire VGA_DE_MIXER;
-video_mixer #(386, 0, 1) video_mixer(
+video_mixer #(386, 0, 0) video_mixer(
     .CLK_VIDEO(CLK_VIDEO),
     .CE_PIXEL(CE_PIXEL),
     .ce_pix(ce_pix),
@@ -576,16 +602,16 @@ video_mixer #(386, 0, 1) video_mixer(
     .scandoubler(forced_scandoubler || scandoubler_fx != 2'b00),
     .hq2x(0),
 
-    .gamma_bus(gamma_bus),
+    .gamma_bus(),
 
-    .R(R),
-    .G(G),
-    .B(B),
+    .R(gamma_r),
+    .G(gamma_g),
+    .B(gamma_b),
 
-    .HBlank(HBlank),
-    .VBlank(VBlank),
-    .HSync(HSync),
-    .VSync(VSync),
+    .HBlank(gamma_hblank),
+    .VBlank(gamma_vblank),
+    .HSync(gamma_hsync),
+    .VSync(gamma_vsync),
 
     .VGA_R(VGA_R),
     .VGA_G(VGA_G),
@@ -596,6 +622,7 @@ video_mixer #(386, 0, 1) video_mixer(
 
     .HDMI_FREEZE(HDMI_FREEZE)
 );
+
 
 video_freak video_freak(
     .CLK_VIDEO(CLK_VIDEO),
@@ -615,6 +642,7 @@ video_freak video_freak(
     .SCALE(scale)
 );
 
+
 pause pause(
     .clk_sys(clk_sys),
     .reset(reset),
@@ -629,7 +657,7 @@ pause pause(
 screen_rotate screen_rotate(.*);
 `endif
 
-assign CLK_VIDEO = CLK_32M;
+
 
 ddr_debug_data_t ddr_debug_data;
 

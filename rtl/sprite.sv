@@ -1,3 +1,23 @@
+//============================================================================
+//  Irem M72 for MiSTer FPGA - Sprites
+//
+//  Copyright (C) 2022 Martin Donlon
+//
+//  This program is free software; you can redistribute it and/or modify it
+//  under the terms of the GNU General Public License as published by the Free
+//  Software Foundation; either version 2 of the License, or (at your option)
+//  any later version.
+//
+//  This program is distributed in the hope that it will be useful, but WITHOUT
+//  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+//  more details.
+//
+//  You should have received a copy of the GNU General Public License along
+//  with this program; if not, write to the Free Software Foundation, Inc.,
+//  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//============================================================================
+
 import m72_pkg::*;
 
 module sprite (
@@ -158,7 +178,7 @@ reg [8:0] width_px, height_px;
 reg [3:0] width, height;
 reg [8:0] rel_y;
 
-wire [8:0] row_y = obj_flipy ? (height_px - rel_y - 1) : rel_y;
+wire [8:0] row_y = obj_flipy ? (height_px - rel_y - 9'd1) : rel_y;
 
 always_ff @(posedge CLK_96M) begin
     reg old_v0 = 0;
@@ -203,7 +223,7 @@ always_ff @(posedge CLK_96M) begin
                 st <= 0;
                 obj_ptr <= obj_ptr + width;
             end
-            code <= obj_code + row_y[8:4] + ( ( obj_flipx ? ( width - span - 1 ) : span ) * 16'd8 );
+            code <= obj_code + row_y[8:4] + ( ( obj_flipx ? ( width - span - 16'd1 ) : span ) * 16'd8 );
         end
         3: begin
             sdr_addr <= REGION_SPRITE.base_addr[24:1] + { code[12:0], row_y[3:0], 2'b00 };
