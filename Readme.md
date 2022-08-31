@@ -37,6 +37,7 @@ Many people, knowingly or not, contributed to this work.
 - @sorgelig for developing and maintaining MiSTer
 - @RobertPeip for the v30mz cpu I am using as the basis for the v30
 - @sentientsixp for encouraging me to do this
+- @atrac17 for schematics and MRAs
 - The MiSTer FPGA discord server for the helpful advice and support
 
 
