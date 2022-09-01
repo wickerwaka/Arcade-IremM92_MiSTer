@@ -38,7 +38,7 @@ module rom_loader
 
     output [19:0] bram_addr,
     output [7:0] bram_data,
-    output reg [1:0] bram_cs,
+    output reg [3:0] bram_cs,
     output bram_wr,
 
     output board_cfg_t board_cfg

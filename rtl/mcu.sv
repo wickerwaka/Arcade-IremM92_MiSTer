@@ -24,11 +24,11 @@ module mcu(
     input reset,
 
     // shared ram
-    output reg [11:0] ext_ram_addr,
+    output [11:0] ext_ram_addr,
     input [7:0] ext_ram_din,
-    output reg [7:0] ext_ram_dout,
-    output reg ext_ram_cs,
-    output reg ext_ram_we,
+    output [7:0] ext_ram_dout,
+    output ext_ram_cs,
+    output ext_ram_we,
     input ext_ram_int,
 
     // z80 latch
@@ -45,6 +45,8 @@ module mcu(
     input [19:0] bram_addr,
     input bram_prom_cs,
     input bram_samples_cs,
+    input bram_offsets_cs,
+    input bram_protect_cs,
 
     output [15:0] dbg_rom_addr
 );
@@ -53,16 +55,37 @@ wire [6:0] ram_addr;
 wire [7:0] ram_din, ram_dout;
 wire ram_we, ram_cs;
 
-wire [7:0] sample_port;
+wire [7:0] mcu_sample_port;
 reg valid_samples = 0;
 reg valid_rom = 0;
+
 always @(posedge clk_bram) if (bram_samples_cs & bram_wr) valid_samples <= 1;
 always @(posedge clk_bram) if (bram_prom_cs & bram_wr) valid_rom <= 1;
 
 reg [2:0] delayed_ce_count = 0;
 wire delayed_ce = ce_8m & ~|delayed_ce_count;
 
-assign sample_data = valid_samples ? sample_port : 8'h80;
+
+// Mux emulator and real mcu external signals
+reg [11:0] mcu_ext_ram_addr;
+reg [7:0] mcu_ext_ram_dout;
+reg mcu_ext_ram_cs;
+reg mcu_ext_ram_we;
+
+wire emulator_active;
+wire [17:0] emulator_sample_addr;
+wire [7:0] emulator_sample_data;
+
+wire [11:0] emulator_ext_ram_addr;
+wire [7:0] emulator_ext_ram_dout;
+wire emulator_ext_ram_cs;
+wire emulator_ext_ram_we;
+
+assign ext_ram_addr = emulator_active ? emulator_ext_ram_addr : mcu_ext_ram_addr;
+assign ext_ram_dout = emulator_active ? emulator_ext_ram_dout : mcu_ext_ram_dout;
+assign ext_ram_cs = emulator_active ? emulator_ext_ram_cs : mcu_ext_ram_cs;
+assign ext_ram_we = emulator_active ? emulator_ext_ram_we : mcu_ext_ram_we;
+assign sample_data = valid_samples ? ( emulator_active ? emulator_sample_data : mcu_sample_port ) : 8'h80;
 
 dpramv_cen #(.widthad_a(7)) internal_ram
 (
@@ -104,7 +127,7 @@ dpramv_cen #(.widthad_a(13)) prom
 dpramv #(.widthad_a(18)) sample_rom
 (
     .clock_a(CLK_32M),
-    .address_a(sample_addr),
+    .address_a(emulator_active ? emulator_sample_addr : mcu_sample_addr),
     .q_a(sample_data_dout),
     .wren_a(1'b0),
     .data_a(),
@@ -117,8 +140,7 @@ dpramv #(.widthad_a(18)) sample_rom
 );
 
 wire [7:0] sample_data_dout;
-reg [7:0] sample_data_latch;
-reg [17:0] sample_addr;
+reg [17:0] mcu_sample_addr;
 
 reg [7:0] z80_latch;
 reg z80_latch_int = 0;
@@ -140,19 +162,19 @@ always @(posedge CLK_32M) begin
     if (delayed_ce) begin
         dbg_rom_addr <= prom_addr;
         
-        ext_ram_cs <= 0;
-        ext_ram_we <= 0;
+        mcu_ext_ram_cs <= 0;
+        mcu_ext_ram_we <= 0;
         if (ext_cs) begin
             casex (ext_addr)
             16'h0000: if (ext_we) begin
-                sample_addr[12:0] <= { ext_dout, 5'd0 };
+                mcu_sample_addr[12:0] <= { ext_dout, 5'd0 };
             end else begin
                 ext_src <= SAMPLE;
-                sample_addr <= sample_addr + 18'd1;
+                mcu_sample_addr <= mcu_sample_addr + 18'd1;
             end
             
             16'h0001: if (ext_we) begin
-                sample_addr[17:13] <= ext_dout[4:0];
+                mcu_sample_addr[17:13] <= ext_dout[4:0];
             end
 
             16'h0002: if (ext_we) begin
@@ -163,12 +185,12 @@ always @(posedge CLK_32M) begin
 
             16'hcxxx: begin
                 if (ext_we) delayed_ce_count <= 7;
-                ext_ram_addr <= ext_addr[11:0];
-                ext_ram_dout <= ext_dout;
-                ext_ram_cs <= ext_cs;
-                ext_ram_we <= ext_cs & ext_we;
+                mcu_ext_ram_addr <= ext_addr[11:0];
+                mcu_ext_ram_dout <= ext_dout;
+                mcu_ext_ram_cs <= ext_cs;
+                mcu_ext_ram_we <= ext_cs & ext_we;
                 if (~ext_we) ext_src <= RAM;
-                end
+            end
             endcase
         end
     end
@@ -200,7 +222,7 @@ mc8051_core mc8051(
     .int1_i(~z80_latch_int),
 
     // sample dac
-    .p1_o(sample_port),
+    .p1_o(mcu_sample_port),
 
     // external ram
     .datax_i(ext_din),
@@ -208,6 +230,38 @@ mc8051_core mc8051(
     .adrx_o(ext_addr),
     .memx_o(ext_cs),
     .wrx_o(ext_we)
+);
+
+
+mcu_emulator mcu_emulator(
+    .CLK_32M(CLK_32M),
+    .ce_8m(ce_8m),
+    .reset(reset),
+
+    .active(emulator_active),
+
+    // shared ram
+    .ext_ram_addr(emulator_ext_ram_addr),
+    .ext_ram_din(ext_ram_din),
+    .ext_ram_dout(emulator_ext_ram_dout),
+    .ext_ram_cs(emulator_ext_ram_cs),
+    .ext_ram_we(emulator_ext_ram_we),
+    .ext_ram_int(ext_ram_int),
+
+    .z80_din(z80_din),
+    .z80_latch_en(z80_latch_en),
+
+    .sample_addr(emulator_sample_addr),
+    .sample_din(sample_data_dout),
+    .sample_data(emulator_sample_data),
+
+    // ioctl
+    .clk_bram(clk_bram),
+    .bram_wr(bram_wr),
+    .bram_data(bram_data),
+    .bram_addr(bram_addr),
+    .bram_offsets_cs(bram_offsets_cs),
+    .bram_protect_cs(bram_protect_cs)
 );
 
 endmodule

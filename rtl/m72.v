@@ -75,7 +75,7 @@ module m72 (
     input bram_wr,
     input [7:0] bram_data,
     input [19:0] bram_addr,
-    input [1:0] bram_cs,
+    input [3:0] bram_cs,
 
     input en_layer_a,
     input en_layer_b,
@@ -663,6 +663,8 @@ mcu mcu(
     .bram_addr(bram_addr),
     .bram_prom_cs(bram_cs[0]),
     .bram_samples_cs(bram_cs[1]),
+    .bram_offsets_cs(bram_cs[2]),
+    .bram_protect_cs(bram_cs[3]),
 
     .dbg_rom_addr(mcu_dbg_rom_addr)
 );

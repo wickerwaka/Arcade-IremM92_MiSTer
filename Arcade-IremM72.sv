@@ -361,7 +361,7 @@ wire sdr_rom_rdy = sdr_ch3_rdy;
 
 wire [19:0] bram_addr;
 wire [7:0] bram_data;
-wire [1:0] bram_cs;
+wire [3:0] bram_cs;
 wire bram_wr;
 
 board_cfg_t board_cfg;

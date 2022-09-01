@@ -25,7 +25,7 @@
 
     <!-- ROM data -->
     <rom index="0" zip="cosmccop.zip|gallop.zip" md5="none" type="merged|nonmerged">
-        <part>01</part>
+        <part>09</part>
 
         <!-- maincpu -->
         <part>00 08 00 00</part>
@@ -65,5 +65,48 @@
             <part name="cc-b-b2.ic25" crc="bda9f6fb" map="0100" />
             <part name="cc-b-b3.ic24" crc="d361ba3f" map="1000" />
         </interleave>
+
+        <!-- mcu -->
+        <part>00 00 00 00</part>
+
+        <!-- samples -->
+        <part>00 02 00 00</part>
+        <part name="cc-c-v0.ic44" crc="6247bade" />
+
+        <!-- sample offsets -->
+        <part>00 00 00 7c</part> <!-- 31 * 3 = -->
+        <part>
+            00 00 00 00
+            00 00 00 20
+            00 00 00 40
+            00 00 13 60
+            00 00 25 80
+            00 00 4f 20
+            00 00 62 40
+            00 00 76 e0
+            00 00 86 60
+            00 00 92 a0
+            00 00 9b a0
+            00 00 a5 60
+            00 00 ce e0
+            00 00 de 20
+            00 00 e6 20
+            00 00 f1 c0
+            00 01 02 00
+            00 01 02 20
+            00 01 02 40
+            00 01 13 80
+            00 01 27 60
+            00 01 27 80
+            00 01 27 a0
+            00 01 3c 40 
+            00 01 40 a0
+            00 01 67 60
+            00 01 7e 40
+            00 01 8e e0
+            00 01 9f 60
+            00 01 bb c0
+            00 01 ce e0
+        </part>
     </rom>
 </misterromdescription>
