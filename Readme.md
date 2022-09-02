@@ -37,6 +37,7 @@ Many people, knowingly or not, contributed to this work.
 - @sentientsixp for encouraging me to do this
 - @atrac17 for schematics and MRAs
 - @tdlabac for help with MCU emulation
+- @_ShootTheCore for providing audio captures from original M72 hardware
 - The MiSTer FPGA discord server for the helpful advice and support
 
 
