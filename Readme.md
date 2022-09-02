@@ -36,6 +36,7 @@ Many people, knowingly or not, contributed to this work.
 - @RobertPeip for the v30mz cpu I am using as the basis for the v30
 - @sentientsixp for encouraging me to do this
 - @atrac17 for schematics and MRAs
+- @tdlabac for help with MCU emulation
 - The MiSTer FPGA discord server for the helpful advice and support
 
 
