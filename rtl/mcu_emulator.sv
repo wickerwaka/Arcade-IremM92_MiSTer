@@ -26,11 +26,11 @@ module mcu_emulator(
     output active,
 
     // shared ram
-    output [11:0] ext_ram_addr,
+    output reg [11:0] ext_ram_addr,
     input [7:0] ext_ram_din,
-    output [7:0] ext_ram_dout,
-    output ext_ram_cs,
-    output ext_ram_we,
+    output reg [7:0] ext_ram_dout,
+    output reg ext_ram_cs,
+    output reg ext_ram_we,
     input ext_ram_int,
 
     // z80 latch
@@ -66,7 +66,7 @@ always_ff @(posedge clk_bram) begin
     if (bram_wr) begin
         if (bram_offsets_cs) begin
             if (bram_addr[1:0] == 2'b11) begin
-                sample_offsets[sample_offsets_count] <= 18'{ buffer[1], buffer[2], bram_data };
+                sample_offsets[sample_offsets_count] <= { buffer[1], buffer[2], bram_data };
                 sample_offsets_count <= sample_offsets_count + 6'd1;
             end else begin
                 buffer[bram_addr[1:0]] <= bram_data;
@@ -103,6 +103,108 @@ always @(posedge CLK_32M or posedge reset) begin
                     sample_addr <= sample_offsets[z80_din];
                     sample_playing <= 1;
             end
+        end
+    end
+end
+
+enum {
+    INIT,
+    WAIT_FOR_INT,
+    XOR_DATA,
+    WAIT_FOR_C7FE,
+    WRITE_CODE,
+    WAIT_FOR_INT2,
+    WRITE_CHECKSUM,
+    DONE
+} state = INIT;
+
+always @(posedge CLK_32M or posedge reset) begin
+    reg [15:0] ptr;
+    if (reset) begin
+        state <= INIT;
+        ext_ram_cs <= 0;
+        ext_ram_we <= 0;
+    end else begin
+        if (ce_8m) begin
+            ext_ram_cs <= 0;
+            ext_ram_we <= 0;
+
+            case(state)
+            INIT: begin // clear int flag if it's set
+                ext_ram_cs <= 1;
+                ext_ram_addr <= 12'hfff;
+                state <= WAIT_FOR_INT;
+            end
+
+            WAIT_FOR_INT: begin
+                if (ext_ram_int) begin
+                    ext_ram_cs <= 1;
+                    ext_ram_addr <= 12'hfff;
+                    state <= XOR_DATA;
+                    ptr <= 16'hc000;
+                end
+            end
+
+            XOR_DATA: begin
+                if (ptr == 16'hd000) begin
+                    state <= WAIT_FOR_C7FE;
+                    ext_ram_cs <= 1;
+                    ext_ram_addr <= 12'h7fe;
+                end else begin
+                    ptr <= ptr + 16'd1;
+                    ext_ram_cs <= 1;
+                    ext_ram_we <= 1;
+                    ext_ram_addr <= ptr[11:0];
+                    ext_ram_dout <= ~({4'b0, ptr[11:8]} + ptr[7:0]);
+                end
+            end
+
+				WAIT_FOR_C7FE: begin
+                if (ext_ram_din != 8'hfa) begin
+                    state <= WRITE_CODE;
+                    ptr <= 16'h18;
+                end else begin
+                    ext_ram_cs <= 1;
+                end
+            end
+
+            WRITE_CODE: begin
+                if (ptr == 16'h128) begin
+                    state <= WAIT_FOR_INT2;
+                end else begin
+                    ext_ram_cs <= 1;
+                    ext_ram_we <= 1;
+                    ext_ram_addr <= ptr - 16'h18;
+                    ext_ram_dout <= protection_data[ptr];
+                    ptr <= ptr + 16'd1;
+                end
+            end
+
+            WAIT_FOR_INT2: begin
+                if (ext_ram_int) begin
+                    ext_ram_cs <= 1;
+                    ext_ram_addr <= 12'hfff;
+                    state <= WRITE_CHECKSUM;
+                    ptr <= 16'h0;
+                end
+            end
+            
+            WRITE_CHECKSUM: begin
+                if (ptr == 16'd18) begin
+                    state <= DONE;
+                end else begin
+                    ext_ram_cs <= 1;
+                    ext_ram_we <= 1;
+                    ext_ram_addr <= 16'h7e0 + ptr;
+                    ext_ram_dout <= protection_data[ptr];
+                    ptr <= ptr + 16'd1;
+                end
+            end
+            
+            DONE: begin
+            end
+                
+            endcase
         end
     end
 end
