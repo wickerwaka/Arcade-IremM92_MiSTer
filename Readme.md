@@ -11,15 +11,13 @@ Implemention of the Irem M72 arcade hardware (https://www.system16.com/hardware.
 |[R-Type](https://en.wikipedia.org/wiki/R-Type)|Japan, US, World||
 |[Ninja Spirit](https://en.wikipedia.org/wiki/Ninja_Spirit)|Japan||
 |[Image Fight](https://en.wikipedia.org/wiki/Image_Fight)|Japan, World||
-|[Gallop - Armed Police Unit](https://en.wikipedia.org/wiki/Armed_Police_Unit_Gallop)|Japan|Missing samples due to lack of MCU ROM dump.|
+|[Gallop - Armed Police Unit](https://en.wikipedia.org/wiki/Armed_Police_Unit_Gallop)|Japan|Emulated MCU|
 |[Legend of Hero Tonma](https://en.wikipedia.org/wiki/Legend_of_Hero_Tonma)|Japan||
 |[Mr. HELI no Daibouken](https://en.wikipedia.org/wiki/Mr._Heli)|Japan||
 |[Air Duel](https://en.wikipedia.org/wiki/Air_Duel)|Japan|Conversion from M81 hardware.|
 |[Dragon Breed](https://en.wikipedia.org/wiki/Dragon_Breed)|Japan|Conversion from M81 hardware.|
 |[X-Multiply](https://en.wikipedia.org/wiki/X_Multiply)|Japan|Conversion from M81 hardware.|
-
-
-Daiku no Gensan (Hammerin' Harry) is the only M72 game currently unsupported, since there are no dumps of it's MCU ROM available. World and US versions of all the supported games are missing for the same reason.
+|[Daiku no Gensan](https://en.wikipedia.org/wiki/Hammerin%27_Harry)|Japan|Conversion from M81 hardware. Emulated MCU|
 
 ## Video Modes
 All of these games output a 256 line signal at 55.02hz, that can be difficult for some consumer CRTs to sync too and the refresh rate can cause irregular scrolling on some digital displays. The core offers three additional refresh rates: 50hz, 57hz and 60hz. These will slow down or speed up gameplay, but sound playback will remain uneffected.
