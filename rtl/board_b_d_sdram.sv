@@ -24,17 +24,19 @@ module board_b_d_sdram(
     input clk,
     input clk_ram,
 
-    input [17:0] addr_a,
+    input m84,
+
+    input [20:0] addr_a,
     output [31:0] data_a,
     input req_a,
     output rdy_a,
 
-    input [17:0] addr_b,
+    input [20:0] addr_b,
     output [31:0] data_b,
     input req_b,
     output rdy_b,
 
-    output [24:1] sdr_addr,
+    output [24:0] sdr_addr,
     input [31:0] sdr_data,
     output sdr_req,
     input sdr_rdy
@@ -48,7 +50,7 @@ reg [31:0] active_data;
 
 reg req_a_2 = 0;
 reg req_b_2 = 0;
-reg [24:1] addr_a_2, addr_b_2;
+reg [24:0] addr_a_2, addr_b_2;
 
 always @(posedge clk) begin
     sdr_req <= 0;
@@ -57,12 +59,12 @@ always @(posedge clk) begin
 
     if (req_a & ~req_a_2) begin
         req_a_2 <= 1;
-        addr_a_2 <= { REGION_BG_A.base_addr[24:19], addr_a };
+        addr_a_2 <= REGION_BG_A.base_addr[24:0] | addr_a;
     end
 
     if (req_b & ~req_b_2) begin
         req_b_2 <= 1;
-        addr_b_2 <= { REGION_BG_B.base_addr[24:19], addr_b };
+        addr_b_2 <= m84 ? ( REGION_BG_A.base_addr[24:0] | addr_b ) : ( REGION_BG_B.base_addr[24:0] | addr_b );
     end
 
     if (active) begin

@@ -36,9 +36,14 @@ module mcu(
     input z80_latch_en,
 
     // sample output, 8-bit unsigned
-    output [7:0] sample_data,
+    output [7:0] sample_out,
 
-    // ioctl
+    output [1:0] sample_addr_wr,
+    output [15:0] sample_addr,
+    output sample_inc,
+    input [7:0] sample_rom_data,
+
+    // ioctlsamp
     input clk_bram,
     input bram_wr,
     input [7:0] bram_data,
@@ -56,10 +61,8 @@ wire [7:0] ram_din, ram_dout;
 wire ram_we, ram_cs;
 
 wire [7:0] mcu_sample_port;
-reg valid_samples = 0;
 reg valid_rom = 0;
 
-always @(posedge clk_bram) if (bram_samples_cs & bram_wr) valid_samples <= 1;
 always @(posedge clk_bram) if (bram_prom_cs & bram_wr) valid_rom <= 1;
 
 reg [2:0] delayed_ce_count = 0;
@@ -73,8 +76,10 @@ reg mcu_ext_ram_cs;
 reg mcu_ext_ram_we;
 
 wire emulator_active;
-wire [17:0] emulator_sample_addr;
-wire [7:0] emulator_sample_data;
+wire [15:0] emulator_sample_addr;
+wire [1:0] emulator_sample_addr_wr;
+wire emulator_sample_inc;
+wire [7:0] emulator_sample_out;
 
 wire [11:0] emulator_ext_ram_addr;
 wire [7:0] emulator_ext_ram_dout;
@@ -85,7 +90,11 @@ assign ext_ram_addr = emulator_active ? emulator_ext_ram_addr : mcu_ext_ram_addr
 assign ext_ram_dout = emulator_active ? emulator_ext_ram_dout : mcu_ext_ram_dout;
 assign ext_ram_cs = emulator_active ? emulator_ext_ram_cs : mcu_ext_ram_cs;
 assign ext_ram_we = emulator_active ? emulator_ext_ram_we : mcu_ext_ram_we;
-assign sample_data = valid_samples ? ( emulator_active ? emulator_sample_data : mcu_sample_port ) : 8'h80;
+assign sample_out = emulator_active ? emulator_sample_out : mcu_sample_port;
+assign sample_addr = emulator_active ? emulator_sample_addr : mcu_sample_addr;
+assign sample_addr_wr = emulator_active ? emulator_sample_addr_wr : mcu_sample_addr_wr;
+assign sample_inc = emulator_active ? emulator_sample_inc : mcu_sample_inc;
+
 
 dpramv_cen #(.widthad_a(7)) internal_ram
 (
@@ -123,24 +132,9 @@ dpramv_cen #(.widthad_a(13)) prom
 
 
 
-/// SAMPLE ROM
-dpramv #(.widthad_a(18)) sample_rom
-(
-    .clock_a(CLK_32M),
-    .address_a(emulator_active ? emulator_sample_addr : mcu_sample_addr),
-    .q_a(sample_data_dout),
-    .wren_a(1'b0),
-    .data_a(),
-
-    .clock_b(clk_bram),
-    .address_b(bram_addr[17:0]),
-    .data_b(bram_data),
-    .wren_b(bram_samples_cs),
-    .q_b()
-);
-
-wire [7:0] sample_data_dout;
 reg [17:0] mcu_sample_addr;
+reg [1:0] mcu_sample_addr_wr;
+reg mcu_sample_inc;
 
 reg [7:0] z80_latch;
 reg z80_latch_int = 0;
@@ -152,6 +146,9 @@ wire ext_cs, ext_we;
 enum { SAMPLE, Z80, RAM } ext_src = SAMPLE;
 
 always @(posedge CLK_32M) begin
+    mcu_sample_inc <= 0;
+    mcu_sample_addr_wr <= 2'b00;
+
     if (z80_latch_en) begin
         z80_latch <= z80_din;
         z80_latch_int <= 1;
@@ -167,14 +164,16 @@ always @(posedge CLK_32M) begin
         if (ext_cs) begin
             casex (ext_addr)
             16'h0000: if (ext_we) begin
-                mcu_sample_addr[12:0] <= { ext_dout, 5'd0 };
+                mcu_sample_addr[7:0] <= ext_dout;
+                mcu_sample_addr_wr <= 2'b01;
             end else begin
                 ext_src <= SAMPLE;
-                mcu_sample_addr <= mcu_sample_addr + 18'd1;
+                mcu_sample_inc <= 1;
             end
             
             16'h0001: if (ext_we) begin
-                mcu_sample_addr[17:13] <= ext_dout[4:0];
+                mcu_sample_addr[15:8] <= ext_dout;
+                mcu_sample_addr_wr <= 2'b10;
             end
 
             16'h0002: if (ext_we) begin
@@ -196,7 +195,7 @@ always @(posedge CLK_32M) begin
     end
 end
 
-wire [7:0] ext_din = ext_src == SAMPLE ? sample_data_dout : ext_src == Z80 ? z80_latch : ext_ram_din;
+wire [7:0] ext_din = ext_src == SAMPLE ? sample_rom_data : ext_src == Z80 ? z80_latch : ext_ram_din;
 
 wire [15:0] prom_addr;
 wire [7:0] prom_data;
@@ -252,8 +251,10 @@ mcu_emulator mcu_emulator(
     .z80_latch_en(z80_latch_en),
 
     .sample_addr(emulator_sample_addr),
-    .sample_din(sample_data_dout),
-    .sample_data(emulator_sample_data),
+    .sample_addr_wr(emulator_sample_addr_wr),
+    .sample_inc(emulator_sample_inc),
+    .sample_in(sample_rom_data),
+    .sample_out(emulator_sample_out),
 
     // ioctl
     .clk_bram(clk_bram),

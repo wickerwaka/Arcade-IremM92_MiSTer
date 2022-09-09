@@ -38,8 +38,10 @@ module mcu_emulator(
     input z80_latch_en,
 
     output reg [17:0] sample_addr,
-    input [7:0] sample_din,
-    output reg [7:0] sample_data,
+    output reg [1:0] sample_addr_wr,
+    output reg sample_inc,
+    input [7:0] sample_in,
+    output reg [7:0] sample_out,
 
     // ioctl
     input clk_bram,
@@ -80,28 +82,34 @@ always_ff @(posedge clk_bram) begin
 end
 
 always @(posedge CLK_32M or posedge reset) begin
+
     if (reset) begin
         sample_counter <= 0;
         sample_playing <= 0;
-        sample_data <= 8'h80;
+        sample_out <= 8'h80;
+        sample_addr_wr <= 2'b00;
+        sample_inc <= 0;
     end else begin
+        sample_addr_wr <= 2'b00;
+        sample_inc <= 0;
         if (ce_8m) begin
             sample_counter <= sample_counter + 10'd1;
             if (sample_playing) begin
-                if (sample_din == 8'd0) begin
+                if (sample_in == 8'd0) begin
                     sample_playing <= 0;
-                    sample_data <= 8'h80;
+                    sample_out <= 8'h80;
                 end else if(&sample_counter) begin
-                    sample_data <= sample_din;
-                    sample_addr <= sample_addr + 18'd1;
+                    sample_out <= sample_in;
+                    sample_inc <= 1;
                 end
             end
         end
     
         if (z80_latch_en) begin
             if (z80_din < sample_offsets_count) begin
-                    sample_addr <= sample_offsets[z80_din];
-                    sample_playing <= 1;
+                sample_addr <= sample_offsets[z80_din][17:5];
+                sample_addr_wr <= 2'b11;
+                sample_playing <= 1;
             end
         end
     end
@@ -159,7 +167,7 @@ always @(posedge CLK_32M or posedge reset) begin
                 end
             end
 
-				WAIT_FOR_C7FE: begin
+            WAIT_FOR_C7FE: begin
                 if (ext_ram_din != 8'hfa) begin
                     state <= WRITE_CODE;
                     ptr <= 16'h18;

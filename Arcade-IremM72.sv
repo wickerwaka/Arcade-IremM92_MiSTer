@@ -230,24 +230,33 @@ end
 localparam CONF_STR = {
     "M72;;",
     "-;",
-    "O[2:1],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
-    "O[4:3],Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
-    "O[6:5],Scale,Normal,V-Integer,Narrower HV-Integer,Wider HV-Integer;",
+    "P1,Video Settings;",
+    "P1O[2:1],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+    "P1O[4:3],Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
+    "P1O[6:5],Scale,Normal,V-Integer,Narrower HV-Integer,Wider HV-Integer;",
+    "P1-;",
+    "P1O[9:8],Video Timing,Normal(55Hz),50Hz,57Hz,60Hz;",
+    "P1O[10],Orientation,Horz,Vert;",
+    "P1-;",
+    "d1P1O[11],240p Crop,Off,On;",
+    "d2P1O[16:12],Crop Offset,0,1,2,3,4,5,6,7,8,-8,-7,-6,-5,-4,-3,-2,-1;",
+    "P1-;",
+    "P1O[20:17],Analog Video H-Pos,0,-1,-2,-3,-4,-5,-6,-7,8,7,6,5,4,3,2,1;",
+	"P1O[24:21],Analog Video V-Pos,0,-1,-2,-3,-4,-5,-6,-7,8,7,6,5,4,3,2,1;",
+    "-;",
     "O[7],OSD Pause,Off,On;",
-    "O[9:8],Video Timing,Normal,50Hz,57Hz,60Hz;",
-    "O[10],Orientation,Horz,Vert;",
     "-;",
     "DIP;",
     "-;",
-    "P1,Debug;",
-    "P1-;",
-    "P1O[64],Layer A,On,Off;",
-    "P1O[65],Layer B,On,Off;",
-    "P1O[66],Sprites,On,Off;",
-    "P1O[67],Layer Palette,On,Off;",
-    "P1O[68],Sprite Palette,On,Off;",
-    "P1O[69],Sprite Freeze,Off,On;",
-    "P1O[70],Audio Filtering,On,Off;",
+    "P2,Debug;",
+    "P2-;",
+    "P2O[64],Layer A,On,Off;",
+    "P2O[65],Layer B,On,Off;",
+    "P2O[66],Sprites,On,Off;",
+    "P2O[67],Layer Palette,On,Off;",
+    "P2O[68],Sprite Palette,On,Off;",
+    "P2O[69],Sprite Freeze,Off,On;",
+    "P2O[70],Audio Filtering,On,Off;",
     "-;",
     "T[0],Reset;",
     "DEFMRA,/_Arcade/m72.mra;",
@@ -279,6 +288,11 @@ wire        no_rotate = ~status[10];
 wire        flip = 0;
 wire        rotate_ccw = 1;
 
+wire        allow_crop_240p = ~forced_scandoubler && scale == 0;
+wire        crop_240p = allow_crop_240p & status[11];
+wire [4:0]  crop_offset = status[16:12] < 9 ? {status[16:12]} : ( status[16:12] + 5'd15 );
+
+
 wire clk_sys = CLK_32M;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
@@ -295,7 +309,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
     .buttons(buttons),
     .status(status),
-    .status_menumask({direct_video}),
+    .status_menumask({crop_240p, allow_crop_240p, direct_video}),
 
     .ioctl_download(ioctl_download),
     .ioctl_upload(ioctl_upload),
@@ -332,25 +346,25 @@ wire reset = RESET | status[0] | buttons[1];
 // SDRAM
 ///////////////////////////////////////////////////////////////////////
 wire [63:0] sdr_sprite_dout;
-wire [24:1] sdr_sprite_addr;
+wire [24:0] sdr_sprite_addr;
 wire sdr_sprite_req, sdr_sprite_rdy;
 
 wire [31:0] sdr_bg_dout;
-wire [24:1] sdr_bg_addr;
+wire [24:0] sdr_bg_addr;
 wire sdr_bg_req, sdr_bg_rdy;
 
 wire [15:0] sdr_cpu_dout, sdr_cpu_din;
-wire [24:1] sdr_cpu_addr;
+wire [24:0] sdr_cpu_addr;
 wire sdr_cpu_req;
 wire [1:0] sdr_cpu_wr_sel;
 
-reg [24:1] sdr_rom_addr;
+reg [24:0] sdr_rom_addr;
 reg [15:0] sdr_rom_data;
 reg [1:0] sdr_rom_be;
 reg sdr_rom_req;
 
 wire sdr_rom_write = ioctl_download && (ioctl_index == 0);
-wire [24:1] sdr_ch3_addr = sdr_rom_write ? sdr_rom_addr : sdr_cpu_addr;
+wire [24:0] sdr_ch3_addr = sdr_rom_write ? sdr_rom_addr : sdr_cpu_addr;
 wire [15:0] sdr_ch3_din = sdr_rom_write ? sdr_rom_data : sdr_cpu_din;
 wire [1:0] sdr_ch3_be = sdr_rom_write ? sdr_rom_be : sdr_cpu_wr_sel;
 wire sdr_ch3_rnw = sdr_rom_write ? 1'b0 : ~{|sdr_cpu_wr_sel};
@@ -361,7 +375,7 @@ wire sdr_rom_rdy = sdr_ch3_rdy;
 
 wire [19:0] bram_addr;
 wire [7:0] bram_data;
-wire [3:0] bram_cs;
+wire [4:0] bram_cs;
 wire bram_wr;
 
 board_cfg_t board_cfg;
@@ -373,18 +387,18 @@ sdram sdram
     .init(~pll_locked),
     .clk(CLK_96M),
 
-    .ch1_addr(sdr_bg_addr),
+    .ch1_addr(sdr_bg_addr[24:1]),
     .ch1_dout(sdr_bg_dout),
     .ch1_req(sdr_bg_req),
     .ch1_ready(sdr_bg_rdy),
 
-    .ch2_addr(sdr_sprite_addr),
+    .ch2_addr(sdr_sprite_addr[24:1]),
     .ch2_dout(sdr_sprite_dout),
     .ch2_req(sdr_sprite_req),
     .ch2_ready(sdr_sprite_rdy),
 
     // multiplexed with rom download and cpu read/writes
-    .ch3_addr(sdr_ch3_addr),
+    .ch3_addr(sdr_ch3_addr[24:1]),
     .ch3_din(sdr_ch3_din),
     .ch3_dout(sdr_cpu_dout),
     .ch3_be(sdr_ch3_be),
@@ -415,6 +429,7 @@ rom_loader rom_loader(
 
     .board_cfg(board_cfg)
 );
+
 
 ///////////////////         Keyboard           //////////////////
 reg btn_up       = 0;
@@ -496,7 +511,7 @@ wire m_pause    = btn_pause    | joy[11];
 //////////////////////////////////////////////////////////////////
 
 wire [7:0] R, G, B;
-wire HBlank, VBlank, HSync, VSync;
+wire HBlank, VBlank, HSync, VSync, hs_core, vs_core;
 wire ce_pix;
 
 m72 m72(
@@ -506,8 +521,8 @@ m72 m72(
     .reset_n(~reset),
     .HBlank(HBlank),
     .VBlank(VBlank),
-    .HSync(HSync),
-    .VSync(VSync),
+    .HSync(hs_core),
+    .VSync(vs_core),
     .R(R),
     .G(G),
     .B(B),
@@ -571,6 +586,22 @@ m72 m72(
     .video_60hz(video_60hz)
 );
 
+// H/V offset
+wire [3:0]	hoffset = status[20:17];
+wire [3:0]	voffset = status[24:21];
+jtframe_resync jtframe_resync
+(
+	.clk(CLK_VIDEO),
+	.pxl_cen(ce_pix),
+	.hs_in(hs_core),
+	.vs_in(vs_core),
+	.LVBL(~VBlank),
+	.LHBL(~HBlank),
+	.hoffset(hoffset),
+	.voffset(voffset),
+	.hs_out(HSync),
+	.vs_out(VSync)
+);
 
 wire gamma_hsync, gamma_vsync, gamma_hblank, gamma_vblank;
 wire [7:0] gamma_r, gamma_g, gamma_b;
@@ -637,8 +668,8 @@ video_freak video_freak(
     .VGA_DE_IN(VGA_DE_MIXER),
     .ARX((!ar) ? ( no_rotate ? 12'd4 : 12'd3 ) : (ar - 1'd1)),
     .ARY((!ar) ? ( no_rotate ? 12'd3 : 12'd4 ) : 12'd0),
-    .CROP_SIZE(0),
-    .CROP_OFF(0),
+    .CROP_SIZE(crop_240p ? 240 : 0),
+    .CROP_OFF(crop_offset),
     .SCALE(scale)
 );
 

@@ -23,19 +23,20 @@ package m72_pkg;
     typedef struct packed {
         bit [24:0] base_addr;
         bit reorder_64;
-        bit [3:0] bram_cs;
+        bit [4:0] bram_cs;
     } region_t;
 
-    parameter region_t REGION_CPU_ROM = '{ base_addr:'h000000, reorder_64:0, bram_cs:4'b0000 };
-    parameter region_t REGION_SPRITE =  '{ base_addr:'h100000, reorder_64:1, bram_cs:4'b0000 };
-    parameter region_t REGION_BG_A =    '{ base_addr:'h200000, reorder_64:0, bram_cs:4'b0000 };
-    parameter region_t REGION_BG_B =    '{ base_addr:'h300000, reorder_64:0, bram_cs:4'b0000 };
-    parameter region_t REGION_MCU =     '{ base_addr:'h000000, reorder_64:0, bram_cs:4'b0001 };
-    parameter region_t REGION_SAMPLES = '{ base_addr:'h000000, reorder_64:0, bram_cs:4'b0010 };
-    parameter region_t REGION_OFFSETS = '{ base_addr:'h000000, reorder_64:0, bram_cs:4'b0100 };
-    parameter region_t REGION_PROTECT = '{ base_addr:'h000000, reorder_64:0, bram_cs:4'b1000 };
+    parameter region_t REGION_CPU_ROM = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_SPRITE =  '{ base_addr:'h010_0000, reorder_64:1, bram_cs:5'b00000 };
+    parameter region_t REGION_BG_A =    '{ base_addr:'h100_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_BG_B =    '{ base_addr:'h020_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_MCU =     '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00001 };
+    parameter region_t REGION_SAMPLES = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00010 };
+    parameter region_t REGION_OFFSETS = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00100 };
+    parameter region_t REGION_PROTECT = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b01000 };
+    parameter region_t REGION_SOUND   = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b10000 };
 
-    parameter region_t LOAD_REGIONS[8] = '{
+    parameter region_t LOAD_REGIONS[9] = '{
         REGION_CPU_ROM,
         REGION_SPRITE,
         REGION_BG_A,
@@ -43,13 +44,15 @@ package m72_pkg;
         REGION_MCU,
         REGION_SAMPLES,
         REGION_OFFSETS,
-        REGION_PROTECT
+        REGION_PROTECT,
+        REGION_SOUND
     };
 
-    parameter region_t REGION_CPU_RAM = '{ 'h400000, 0, 4'b0000 };
+    parameter region_t REGION_CPU_RAM = '{ 'h400000, 0, 5'b00000 };
 
     typedef struct packed {
-        bit [3:0] reserved;
+        bit [2:0] reserved;
+        bit m84;
         bit main_mculatch;
         bit [2:0] memory_map;
     } board_cfg_t;

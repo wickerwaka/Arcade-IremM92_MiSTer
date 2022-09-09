@@ -11,10 +11,12 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d_sdram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/rom.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sample_rom.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sprite.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/pal.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_frac_cen.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_resync.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/pause.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu_emulator.sv

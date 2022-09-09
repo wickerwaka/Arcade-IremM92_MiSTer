@@ -47,7 +47,7 @@ module sprite (
     output [7:0] pix_test,
 
     input [63:0] sdr_data,
-    output [24:1] sdr_addr,
+    output [24:0] sdr_addr,
     output sdr_req,
     input sdr_rdy
 );
@@ -226,7 +226,7 @@ always_ff @(posedge CLK_96M) begin
             code <= obj_code + row_y[8:4] + ( ( obj_flipx ? ( width - span - 16'd1 ) : span ) * 16'd8 );
         end
         3: begin
-            sdr_addr <= REGION_SPRITE.base_addr[24:1] + { code[12:0], row_y[3:0], 2'b00 };
+            sdr_addr <= REGION_SPRITE.base_addr[24:0] + { code[12:0], row_y[3:0], 3'b000 };
             sdr_req <= 1;
             sdr_wait <= 1;
         end
