@@ -43,7 +43,7 @@
         </interleave>
 
         <!-- sprites -->
-        <part>00 08 00 00</part>
+        <part>01 08 00 00</part>
         <interleave output="32">
             <part name="hh_00.rom" crc="ec5127ef" map="0001" />
             <part name="hh_10.rom" crc="def65294" map="0010" />
@@ -52,7 +52,7 @@
         </interleave>
 
         <!-- gfx2 -->
-        <part>00 08 00 00</part>
+        <part>02 08 00 00</part>
         <interleave output="32">
             <part name="ge72b-a0.bin" crc="f5f56b2a" map="0001" />
             <part name="ge72-a1.bin"  crc="d194ea08" map="0010" />
@@ -67,7 +67,7 @@
         </interleave>
 
         <!-- gfx3 -->
-        <part>00 04 00 00</part>
+        <part>03 04 00 00</part>
         <interleave output="32">
             <part name="ge72-b0.bin"  crc="208796b3" map="0001" />
             <part name="ge72-b1.bin"  crc="b4a7f490" map="0010" />
@@ -75,15 +75,12 @@
             <part name="ge72b-b3.bin" crc="4b0e92f4" map="1000" />
         </interleave>
 
-        <!-- mcu MISSING -->
-        <part>00 00 00 00</part>
-
         <!-- samples -->
-        <part>00 02 00 00</part>
+        <part>05 02 00 00</part>
         <part name="gen-vo.bin" crc="d8595c66"/>
 
         <!-- offsets -->
-        <part>00 00 00 70</part>
+        <part>06 00 00 70</part>
         <part>
             00 00 00 00
             00 00 00 20
@@ -116,7 +113,7 @@
         </part>
 
         <!-- protection -->
-        <part>00 00 00 17</part>
+        <part>07 00 00 17</part>
         <part>
             c8 b4 dc f8 d3 ba 48 ed 79 08 1c b3 00 00 00 00 00 00
             ea 3d 00 00 10
