@@ -1,0 +1,69 @@
+<misterromdescription>
+    <name>Lightning Swords</name>
+    <mameversion>0240</mameversion>
+    <setname>ltswords</setname>
+    <year>1991</year>
+    <manufacturer>Irem</manufacturer>
+    <category></category>
+    <rbf>irem_m72</rbf>
+
+    <buttons names="1,2,3,4,Start,Coin,Pause" default="A,B,X,Y,L,R,Start"/>
+
+    <switches default="ff,ff">
+        <!-- DSW -->
+        <dip name="Lives" bits="0,1" ids="5,4,2,3"/>
+        <dip name="Difficulty" bits="2,3" ids="Very Easy,Hard,Easy,Normal"/>
+        <dip name="Unknown" bits="4" ids="On,Off"/>
+        <dip name="Allow Continue" bits="5" ids="No,Yes"/>
+        <dip name="Demo Sounds" bits="6" ids="On,Off"/>
+        <dip name="Service Mode" bits="7" ids="On,Off"/>
+        <dip name="Flip Screen" bits="8" ids="On,Off"/>
+        <dip name="Unknown" bits="9" ids="On,Off"/>
+        <dip name="Unknown" bits="10" ids="On,Off"/>
+        <dip name="Coin Mode" bits="11" ids="Mode 2,Mode 1"/>
+        <dip name="Coin A" bits="12,13" ids="5/1,3/1,2/1,1/1"/>
+        <dip name="Coin B" bits="14,15" ids="1/6,1/5,1/3,1/2"/>
+        <dip name="Coinage" bits="12,15" ids="Free Play,2 to Start/1 to Continue,4/3,3/2,2/3,1/6,1/5,1/4,1/3,1/2,6/1,5/1,4/1,3/1,2/1,1/1"/>
+    </switches>
+
+    <rom index="0" zip="ltswords.zip" md5="None">
+
+        <!-- maincpu - starts at 0x0 -->
+        <interleave output="16">
+            <part name="l0.ic61" crc="0210d592" map="01"/>
+            <part name="h0.ic55" crc="22f342b2" map="10"/>
+        </interleave>
+        <part repeat="0x40000"> FF</part>
+
+        <!-- soundcpu - starts at 0x80000 -->
+        <part name="ken_d-sp.rom" crc="233ca1cf"/>
+        <part repeat="0x10000"> FF</part>
+
+        <!-- sprites - starts at 0xA0000 -->
+        <part name="ken_m31.rom" crc="e00b95a6"/>
+        <part name="ken_m21.rom" crc="d7722f87"/>
+        <part name="ken_m32.rom" crc="30a844c4"/>
+        <part name="ken_m22.rom" crc="a00dac85"/>
+        <part repeat="0x80000"> FF</part>
+
+        <!-- gfx2 - starts at 0x1A0000 -->
+        <part name="ken_m51.rom" crc="1646cf4f"/>
+        <part name="ken_m57.rom" crc="a9f88d90"/>
+        <part name="ken_m66.rom" crc="e9d17645"/>
+        <part name="ken_m64.rom" crc="df46709b"/>
+        <part repeat="0x80000"> FF</part>
+
+        <!-- samples - starts at 0x2A0000 -->
+        <part name="ken_m14.rom" crc="6651e9b7"/>
+        <part repeat="0x20000"> FF</part>
+
+        <!-- mcu - starts at 0x2E0000 -->
+        <part repeat="0x1000"> FF</part>
+
+        <!-- Total 0x2E1000 bytes - 2948 kBytes -->
+    </rom>
+
+    <rom index="1">
+        <part>00</part>
+    </rom>
+</misterromdescription>

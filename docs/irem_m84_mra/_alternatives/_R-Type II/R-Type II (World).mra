@@ -1,0 +1,74 @@
+<misterromdescription>
+    <name>R-Type II (World)</name>
+    <mameversion>0240</mameversion>
+    <setname>rtype2</setname>
+    <year>1989</year>
+    <manufacturer>Irem</manufacturer>
+    <category></category>
+    <rbf>irem_m72</rbf>
+
+    <buttons names="1,2,3,4,Start,Coin,Pause" default="A,B,X,Y,L,R,Start"/>
+
+    <switches default="ff,ff">
+        <!-- DSW -->
+        <dip name="Lives" bits="0,1" ids="5,4,2,3"/>
+        <dip name="Difficulty" bits="2,3" ids="Hardest,Hard,Easy,Normal"/>
+        <dip name="Coin A" bits="4,5" ids="5/1,3/1,2/1,1/1"/>
+        <dip name="Coin B" bits="6,7" ids="1/6,1/5,1/3,1/2"/>
+        <dip name="Coinage" bits="4,7" ids="Free Play,8/3,5/3,3/2,2/3,1/6,1/5,1/4,1/3,1/2,6/1,5/1,4/1,3/1,2/1,1/1"/>
+        <dip name="Flip Screen" bits="8" ids="On,Off"/>
+        <dip name="Demo Sounds" bits="9" ids="Off,On"/>
+        <dip name="Coin Mode" bits="10" ids="Mode 2,Mode 1"/>
+        <dip name="Cabinet" bits="11,12" ids="Upright,Upright,Cocktail"/>
+        <dip name="Stop Mode" bits="13" ids="On,Off"/>
+        <dip name="Unused" bits="14" ids="On,Off"/>
+        <dip name="Service Mode" bits="15" ids="On,Off"/>
+    </switches>
+
+    <rom index="0" zip="rtype2.zip" md5="None">
+
+        <!-- maincpu - starts at 0x0 -->
+        <interleave output="16">
+            <part name="rt2-a-l0-d.60" crc="32cfb2e4" map="01"/>
+            <part name="rt2-a-h0-d.54" crc="d8ece6f4" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="rt2-a-l1-d.59" crc="0fd123bf" map="01"/>
+            <part name="rt2-a-h1-d.53" crc="4f6e9b15" map="10"/>
+        </interleave>
+
+        <!-- soundcpu - starts at 0x80000 -->
+        <part name="ic17.4f" crc="73ffecb4"/>
+        <part repeat="0x10000"> FF</part>
+
+        <!-- sprites - starts at 0xA0000 -->
+        <part name="ic31.6l" crc="2cd8f913"/>
+        <part name="ic21.4l" crc="5033066d"/>
+        <part name="ic32.6m" crc="ec3a0450"/>
+        <part name="ic22.4m" crc="db6176fc"/>
+        <part repeat="0x80000"> FF</part>
+
+        <!-- gfx2 - starts at 0x1A0000 -->
+        <part name="ic50.7s" crc="f3f8736e"/>
+        <part name="ic51.7u" crc="b4c543af"/>
+        <part name="ic56.8s" crc="4cb80d66"/>
+        <part name="ic57.8u" crc="bee128e0"/>
+        <part name="ic65.9r" crc="2dc9c71a"/>
+        <part name="ic66.9u" crc="7533c428"/>
+        <part name="ic63.9m" crc="a6ad67f2"/>
+        <part name="ic64.9p" crc="3686d555"/>
+
+        <!-- samples - starts at 0x2A0000 -->
+        <part name="ic14.4c" crc="637172d5"/>
+        <part repeat="0x20000"> FF</part>
+
+        <!-- mcu - starts at 0x2E0000 -->
+        <part repeat="0x1000"> FF</part>
+
+        <!-- Total 0x2E1000 bytes - 2948 kBytes -->
+    </rom>
+
+    <rom index="1">
+        <part>00</part>
+    </rom>
+</misterromdescription>
