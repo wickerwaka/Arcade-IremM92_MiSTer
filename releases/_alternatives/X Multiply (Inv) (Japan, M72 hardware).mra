@@ -44,7 +44,7 @@
         </interleave>
 
         <!-- sprites -->
-        <part>00 10 00 00</part>
+        <part>01 10 00 00</part>
         <interleave output="32">
             <part name="t44.00.ic53" crc="db45186e" map="0001" />
             <part name="t45.01.ic52" crc="4d0764d4" map="0001" />
@@ -57,7 +57,7 @@
         </interleave>
 
         <!-- gfx2 -->
-        <part>00 08 00 00</part>
+        <part>02 08 00 00</part>
         <interleave output="32">
             <part name="t53.a0" crc="1a082494" map="0001"/>
             <part name="t54.a1" crc="076c16c5" map="0010"/>
@@ -65,8 +65,8 @@
             <part name="t56.a3" crc="5b1213f5" map="1000"/>
         </interleave>
 
-        <!-- gfx2 -->
-        <part>00 08 00 00</part>
+        <!-- gfx3 -->
+        <part>03 08 00 00</part>
         <interleave output="32">
             <part name="t57.b0" crc="0a84e0c7" map="0001"/>
             <part name="t58.b1" crc="a874121d" map="0010"/>
@@ -75,11 +75,11 @@
         </interleave>
 
         <!-- mcu -->
-        <part>00 00 10 00</part>
+        <part>04 00 10 00</part>
         <part name="xm_c-pr-.ic1" crc="c8ceb3cd"/>
 
         <!-- samples -->
-        <part>00 02 00 00</part>
+        <part>05 02 00 00</part>
         <part name="t52.v0.ic44" crc="2db1bd80"/>
 		  
         <!-- Invincibility -->
