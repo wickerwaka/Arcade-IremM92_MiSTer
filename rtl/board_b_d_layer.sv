@@ -141,7 +141,7 @@ kna6034201 kna6034201(
 );
 
 wire [8:0] SV = VE + adj_v;
-wire [8:0] SH = ( HE + adj_h ) ^ { 6'b0, {3{NL}} };
+wire [8:0] SH = ( ( m84 ? HE - 9'd4 : HE ) + adj_h ) ^ { 6'b0, {3{NL}} };
 
 reg [8:0] adj_v;
 reg [8:0] adj_h;
