@@ -1,0 +1,70 @@
+<misterromdescription>
+    <name>Pound for Pound (World)</name>
+    <mameversion>0240</mameversion>
+    <setname>poundfor</setname>
+    <year>1990</year>
+    <manufacturer>Irem</manufacturer>
+    <category></category>
+    <rbf>irem_m72</rbf>
+
+    <buttons names="-,-,-,-,Start,Coin,Pause" default="A,B,X,Y,L,R,Start"/>
+
+    <switches default="ff,ff">
+        <!-- DSW -->
+        <dip name="Round Time" bits="0,1" ids="150,120,60,90"/>
+        <dip name="Matches/Credit (2P)" bits="2" ids="2,1"/>
+        <dip name="Rounds/Match" bits="3" ids="3,2"/>
+        <dip name="Difficulty" bits="4" ids="Hard,Normal"/>
+        <dip name="Trackball Size" bits="5" ids="Large,Small"/>
+        <dip name="Demo Sounds" bits="6" ids="On,Off"/>
+        <dip name="Service Mode" bits="7" ids="On,Off"/>
+        <dip name="Flip Screen" bits="8" ids="On,Off"/>
+        <dip name="Cabinet" bits="9,10" ids="Upright,Upright,Cocktail"/>
+        <dip name="Coin Mode" bits="11" ids="Mode 2,Mode 1"/>
+        <dip name="Coin A" bits="12,13" ids="5/1,3/1,2/1,1/1"/>
+        <dip name="Coin B" bits="14,15" ids="1/6,1/5,1/3,1/2"/>
+        <dip name="Coinage" bits="12,15" ids="Free Play,1/1, 1/Continue,4/3,3/2,2/3,1/6,1/5,1/4,1/3,1/2,6/1,5/1,4/1,3/1,2/1,1/1"/>
+    </switches>
+
+    <rom index="0" zip="poundfor.zip" md5="None">
+
+        <!-- maincpu - starts at 0x0 -->
+        <interleave output="16">
+            <part name="ppa-l0-b.9d" crc="bd997942" map="01"/>
+            <part name="ppa-h0-b.9e" crc="50d4a2d8" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="ppa-l1.9c" crc="5b07b087" map="01"/>
+            <part name="ppa-h1.9f" crc="f6c82f48" map="10"/>
+        </interleave>
+
+        <!-- soundcpu - starts at 0x80000 -->
+        <part name="ppa-sp.4j" crc="3f458a5b"/>
+        <part repeat="0x10000"> FF</part>
+
+        <!-- sprites - starts at 0xA0000 -->
+        <part name="ppb-n0.bin" crc="951a41f8"/>
+        <part name="ppb-n1.bin" crc="c609b7f2"/>
+        <part name="ppb-n2.bin" crc="318c0b5f"/>
+        <part name="ppb-n3.bin" crc="93dc9490"/>
+
+        <!-- gfx2 - starts at 0x1A0000 -->
+        <part name="ppa-g00.bin" crc="8a88a174"/>
+        <part name="ppa-g10.bin" crc="e48a66ac"/>
+        <part name="ppa-g20.bin" crc="12b93e79"/>
+        <part name="ppa-g30.bin" crc="faa39aee"/>
+        <part repeat="0x80000"> FF</part>
+
+        <!-- samples - starts at 0x2A0000 -->
+        <part name="ppa-v0.bin" crc="03321664"/>
+
+        <!-- mcu - starts at 0x2E0000 -->
+        <part repeat="0x1000"> FF</part>
+
+        <!-- Total 0x2E1000 bytes - 2948 kBytes -->
+    </rom>
+
+    <rom index="1">
+        <part>00</part>
+    </rom>
+</misterromdescription>
