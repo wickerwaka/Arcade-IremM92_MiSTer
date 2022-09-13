@@ -260,7 +260,7 @@ wire COIN0 = sys_flags[0];
 wire COIN1 = sys_flags[1];
 wire SOFT_NL = ~sys_flags[2];
 wire CBLK = sys_flags[3];
-wire BRQ = ~sys_flags[4];
+wire BRQ = ~m84 & ~sys_flags[4];
 wire BANK = sys_flags[5];
 wire NL = SOFT_NL ^ dip_sw[8];
 

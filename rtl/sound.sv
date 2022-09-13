@@ -165,7 +165,7 @@ T80s z80(
     .A(z80_addr),
     .DI(z80_din),
     .DO(z80_dout),
-    .NMI_n(m84 ? ~m84_nmi_pulse : ~snd_latch2_ready)
+    .NMI_n(m84 ? ~m84_nmi : ~snd_latch2_ready)
 );
 
 jt51 ym2151(
@@ -190,18 +190,20 @@ reg [7:0] snd_latch2;
 reg snd_latch2_ready = 0;
 
 reg [11:0] nmi_counter = 0;
-reg nmi_rq = 0;
-reg nmi_ack = 0;
-reg m84_nmi_pulse = 0;
+reg m84_nmi = 0;
+reg z80_IORQ_n_old;
 
 always @(posedge CLK_32M) begin
     sample_inc <= 0;
     sample_addr_wr <= 2'b00;
 
-    if (~pause) begin
-            
+    if (reset) begin
+        m84_nmi <= 0;
+        nmi_counter <= 0;
+    end else if (~pause) begin
+
         nmi_counter <= nmi_counter + 12'd1;
-        if (&nmi_counter) nmi_rq <= ~nmi_rq;
+        if (&nmi_counter) m84_nmi <= 1;
 
         if (SND & ~IO_A[0]) begin
             snd_latch1 <= IO_DIN[7:0];
@@ -213,31 +215,32 @@ always @(posedge CLK_32M) begin
             snd_latch2_ready <= 1;
         end
 
+        if (~z80_M1_n && ~z80_MREQ_n && z80_addr == 16'h0066)
+            m84_nmi <= 0;
 
-        if (CE_AUDIO) begin
-            m84_nmi_pulse <= nmi_ack != nmi_rq;
-            nmi_ack <= nmi_rq;
+        z80_IORQ_n_old <= z80_IORQ_n;
+        if (z80_IORQ_n_old & ~z80_IORQ_n) begin
 
             if (m84) begin
-                if (~z80_IORQ_n & ~z80_WR_n & z80_addr[7:0] == 8'h80) begin
+                if (~z80_WR_n & z80_addr[7:0] == 8'h80) begin
                     sample_addr <= { 8'h00, z80_dout };
                     sample_addr_wr <= 2'b01;
                 end
-                
-                if (~z80_IORQ_n & ~z80_WR_n & z80_addr[7:0] == 8'h81) begin
+
+                if (~z80_WR_n & z80_addr[7:0] == 8'h81) begin
                     sample_addr <= { z80_dout, 8'h00 };
                     sample_addr_wr <= 2'b10;
                 end
-                
-                if (~z80_IORQ_n & ~z80_WR_n & z80_addr[7:0] == 8'h82) begin
+
+                if (~z80_WR_n & z80_addr[7:0] == 8'h82) begin
                     sample_out <= z80_dout;
                     sample_inc <= 1;
                 end
-                
-                if (~z80_IORQ_n & ~z80_WR_n & z80_addr[7:0] == 8'h83) snd_latch1_ready <= 0;
+
+                if (~z80_WR_n & z80_addr[7:0] == 8'h83) snd_latch1_ready <= 0;
             end else begin
-                if (~z80_IORQ_n & ~z80_WR_n & z80_addr[2:1] == 2'b11) snd_latch1_ready <= 0;
-                if (~z80_IORQ_n & ~z80_RD_n & (z80_addr[2:1] == 2'b10)) snd_latch2_ready <= 0;
+                if (~z80_WR_n & z80_addr[2:1] == 2'b11) snd_latch1_ready <= 0;
+                if (~z80_RD_n & (z80_addr[2:1] == 2'b10)) snd_latch2_ready <= 0;
             end
         end
     end

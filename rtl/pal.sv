@@ -85,7 +85,7 @@ module address_translator
             endcase
         end
 
-        3: begin
+        3,4: begin
             casex (A[19:16])
             4'b1110: begin ls245_en = DBEN & M_IO; writable = 1; sdr_addr = REGION_CPU_RAM.base_addr[24:0] | A[16:0]; end
             4'b0xxx: begin ls245_en = DBEN & M_IO; writable = 0; sdr_addr = REGION_CPU_ROM.base_addr[24:0] | A[18:0]; end
@@ -128,6 +128,23 @@ module address_translator
             default: begin end// nothing
             endcase
         end
+        // M84 Hammerin' Harry
+        4: begin
+            casex (A[19:12])
+            // 0xc0xxx
+            8'b1100_0000: sprite_memrq = 1;
+            // 0xa0xxx
+            8'b1010_0000: sprite_palette_memrq = 1;
+            // 0xa8xxx
+            8'b1010_1000: bg_palette_memrq = 1;
+            // 0xd0000 - 0xd3fff
+            8'b1101_00xx: bg_a_memrq = 1;
+            // 0xd4000 - 0xd7fff
+            8'b1101_01xx: bg_b_memrq = 1;
+            default: begin end// nothing
+            endcase
+        end
+
         // M72
         default: begin
             casex (A[19:12])
@@ -142,7 +159,7 @@ module address_translator
             // 0xd8000 - 0xdbfff
             8'b1101_10xx: bg_b_memrq = 1;
             // 0xexxxx
-            8'b111x_xxxx: sound_memrq = 1;
+            8'b1110_xxxx: sound_memrq = 1;
             default: begin end// nothing
             endcase
         end

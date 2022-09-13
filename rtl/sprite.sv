@@ -236,7 +236,7 @@ always_ff @(posedge CLK_96M) begin
                 st <= st; // wait
             else begin
                 line_buffer_color <= obj_color;
-                line_buffer_x = obj_org_x + ( 10'd16 * span );
+                line_buffer_x <= obj_org_x + ( 10'd16 * span );
                 line_buffer_req <= ~line_buffer_ack;
             end
         end
@@ -274,7 +274,7 @@ module line_buffer(
     output reg [7:0] pixel_out
 );
 
-reg [1:0] scan_buffer = 0;
+reg       scan_buffer;
 reg [9:0] scan_pos = 0;
 wire [9:0] scan_pos_nl = scan_pos ^ {10{NL}};
 reg [7:0] line_pixel;
@@ -287,13 +287,13 @@ dpramv #(.widthad_a(10)) buffer_0
     .clock_a(CLK_32M),
     .address_a(scan_pos_nl),
     .q_a(scan_0),
-    .wren_a(scan_buffer == 1),
+    .wren_a(!scan_buffer && CE_PIX),
     .data_a(8'd0),
 
     .clock_b(CLK_96M),
     .address_b(line_position),
     .data_b(line_pixel),
-    .wren_b(scan_buffer == 2 && line_write),
+    .wren_b(scan_buffer && line_write),
     .q_b()
 );
 
@@ -302,28 +302,13 @@ dpramv #(.widthad_a(10)) buffer_1
     .clock_a(CLK_32M),
     .address_a(scan_pos_nl),
     .q_a(scan_1),
-    .wren_a(scan_buffer == 2),
+    .wren_a(scan_buffer && CE_PIX),
     .data_a(8'd0),
 
     .clock_b(CLK_96M),
     .address_b(line_position),
     .data_b(line_pixel),
-    .wren_b(scan_buffer == 0 && line_write),
-    .q_b()
-);
-
-dpramv #(.widthad_a(10)) buffer_2
-(
-    .clock_a(CLK_32M),
-    .address_a(scan_pos_nl),
-    .q_a(scan_2),
-    .wren_a(scan_buffer == 0),
-    .data_a(8'd0),
-
-    .clock_b(CLK_96M),
-    .address_b(line_position),
-    .data_b(line_pixel),
-    .wren_b(scan_buffer == 1 && line_write),
+    .wren_b(!scan_buffer && line_write),
     .q_b()
 );
 
@@ -334,7 +319,7 @@ always_ff @(posedge CLK_96M) begin
     reg [4:0] count = 0;
 
     line_write <= 0;
-    
+
     if (count != 0) begin
         line_pixel <= { color, data[63], data[47], data[31], data[15] };
         line_write <= data[63] | data[47] | data[31] | data[15];
@@ -357,21 +342,9 @@ always_ff @(posedge CLK_32M) begin
     if (old_v0 != V0) begin
         scan_pos <= 249; // TODO why?
         old_v0 <= V0;
-
-        case (scan_buffer)
-        0: scan_buffer <= 1;
-        1: scan_buffer <= 2;
-        default: scan_buffer <= 0;
-        endcase
-
+        scan_buffer <= ~scan_buffer;
     end else if (CE_PIX) begin
-        
-        case (scan_buffer)
-        0: pixel_out <= scan_0;
-        1: pixel_out <= scan_1;
-        2: pixel_out <= scan_2;
-        endcase
-
+        pixel_out <= scan_buffer ? scan_1 : scan_0;
         scan_pos <= scan_pos + 10'd1;
     end
 end
