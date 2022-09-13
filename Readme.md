@@ -18,6 +18,7 @@ Implemention of the Irem M72 & M84 arcade hardware (https://www.system16.com/har
 |[Dragon Breed](https://en.wikipedia.org/wiki/Dragon_Breed)|Japan|Conversion from M81 hardware.|
 |[X-Multiply](https://en.wikipedia.org/wiki/X_Multiply)|Japan|Conversion from M81 hardware.|
 |[Daiku no Gensan](https://en.wikipedia.org/wiki/Hammerin%27_Harry)|Japan|Conversion from M81 hardware. Emulated MCU.|
+|[Hammerin' Harry](https://en.wikipedia.org/wiki/Hammerin%27_Harry)|US|M84 Hardware.|
 |[R-Type II](https://en.wikipedia.org/wiki/R-Type_II)|Japan,World|M84 hardware.|
 
 ## Video Modes
@@ -32,13 +33,14 @@ Many people, knowingly or not, contributed to this work.
 - @furrtek for the KNA70H015(11) reverse engineering https://github.com/furrtek/VGChips/tree/master/Nanao/KNA70H015(11)
 - @jotego for the YM2151 implementation and analog adjustment module
 - @Ace9921 because I used a lot of his TimePilot'84 code as an example for hooking up inputs and dipswitches
-- The people from PLD Archive for collecting and archiving schematics and PAL information http://wiki.pldarchive.co.uk/index.php?title=R-Type_(M72)
+- The people from PLD Archive and https://www.jammarcade.net/ for collecting and archiving schematics and PAL information http://wiki.pldarchive.co.uk/index.php?title=R-Type_(M72)
 - @sorgelig for developing and maintaining MiSTer
 - @RobertPeip for the v30mz cpu I am using as the basis for the v30
 - @sentientsixp for encouraging me to do this
 - @atrac17 for schematics and MRAs
 - @tdlabac for help with MCU emulation
 - @_ShootTheCore for providing audio captures from original M72 hardware
+- @gyurco for fixes, optimizations and Hammerin' Harry support.
 - The MiSTer FPGA discord server for the helpful advice and support
 
 
