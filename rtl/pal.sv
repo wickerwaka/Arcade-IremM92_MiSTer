@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - PAL address decoders
+//  Irem M92 for MiSTer FPGA - PAL address decoders
 //
 //  Copyright (C) 2022 Martin Donlon
 //
@@ -18,9 +18,9 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-// http://wiki.pldarchive.co.uk/index.php?title=M72-R-3A
+// http://wiki.pldarchive.co.uk/index.php?title=M92-R-3A
 
-import m72_pkg::*;
+import m92_pkg::*;
 
 module address_translator
 (
@@ -145,7 +145,7 @@ module address_translator
             endcase
         end
 
-        // M72
+        // M92
         default: begin
             casex (A[19:12])
             // 0xc0xxx

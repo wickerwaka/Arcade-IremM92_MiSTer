@@ -1,7 +1,7 @@
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m72.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m72_pkg.sv
-set_global_assignment -name SDC_FILE Arcade-IremM72.sdc
-set_global_assignment -name SYSTEMVERILOG_FILE Arcade-IremM72.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pkg.sv
+set_global_assignment -name SDC_FILE Arcade-IremM92.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE Arcade-IremM92.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/dpramv.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/kna6034201.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/kna70h015.sv
@@ -22,7 +22,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu_emulator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/dualport_mailbox.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/ddr_debug.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m72_pic.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pic.sv
 
 set_global_assignment -name VHDL_FILE rtl/v30/export.vhd
 set_global_assignment -name VHDL_FILE rtl/v30/bus_savestates.vhd

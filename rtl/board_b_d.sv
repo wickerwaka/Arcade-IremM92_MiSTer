@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - B-D board, two background layers
+//  Irem M92 for MiSTer FPGA - B-D board, two background layers
 //
 //  Copyright (C) 2022 Martin Donlon
 //
@@ -65,7 +65,7 @@ module board_b_d (
     input m84
 );
 
-// M72-B-D 1/8
+// M92-B-D 1/8
 // Didn't implement WAIT signal
 wire WRA = MWR & a_memrq;
 wire WRB = MWR & b_memrq;

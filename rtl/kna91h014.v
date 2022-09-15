@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Palette chip
+//  Irem M92 for MiSTer FPGA - Palette chip
 //
 //  Copyright (C) 2022 Martin Donlon
 //

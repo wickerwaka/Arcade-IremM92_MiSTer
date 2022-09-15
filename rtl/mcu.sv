@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - 8051 protection and sample playback MCU
+//  Irem M92 for MiSTer FPGA - 8051 protection and sample playback MCU
 //
 //  Copyright (C) 2022 Martin Donlon
 //

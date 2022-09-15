@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - DDR-based tracing system
+//  Irem M92 for MiSTer FPGA - DDR-based tracing system
 //
 //  Copyright (C) 2022 Martin Donlon
 //

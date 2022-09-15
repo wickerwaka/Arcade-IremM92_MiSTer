@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Sprites
+//  Irem M92 for MiSTer FPGA - Sprites
 //
 //  Copyright (C) 2022 Martin Donlon
 //
@@ -18,7 +18,7 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-import m72_pkg::*;
+import m92_pkg::*;
 
 module sprite (
     input CLK_32M,

@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Emulate the protection and sample playback
+//  Irem M92 for MiSTer FPGA - Emulate the protection and sample playback
 //
 //  Copyright (C) 2022 Martin Donlon
 //

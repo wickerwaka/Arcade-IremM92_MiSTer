@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Background layer
+//  Irem M92 for MiSTer FPGA - Background layer
 //
 //  Copyright (C) 2022 Martin Donlon
 //

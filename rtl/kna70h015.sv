@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Video counter generator
+//  Irem M92 for MiSTer FPGA - Video counter generator
 //
 //  Copyright (C) 2022 Martin Donlon
 //
@@ -74,7 +74,7 @@ reg [9:0] h_count;
 Legend of Hero TONMA
 (c)1989 Irem
 
-M72 System
+M92 System
 Horizontal Freq. = 15.625KHz
 H.Period         = 64.0us (512)
 H.Blank          = 16.0us (128)

@@ -1,5 +1,5 @@
 //============================================================================
-//  Irem M72 for MiSTer FPGA - 4-bit color shift register
+//  Irem M92 for MiSTer FPGA - 4-bit color shift register
 //
 //  Copyright (C) 2022 Martin Donlon
 //

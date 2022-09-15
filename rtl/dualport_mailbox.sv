@@ -1,6 +1,6 @@
 
 //============================================================================
-//  Irem M72 for MiSTer FPGA - Dualport memory with mailbox functionality
+//  Irem M92 for MiSTer FPGA - Dualport memory with mailbox functionality
 //
 //  Copyright (C) 2022 Martin Donlon
 //
