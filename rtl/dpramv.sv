@@ -56,6 +56,52 @@ end
 
 endmodule
 
+module dpramv_16 #( parameter widthad_a = 10 ) (
+    // Port A
+    input   wire                clock_a,
+    input   wire    [1:0]       wren_a,
+    input   wire    [widthad_a-1:0]  address_a,
+    input   wire    [15:0]      data_a,
+    output  wire    [15:0]      q_a,
+
+    // Port B
+    input   wire                clock_b,
+    input   wire    [1:0]       wren_b,
+    input   wire    [widthad_a-1:0]  address_b,
+    input   wire    [15:0]      data_b,
+    output  wire    [15:0]      q_b
+);
+
+dpramv #(.widthad_a(widthad_a)) low(
+    .clock_a(clock_a),
+    .address_a(address_a),
+    .q_a(q_a[7:0]),
+    .wren_a(wren_a[0]),
+    .data_a(data_a[7:0]),
+
+    .clock_b(clock_b),
+    .address_b(address_b),
+    .q_b(q_b[7:0]),
+    .wren_b(wren_b[0]),
+    .data_b(data_b[7:0])
+);
+
+dpramv #(.widthad_a(widthad_a)) high(
+    .clock_a(clock_a),
+    .address_a(address_a),
+    .q_a(q_a[15:8]),
+    .wren_a(wren_a[1]),
+    .data_a(data_a[15:8]),
+
+    .clock_b(clock_b),
+    .address_b(address_b),
+    .q_b(q_b[15:8]),
+    .wren_b(wren_b[1]),
+    .data_b(data_b[15:8])
+);
+
+endmodule
+
 module dpramv_cen #(
     parameter width_a = 8,
     parameter widthad_a = 10

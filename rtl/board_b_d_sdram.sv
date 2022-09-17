@@ -24,8 +24,6 @@ module board_b_d_sdram(
     input clk,
     input clk_ram,
 
-    input m84,
-
     input [20:0] addr_a,
     output [31:0] data_a,
     input req_a,
@@ -35,6 +33,11 @@ module board_b_d_sdram(
     output [31:0] data_b,
     input req_b,
     output rdy_b,
+
+    input [20:0] addr_c,
+    output [31:0] data_c,
+    input req_c,
+    output rdy_c,
 
     output [24:0] sdr_addr,
     input [31:0] sdr_data,
@@ -50,21 +53,28 @@ reg [31:0] active_data;
 
 reg req_a_2 = 0;
 reg req_b_2 = 0;
-reg [24:0] addr_a_2, addr_b_2;
+reg req_c_2 = 0;
+reg [24:0] addr_a_2, addr_b_2, addr_c_2;
 
 always @(posedge clk) begin
     sdr_req <= 0;
     rdy_a <= 0;
     rdy_b <= 0;
+    rdy_c <= 0;
 
     if (req_a & ~req_a_2) begin
         req_a_2 <= 1;
-        addr_a_2 <= REGION_BG_A.base_addr[24:0] | addr_a;
+        addr_a_2 <= REGION_TILE.base_addr[24:0] | addr_a;
     end
 
     if (req_b & ~req_b_2) begin
         req_b_2 <= 1;
-        addr_b_2 <= m84 ? ( REGION_BG_A.base_addr[24:0] | addr_b ) : ( REGION_BG_B.base_addr[24:0] | addr_b );
+        addr_b_2 <= REGION_TILE.base_addr[24:0] | addr_b;
+    end
+
+    if (req_c & ~req_c_2) begin
+        req_c_2 <= 1;
+        addr_c_2 <= REGION_TILE.base_addr[24:0] | addr_c;
     end
 
     if (active) begin
@@ -78,6 +88,11 @@ always @(posedge clk) begin
             if (active == 2'd2) begin
                 data_b <= active_data;
                 rdy_b <= 1;
+            end
+
+            if (active == 2'd3) begin
+                data_c <= active_data;
+                rdy_c <= 1;
             end
         end
     end else begin
@@ -93,6 +108,12 @@ always @(posedge clk) begin
             active_rq <= ~active_rq;
             active <= 2'd2;
             req_b_2 <= 0;
+        end else if (req_c_2) begin
+            sdr_addr <= addr_c_2;
+            sdr_req <= 1;
+            active_rq <= ~active_rq;
+            active <= 2'd3;
+            req_c_2 <= 0;
         end
     end
 end

@@ -100,7 +100,7 @@ reg [9:0] paused_h;
 
 always @(posedge CLK_32M) begin
     if (pause_rq & ~paused) begin
-        if (~ls245_en & ~DBEN & ~mem_rq_active) begin
+        if (~cpu_mem_read & ~cpu_mem_write & ~mem_rq_active) begin
             paused <= 1;
             paused_v <= V;
             paused_h <= H;
@@ -125,7 +125,7 @@ always @(posedge CLK_32M) begin
         ce_mcu <= 0;
 
         if (~paused) begin
-            if (~ls245_en && ~mem_rq_active) begin // stall main cpu while fetching from sdram
+            if (~(ram_rom_memrq & (cpu_mem_read | cpu_mem_write)) & ~mem_rq_active) begin // stall main cpu while fetching from sdram
                 ce_counter_cpu <= ce_counter_cpu + 2'd1;
                 ce_4x_cpu <= 1;
                 ce_cpu <= &ce_counter_cpu;
@@ -152,15 +152,14 @@ wire IOWR = cpu_io_write; // IO Write
 wire IORD = cpu_io_read; // IO Read
 wire MWR = cpu_mem_write; // Mem Write
 wire MRD = cpu_mem_read; // Mem Read
-wire DBEN = cpu_io_write | cpu_io_read | cpu_mem_read | cpu_mem_write;
 
-wire TNSL;
-
-wire m84 = board_cfg.m84;
+wire TNSL = 1;
 
 wire [15:0] cpu_mem_out;
 wire [19:0] cpu_mem_addr;
 wire [1:0] cpu_mem_sel;
+
+// v30 bus read/write signals are only asserted for a single clock cycle, so latch them for an additional one
 reg cpu_mem_read_lat, cpu_mem_write_lat;
 wire cpu_mem_read_w, cpu_mem_write_w;
 wire cpu_mem_read = cpu_mem_read_w | cpu_mem_read_lat;
@@ -181,12 +180,12 @@ reg [15:0] cpu_ram_rom_data;
 wire [24:0] cpu_region_addr;
 wire cpu_region_writable;
 
-wire bg_a_memrq;
-wire bg_b_memrq;
-wire bg_palette_memrq;
+wire ram_rom_memrq;
 wire sprite_memrq;
-wire sprite_palette_memrq;
-wire sound_memrq;
+wire palette_memrq;
+wire sprite_control_memrq;
+wire video_control_memrq;
+wire pf_vram_memrq;
 
 function [15:0] word_shuffle(input [19:0] addr, input [15:0] data);
     begin
@@ -195,23 +194,14 @@ function [15:0] word_shuffle(input [19:0] addr, input [15:0] data);
 endfunction
 
 reg mem_rq_active = 0;
-reg b_d_dout_valid_lat, obj_pal_dout_valid_lat, sound_dout_valid_lat, sprite_dout_valid_lat;
+reg pal_;
 
 always @(posedge CLK_32M or negedge reset_n)
 begin
     if (!reset_n) begin
-        b_d_dout_valid_lat <= 0;
-        obj_pal_dout_valid_lat <= 0;
-        sound_dout_valid_lat <= 0;
-        sprite_dout_valid_lat <= 0;
     end else begin
         cpu_mem_read_lat <= cpu_mem_read_w;
         cpu_mem_write_lat <= cpu_mem_write_w;
-
-        b_d_dout_valid_lat <= b_d_dout_valid;
-        obj_pal_dout_valid_lat <= obj_pal_dout_valid;
-        sound_dout_valid_lat <= sound_dout_valid;
-        sprite_dout_valid_lat <= sprite_dout_valid;
     end
 end
 
@@ -232,7 +222,7 @@ always_ff @(posedge CLK_32M or negedge reset_n) begin
         mem_rq_active <= 0;
     end else begin
         if (!mem_rq_active) begin
-            if (ls245_en && ((cpu_mem_read_w & ~cpu_mem_read_lat) || (cpu_mem_write_w & ~cpu_mem_write_lat))) begin // sdram request
+            if (ram_rom_memrq & ((cpu_mem_read_w & ~cpu_mem_read_lat) | (cpu_mem_write_w & ~cpu_mem_write_lat))) begin // sdram request
                 sdr_cpu_wr_sel <= 2'b00;
                 sdr_cpu_addr <= cpu_region_addr;
                 if (cpu_mem_write & cpu_region_writable ) begin
@@ -249,10 +239,11 @@ always_ff @(posedge CLK_32M or negedge reset_n) begin
     end
 end
 
-wire ls245_en, rom0_ce, rom1_ce, ram_cs2;
+wire rom0_ce, rom1_ce, ram_cs2;
 
 
-wire [15:0] switches = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
+wire [15:0] switches_p1_p2 = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
+wire [15:0] switches_p3_p4 = 16'hffff;
 wire [15:0] flags = { 8'hff, TNSL, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
 
 reg [7:0] sys_flags = 0;
@@ -260,13 +251,26 @@ wire COIN0 = sys_flags[0];
 wire COIN1 = sys_flags[1];
 wire SOFT_NL = ~sys_flags[2];
 wire CBLK = sys_flags[3];
-wire BRQ = ~m84 & ~sys_flags[4];
+wire BRQ = ~sys_flags[4];
 wire BANK = sys_flags[5];
 wire NL = SOFT_NL ^ dip_sw[8];
 
+reg [1:0] iset;
+reg [15:0] iset_data;
+
 // TODO BANK, CBLK, NL
 always @(posedge CLK_32M) begin
+    iset <= 2'b00;
     if (IOWR && cpu_io_addr == 8'h02) sys_flags <= cpu_io_out[7:0];
+    if (IOWR && cpu_io_addr == 8'h9e) begin
+        iset <= 2'b01;
+        iset_data <= { 8'h00, cpu_io_out };
+    end
+    if (IOWR && cpu_io_addr == 8'h9f) begin
+        iset <= 2'b10;
+        iset_data <= { cpu_io_out, 8'h00 };
+    end
+
 end
 
 // mux io and memory reads
@@ -274,18 +278,18 @@ always_comb begin
     bit [15:0] d16;
     bit [15:0] io16;
 
-    if (b_d_dout_valid_lat) d16 = b_d_dout;
-    else if (obj_pal_dout_valid_lat) d16 = obj_pal_dout;
-    else if (sound_dout_valid_lat) d16 = sound_dout;
-    else if (sprite_dout_valid_lat) d16 = sprite_dout;
-    else if (cpu_mem_addr[19:16] == 4'hb) d16 = cpu_shared_ram_dout;
+    if (palette_memrq) d16 = palette_dout;
+    else if (sprite_memrq) d16 = sprite_dout;
+    else if(pf_vram_memrq) d16 = pf_vram_dout;
     else d16 = cpu_ram_rom_data;
     cpu_mem_in = word_shuffle(cpu_mem_addr, d16);
 
     case ({cpu_io_addr[7:1], 1'b0})
-    8'h00: io16 = switches;
+    8'h00: io16 = switches_p1_p2;
     8'h02: io16 = flags;
     8'h04: io16 = dip_sw;
+    8'h06: io16 = switches_p3_p4;
+    8'h08: io16 = 16'hffff; // soundlatch2 TODO
     default: io16 = 16'hffff;
     endcase
 
@@ -324,9 +328,6 @@ cpu v30(
 
     // TODO
     .cpu_done(),
-    .cpu_export_opcode(cpu_export_opcode),
-    .cpu_export_reg_cs(cpu_export_reg_cs),
-    .cpu_export_reg_ip(cpu_export_reg_ip),
 
     .RegBus_Din(cpu_io_out),
     .RegBus_Adr(cpu_io_addr),
@@ -337,45 +338,21 @@ cpu v30(
     .sleep_savestate(paused)
 );
 
-wire [15:0] cpu_export_reg_cs;
-wire [15:0] cpu_export_reg_ip;
-wire [7:0] cpu_export_opcode;
-
-assign ddr_debug_data.cpu_cs = cpu_export_reg_cs;
-assign ddr_debug_data.cpu_ip = cpu_export_reg_ip;
-assign ddr_debug_data.cpu_opcode = cpu_export_opcode;
-
-wire m_io = MRD | MWR;
 wire sprite_dma;
-wire [1:0] iset;
-wire [15:0] iset_data;
 wire snd_latch1_wr, snd_latch2_wr;
 
 address_translator address_translator(
-    .A(m_io ? cpu_mem_addr : {8'h00, cpu_io_addr}),
-    .data(m_io ? cpu_mem_out : {8'h00, cpu_io_out}),
-    .bytesel(m_io ? cpu_mem_sel : 2'b01),
-    .rd(m_io ? MRD : IORD),
-    .wr(m_io ? MWR : IOWR),
-    .M_IO(m_io),
-    .DBEN(DBEN),
+    .A(cpu_mem_addr),
     .board_cfg(board_cfg),
-    .ls245_en(ls245_en),
+    .ram_rom_memrq(ram_rom_memrq),
     .sdr_addr(cpu_region_addr),
     .writable(cpu_region_writable),
-    .bg_a_memrq(bg_a_memrq),
-    .bg_b_memrq(bg_b_memrq),
-    .bg_palette_memrq(bg_palette_memrq),
+
     .sprite_memrq(sprite_memrq),
-    .sprite_palette_memrq(sprite_palette_memrq),
-    .sound_memrq(sound_memrq),
-
-    .sprite_dma(sprite_dma),
-    .iset(iset),
-    .iset_data(iset_data),
-
-    .snd_latch1_wr(snd_latch1_wr),
-    .snd_latch2_wr(snd_latch2_wr)
+    .palette_memrq(palette_memrq),
+    .sprite_control_memrq(sprite_control_memrq),
+    .video_control_memrq(video_control_memrq),
+    .pf_vram_memrq(pf_vram_memrq)
 );
 
 wire int_req, int_ack;
@@ -403,7 +380,7 @@ m92_pic m92_pic(
 wire [8:0] VE, V;
 wire [9:0] HE, H;
 wire HBLK, VBLK, HS, VS;
-wire HINT;
+wire HINT, CLD;
 
 assign HSync = HS;
 assign HBlank = HBLK;
@@ -419,7 +396,7 @@ kna70h015 kna70h015(
     .NL(NL),
     .S24H(0),
 
-    .CLD(),
+    .CLD(CLD),
     .CPBLK(),
 
     .VE(VE),
@@ -437,10 +414,9 @@ kna70h015 kna70h015(
     .video_50hz(video_50hz)
 );
 
-wire [15:0] b_d_dout;
-wire b_d_dout_valid;
+wire [15:0] pf_vram_dout;
+wire [10:0] pf_color_index;
 
-wire [4:0] char_r, char_g, char_b;
 wire P1L;
 
 board_b_d board_b_d(
@@ -449,8 +425,7 @@ board_b_d board_b_d(
 
     .CE_PIX(ce_pix),
 
-    .DOUT(b_d_dout),
-    .DOUT_VALID(b_d_dout_valid),
+    .DOUT(pf_vram_dout),
 
     .DIN(cpu_word_out),
     .A(cpu_word_addr),
@@ -463,20 +438,17 @@ board_b_d board_b_d(
     .MWR(MWR),
     .IORD(IORD),
     .IOWR(IOWR),
+    .CLD(CLD),
 
-    .a_memrq(bg_a_memrq),
-    .b_memrq(bg_b_memrq),
-    .palette_memrq(bg_palette_memrq),
+    .vram_memrq(pf_vram_memrq),
     
     .NL(NL),
 
     .VE(VE),
     .HE({HE[9], HE[7:0]}),
+    .H({H[9], H[7:0]}),
 
-
-    .RED(char_r),
-    .GREEN(char_g),
-    .BLUE(char_b),
+    .color_index(pf_color_index),
     .P1L(P1L),
 
     .sdr_data(sdr_bg_dout),
@@ -488,96 +460,32 @@ board_b_d board_b_d(
 
     .en_layer_a(en_layer_a),
     .en_layer_b(en_layer_b),
-    .en_palette(en_layer_palette),
-
-    .m84(m84)
+    .en_palette(en_layer_palette)
 );
 
+wire [15:0] palette_dout;
+wire [4:0] pal_r, pal_g, pal_b;
+palette palette(
+    .clk(CLK_32M),
+    .bank(0), // TODO
+    .cpu_we(palette_memrq & MWR ? cpu_word_byte_sel : 2'b00),
+    .cpu_word_addr(cpu_word_addr),
+    .word_in(cpu_word_out),
+    .word_out(palette_dout),
 
-wire [15:0] sound_dout;
-wire sound_dout_valid;
-
-wire [7:0] snd_io_addr;
-wire [7:0] snd_io_data;
-wire snd_io_req;
-
-wire [15:0] ym_audio = ym_audio_raw; // { ym_audio_raw[15], ym_audio_raw[15], ym_audio_raw[15:2] };
-wire [15:0] ym_audio_raw;
-
-sound sound(
-    .reset(~reset_n),
-    .CLK_32M(CLK_32M),
-    .DIN(cpu_mem_out),
-    .DOUT(sound_dout),
-    .DOUT_VALID(sound_dout_valid),
-    
-    .A(cpu_mem_addr),
-    .BYTE_SEL(cpu_mem_sel),
-
-    .IO_A(cpu_io_addr),
-    .IO_DIN(cpu_io_out),
-
-    .SDBEN(sound_memrq & BRQ),
-    .SND(snd_latch1_wr),
-    .BRQ(BRQ),
-    .MRD(MRD),
-    .MWR(MWR),
-    .SND2(snd_latch2_wr),
-
-    .sample_inc(z80_sample_inc),
-    .sample_addr(z80_sample_addr),
-    .sample_addr_wr(z80_sample_addr_wr),
-    .sample_out(z80_sample_out),
-    .sample_in(sample_rom_data),
-
-    .ym_audio_l(),
-    .ym_audio_r(ym_audio_raw),
-
-    .snd_io_addr(snd_io_addr),
-    .snd_io_data(snd_io_data),
-    .snd_io_req(snd_io_req),
-
-    .pause(paused),
-
-    .m84(m84),
-
-    .clk_bram(clk_bram),
-    .bram_wr(bram_wr),
-    .bram_data(bram_data),
-    .bram_addr(bram_addr),
-    .bram_cs(bram_cs[4])
+    .color_index(pf_color_index),
+    .red(pal_r),
+    .green(pal_g),
+    .blue(pal_b)
 );
 
-// Temp A-C board palette
-wire [15:0] obj_pal_dout;
-wire obj_pal_dout_valid;
+assign R = ~CBLK ? { pal_r, pal_r[4:2] } : 8'h00;
+assign G = ~CBLK ? { pal_g, pal_g[4:2] } : 8'h00;
+assign B = ~CBLK ? { pal_b, pal_b[4:2] } : 8'h00;
 
+wire [15:0] sprite_dout;
 
-wire [4:0] obj_pal_r, obj_pal_g, obj_pal_b;
-kna91h014 obj_pal(
-    .CLK_32M(CLK_32M),
-
-    .G(sprite_palette_memrq),
-    .SELECT(0),
-    .CA(obj_pix),
-    .CB(obj_pix),
-
-    .E1_N(), // TODO
-    .E2_N(), // TODO
-    
-    .MWR(MWR & cpu_word_byte_sel[0]),
-    .MRD(MRD),
-
-    .DIN(cpu_word_out),
-    .DOUT(obj_pal_dout),
-    .DOUT_VALID(obj_pal_dout_valid),
-    .A(cpu_word_addr),
-
-    .RED(obj_pal_r),
-    .GRN(obj_pal_g),
-    .BLU(obj_pal_b)
-);
-
+/*
 wire [4:0] obj_r = en_sprite_palette ? obj_pal_r : { obj_pix[3:0], 1'b0 };
 wire [4:0] obj_g = en_sprite_palette ? obj_pal_g : { obj_pix[3:0], 1'b0 };
 wire [4:0] obj_b = en_sprite_palette ? obj_pal_b : { obj_pix[3:0], 1'b0 };
@@ -588,7 +496,6 @@ assign R = ~CBLK ? ( (P0L & P1L) ? {obj_r[4:0], obj_r[4:2]} : {char_r[4:0], char
 assign G = ~CBLK ? ( (P0L & P1L) ? {obj_g[4:0], obj_g[4:2]} : {char_g[4:0], char_g[4:2]} ) : 8'h00;
 assign B = ~CBLK ? ( (P0L & P1L) ? {obj_b[4:0], obj_b[4:2]} : {char_b[4:0], char_b[4:2]} ) : 8'h00;
 
-wire [15:0] sprite_dout;
 wire sprite_dout_valid;
 
 wire [7:0] obj_pix;
@@ -600,7 +507,6 @@ sprite sprite(
 
     .DIN(cpu_word_out),
     .DOUT(sprite_dout),
-    .DOUT_VALID(sprite_dout_valid),
     
     .A(cpu_word_addr),
     .BYTE_SEL(cpu_word_byte_sel),
@@ -622,100 +528,9 @@ sprite sprite(
     .sdr_req(sdr_sprite_req),
     .sdr_rdy(sdr_sprite_rdy)
 );
+*/
 
-
-wire [15:0] cpu_shared_ram_dout;
-wire [11:0] mcu_ram_addr;
-wire [7:0] mcu_ram_din;
-wire [7:0] mcu_ram_dout;
-wire mcu_ram_we;
-wire mcu_ram_int;
-wire mcu_ram_cs;
-wire [7:0] mcu_sample_out;
-
-dualport_mailbox_2kx16 mcu_shared_ram(
-    .reset(~reset_n),
-    .clk_l(CLK_32M),
-    .addr_l(cpu_word_addr[11:1]),
-    .cs_l(1'b1),
-    .din_l(cpu_word_out),
-    .dout_l(cpu_shared_ram_dout),
-    .we_l((cpu_word_addr[19:16] == 4'hb && MWR) ? cpu_word_byte_sel : 2'b00),
-    .int_l(),
-
-    .clk_r(CLK_32M),
-    .cs_r(mcu_ram_cs),
-    .addr_r(mcu_ram_addr[11:0]),
-    .din_r(mcu_ram_dout),
-    .dout_r(mcu_ram_din),
-    .we_r(mcu_ram_we),
-    .int_r(mcu_ram_int)
-);
-
-wire [7:0] mculatch_data = board_cfg.main_mculatch ? cpu_io_out : snd_io_data;
-wire mculatch_en = board_cfg.main_mculatch ? ( IOWR && cpu_io_addr == 8'hc0 ) : ( snd_io_req && snd_io_addr == 8'h82 );
-
-mcu mcu(
-    .CLK_32M(CLK_32M),
-    .ce_8m(ce_mcu),
-    .reset(~reset_n),
-
-    .ext_ram_addr(mcu_ram_addr),
-    .ext_ram_din(mcu_ram_din),
-    .ext_ram_dout(mcu_ram_dout),
-    .ext_ram_cs(mcu_ram_cs),
-    .ext_ram_we(mcu_ram_we),
-    .ext_ram_int(mcu_ram_int),
-
-    .z80_din(mculatch_data),
-    .z80_latch_en(mculatch_en),
-
-    .sample_out(mcu_sample_out),
-
-    .sample_addr_wr(mcu_sample_addr_wr),
-    .sample_addr(mcu_sample_addr),
-    .sample_inc(mcu_sample_inc),
-    .sample_rom_data(sample_rom_data),
-
-
-    .clk_bram(clk_bram),
-    .bram_wr(bram_wr),
-    .bram_data(bram_data),
-    .bram_addr(bram_addr),
-    .bram_prom_cs(bram_cs[0]),
-    .bram_offsets_cs(bram_cs[2]),
-    .bram_protect_cs(bram_cs[3]),
-
-    .dbg_rom_addr(mcu_dbg_rom_addr)
-);
-
-wire [1:0] z80_sample_addr_wr, mcu_sample_addr_wr;
-wire [15:0] z80_sample_addr, mcu_sample_addr;
-wire [7:0] sample_rom_data;
-wire [7:0] z80_sample_out;
-wire z80_sample_inc, mcu_sample_inc;
-
-sample_rom sample_rom(
-    .clk(CLK_32M),
-    .sample_addr_in(m84 ? z80_sample_addr : mcu_sample_addr),
-    .sample_addr_wr(m84 ? z80_sample_addr_wr : mcu_sample_addr_wr),
-
-    .sample_data(sample_rom_data),
-    .sample_inc(m84 ? z80_sample_inc : mcu_sample_inc),
-    
-    .clk_bram(clk_bram),
-    .bram_wr(bram_wr),
-    .bram_data(bram_data),
-    .bram_addr(bram_addr),
-    .bram_cs(bram_cs[1])
-);
-
-wire [7:0] signed_mcu_sample = ( m84 ? z80_sample_out : mcu_sample_out ) - 8'h80;
-reg [2:0] ce_filter_counter = 0;
-wire ce_filter = &ce_filter_counter;
-reg [15:0] filtered_mcu_sample;
-reg [15:0] filtered_ym_audio;
-
+/*
 // 3.5Khz 2nd order low pass filter with additional 10dB attenuation
 IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00004185087102461337 * 0.31622776601), .coeff_x0(2), .coeff_x1(1), .coeff_x2(0), .coeff_y0(-1.99222499379830120247), .coeff_y1(0.99225510233860669818), .coeff_y2(0)) samples_lpf (
 	.clk(CLK_32M),
@@ -775,82 +590,6 @@ always @(posedge CLK_32M) begin
         audio_out <= {ym_audio[15], ym_audio[15:0]} + {{signed_mcu_sample[7], signed_mcu_sample[7:0], 8'd0}};
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-reg [11:0] dbg_cpu_ext_addr;
-reg [15:0] dbg_cpu_ext_data;
-reg [1:0]  dbg_cpu_ext_we;
-
-assign ddr_debug_data.cpu_ext_addr = dbg_cpu_ext_addr;
-assign ddr_debug_data.cpu_ext_data = dbg_cpu_ext_data;
-assign ddr_debug_data.cpu_ext_we = dbg_cpu_ext_we;
-
-// CPU debug
-always @(posedge CLK_32M) begin
-    reg cs;
-    reg [11:0] addr;
-    reg [15:0] data;
-    reg [1:0] we;
-
-    cs <= (cpu_word_addr[19:16] == 4'hb) && ( MWR || MRD );
-    addr <= cpu_word_addr[11:0];
-    data <= cpu_word_out;
-    we <= MWR ? cpu_word_byte_sel : 2'b00;
-
-    if (cs & ~((cpu_word_addr[19:16] == 4'hb) && ( MWR || MRD ))) begin
-        dbg_cpu_ext_addr <= addr;
-        dbg_cpu_ext_we <= we;
-        if (we != 2'b00) dbg_cpu_ext_data <= data;
-        else dbg_cpu_ext_data <= cpu_shared_ram_dout;
-    end
-end
-
-reg [11:0] dbg_mcu_ext_addr;
-reg [7:0] dbg_mcu_ext_data;
-reg dbg_mcu_ext_we;
-
-assign ddr_debug_data.mcu_ext_addr = dbg_mcu_ext_addr;
-assign ddr_debug_data.mcu_ext_data = dbg_mcu_ext_data;
-assign ddr_debug_data.mcu_ext_we = dbg_mcu_ext_we;
-
-// MCU debug
-always @(posedge CLK_32M) begin
-    reg cs;
-    reg [11:0] addr;
-    reg [7:0] data;
-    reg we;
-
-    cs <= mcu_ram_cs;
-    addr <= mcu_ram_addr;
-    data <= mcu_ram_dout;
-    we <= mcu_ram_we;
-
-    if (cs & ~mcu_ram_cs) begin
-        dbg_mcu_ext_addr <= addr;
-        dbg_mcu_ext_we <= we;
-        if (we) dbg_mcu_ext_data <= data;
-        else dbg_mcu_ext_data <= mcu_ram_din;
-    end
-end
-
-
-wire [15:0] mcu_dbg_rom_addr;
-reg [15:0] latched_mcu_dbg_rom_addr;
-assign ddr_debug_data.mcu_rom_addr = latched_mcu_dbg_rom_addr; 
-always @(posedge CLK_32M) if (ce_cpu) latched_mcu_dbg_rom_addr <= mcu_dbg_rom_addr;
+*/
 
 endmodule

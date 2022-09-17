@@ -25,7 +25,6 @@ module board_b_d (
     input CE_PIX,
 
     output [15:0] DOUT,
-    output DOUT_VALID,
 
     input [15:0] DIN,
     input [19:0] A,
@@ -38,17 +37,15 @@ module board_b_d (
     input MWR,
     input IORD,
     input IOWR,
-    input a_memrq,
-    input b_memrq,
-    input palette_memrq,
+    input vram_memrq,
     input NL,
 
+    input CLD,
     input [8:0] VE,
     input [8:0] HE,
+    input [8:0] H,
 
-    output [4:0] RED,
-    output [4:0] GREEN,
-    output [4:0] BLUE,
+    output [10:0] color_index,
     output P1L,
 
     input [63:0] sdr_data,
@@ -60,54 +57,140 @@ module board_b_d (
     
     input en_layer_a,
     input en_layer_b,
-    input en_palette,
-
-    input m84
+    input en_palette
 );
 
-// M92-B-D 1/8
-// Didn't implement WAIT signal
-wire WRA = MWR & a_memrq;
-wire WRB = MWR & b_memrq;
-wire RDA = MRD & a_memrq;
-wire RDB = MRD & b_memrq;
+wire [15:0] prolog_addr;
+reg [15:0] tile_addr;
 
-wire VSCKA = IOWR & (IO_A[7:6] == 2'b10) & (IO_A[3:1] == 3'b000);
-wire HSCKA = IOWR & (IO_A[7:6] == 2'b10) & (IO_A[3:1] == 3'b001);
-wire VSCKB = IOWR & (IO_A[7:6] == 2'b10) & (IO_A[3:1] == 3'b010);
-wire HSCKB = IOWR & (IO_A[7:6] == 2'b10) & (IO_A[3:1] == 3'b011);
+wire [15:0] vram_addr = prolog ? prolog_addr : tile_addr;
+wire [15:0] vram_data;
 
-wire [3:0] BITA;
-wire [3:0] BITB;
-wire [3:0] COLA;
-wire [3:0] COLB;
-wire CP15A, CP15B, CP8A, CP8B;
+dpramv_16 #(.widthad_a(15)) vram(
+    .clock_a(CLK_32M),
+    .address_a(A[15:1]),
+    .q_a(DOUT),
+    .wren_a((vram_memrq & MWR) ? BYTE_SEL : 2'b00),
+    .data_a(DIN),
 
-wire [15:0] DOUT_A, DOUT_B;
+    .clock_b(CLK_32M),
+    .address_b(vram_addr[15:1]),
+    .q_b(vram_data),
+    .wren_b(2'b00),
+    .data_b()
+);
 
-assign DOUT = pal_dout_valid ? pal_dout : RDA ? DOUT_A : DOUT_B;
-assign DOUT_VALID = RDA | RDB | pal_dout_valid;
+always_comb begin
+	prolog_addr = 16'h0;
+    if (prolog) begin
+        case (H[2:0])
+        0: prolog_addr = 16'hf400 + VE;
+        2: prolog_addr = 16'hf800 + VE;
+        4: prolog_addr = 16'hfc00 + VE;
+        default: prolog_addr = 16'h0;
+        endcase
+    end
+end
 
-wire [20:0] addr_a, addr_b;
-wire [31:0] data_a, data_b;
-wire req_a, req_b;
-wire rdy_a, rdy_b;
+always_ff @(posedge CLK_32M) begin
+    reg [2:0] st = 0;
+
+    st <= st + 3'd1;
+    if (st == 5) st <= 0;
+
+    case (st)
+    0: begin tile_addr <= { vram_base[0], 14'd0 } + { tile_index[0], 2'b00 }; tile_data[2][15:0]  <= vram_data; end
+    1: begin tile_addr <= { vram_base[0], 14'd0 } + { tile_index[0], 2'b10 }; tile_data[2][31:16] <= vram_data; end
+    2: begin tile_addr <= { vram_base[1], 14'd0 } + { tile_index[1], 2'b00 }; tile_data[0][15:0]  <= vram_data; end
+    3: begin tile_addr <= { vram_base[1], 14'd0 } + { tile_index[1], 2'b10 }; tile_data[0][31:16] <= vram_data; end
+    4: begin tile_addr <= { vram_base[2], 14'd0 } + { tile_index[2], 2'b00 }; tile_data[1][15:0]  <= vram_data; end
+    5: begin tile_addr <= { vram_base[2], 14'd0 } + { tile_index[2], 2'b10 }; tile_data[1][31:16] <= vram_data; end
+    endcase
+end
+
+reg prolog = 0;
+
+reg [10:0] row_scroll[3];
+reg [10:0] v_adj[3], h_adj[3];
+reg [7:0] control[3];
+
+wire [12:0] tile_index[3];
+reg [31:0] tile_data[3];
+
+wire [1:0] vram_base[3] = '{ control[0][1:0], control[1][1:0], control[2][1:0] };
+wire wide[3] = '{ control[0][2], control[1][2], control[1][2] };
+wire enabled[3] = '{ control[0][3], control[1][3], control[1][3] };
+wire row_scrolled[3] = '{ control[0][4], control[1][4], control[1][4] };
+
+always_ff @(posedge CLK_32M) begin
+    if (CE_PIX) begin
+        if (CLD) begin
+            prolog <= 1;
+        end
+    end
+    
+    if (prolog) begin
+        case (H[2:0])
+        1: row_scroll[0] <= vram_data[10:0];
+        3: row_scroll[1] <= vram_data[10:0];
+        5: row_scroll[2] <= vram_data[10:0];
+        7: prolog <= 0;
+        default: begin end
+        endcase
+    end else begin
+        if (IOWR) begin
+            case (IO_A)
+            8'h80: v_adj[0][7:0] <= IO_DIN;
+            8'h81: v_adj[0][10:8] <= IO_DIN[2:0];
+            8'h84: h_adj[0][7:0] <= IO_DIN;
+            8'h85: h_adj[0][10:8] <= IO_DIN[2:0];
+
+            8'h88: v_adj[1][7:0] <= IO_DIN;
+            8'h89: v_adj[1][10:8] <= IO_DIN[2:0];
+            8'h8c: h_adj[1][7:0] <= IO_DIN;
+            8'h8d: h_adj[1][10:8] <= IO_DIN[2:0];
+
+            8'h90: v_adj[2][7:0] <= IO_DIN;
+            8'h91: v_adj[2][10:8] <= IO_DIN[2:0];
+            8'h94: h_adj[2][7:0] <= IO_DIN;
+            8'h95: h_adj[2][10:8] <= IO_DIN[2:0];
+
+            8'h98: control[0] <= IO_DIN;
+            8'h9a: control[1] <= IO_DIN;
+            8'h9c: control[2] <= IO_DIN;
+
+            default: begin end
+            endcase
+        end
+    end
+end
+
+wire [20:0] addr[3];
+wire [31:0] data[3];
+wire req[3], rdy[3];
+
+wire [3:0] pf_color[3];
+wire [5:0] pf_palette[3];
+wire pf_cp8[3], pf_cp15[3];
 
 board_b_d_sdram board_b_d_sdram(
     .clk_ram(CLK_96M),
     .clk(CLK_32M),
 
-    .m84(m84),
+    .addr_a(addr[0]),
+    .data_a(data[0]),
+    .req_a(req[0]),
+    .rdy_a(rdy[0]),
 
-    .addr_a(addr_a),
-    .data_a(data_a),
-    .req_a(req_a),
-    .rdy_a(rdy_a),
+    .addr_b(addr[1]),
+    .data_b(data[1]),
+    .req_b(req[1]),
+    .rdy_b(rdy[1]),
 
-    .addr_b(addr_b),
-    .data_b(data_b),
-    .req_b(req_b),
-    .rdy_b(rdy_b),
+    .addr_c(addr[2]),
+    .data_c(data[2]),
+    .req_c(req[2]),
+    .rdy_c(rdy[2]),
 
     .sdr_addr(sdr_addr),
     .sdr_data(sdr_data),
@@ -115,120 +198,42 @@ board_b_d_sdram board_b_d_sdram(
     .sdr_rdy(sdr_rdy)
 );
 
-board_b_d_layer layer_a(
-    .CLK_32M(CLK_32M),
-    .CE_PIX(CE_PIX),
+generate
+	genvar i;
+    for(i = 0; i < 3; i = i + 1 ) begin : generate_pf
+        board_b_d_layer pf(
+            .CLK_32M(CLK_32M),
+            .CE_PIX(CE_PIX),
 
-    .DOUT(DOUT_A),
-    .DIN(DIN),
-    .A(A),
-    .BYTE_SEL(BYTE_SEL),
-    .RD(RDA),
-    .WR(WRA),
+            .NL(NL),
 
-    .IO_DIN(IO_DIN),
-    .IO_A(IO_A),
+            .VE(VE),
+            .HE(HE),
 
-    .VSCK(VSCKA),
-    .HSCK(HSCKA),
-    .NL(NL),
+            .wide(wide[i]),
+            .v_adj(v_adj[i]),
+            .h_adj(row_scrolled[i] ? row_scroll[i] : h_adj[i]),
 
-    .VE(VE),
-    .HE(HE),
+            .tile_data(tile_data[i]),
+            .tile_index(tile_index[i]),
 
-    .BIT(BITA),
-    .COL(COLA),
-    .CP15(CP15A),
-    .CP8(CP8A),
+            .color(pf_color[i]),
+            .palette(pf_palette[i]),
+            .CP15(pf_cp15[i]),
+            .CP8(pf_cp8[i]),
 
-    .sdr_addr(addr_a),
-    .sdr_data(data_a),
-    .sdr_req(req_a),
-    .sdr_rdy(rdy_a),
+            .sdr_addr(addr[i]),
+            .sdr_data(data[i]),
+            .sdr_req(req[i]),
+            .sdr_rdy(rdy[i]),
 
-    .enabled(en_layer_a),
-    .paused(paused),
+            .enabled(en_layer_a),
+            .paused(paused)
+        );
+    end
+endgenerate
 
-    .m84(m84)
-);
-
-
-board_b_d_layer layer_b(
-    .CLK_32M(CLK_32M),
-    .CE_PIX(CE_PIX),
-
-    .DOUT(DOUT_B),
-    .DIN(DIN),
-    .A(A),
-    .BYTE_SEL(BYTE_SEL),
-    .RD(RDB),
-    .WR(WRB),
-
-    .IO_DIN(IO_DIN),
-    .IO_A(IO_A),
-
-    .VSCK(VSCKB),
-    .HSCK(HSCKB),
-    .NL(NL),
-
-    .VE(VE),
-    .HE(HE),
-
-    .BIT(BITB),
-    .COL(COLB),
-    .CP15(CP15B),
-    .CP8(CP8B),
-
-    .sdr_addr(addr_b),
-    .sdr_data(data_b),
-    .sdr_req(req_b),
-    .sdr_rdy(rdy_b),
-
-    .enabled(en_layer_b),
-    .paused(paused),
-
-    .m84(m84)
-);
-
-
-wire [4:0] r_out, g_out, b_out;
-wire [15:0] pal_dout;
-wire pal_dout_valid;
-
-wire a_opaque = (BITA != 4'b0000);
-wire b_opaque = (BITB != 4'b0000);
-
-wire S = a_opaque;
-
-assign P1L = ~(CP15A & a_opaque) & ~(CP15B & b_opaque) & ~(CP8A & BITA[3]) & ~(CP8B & BITB[3]);
-
-kna91h014 kna91h014(
-    .CLK_32M(CLK_32M),
-
-    .G(palette_memrq),
-    .SELECT(S),
-    .CA({COLA, BITA}),
-    .CB({COLB, BITB}),
-
-    .E1_N(), // TODO
-    .E2_N(), // TODO
-    
-    .MWR(MWR & BYTE_SEL[0]),
-    .MRD(MRD),
-
-    .DIN(DIN),
-    .DOUT(pal_dout),
-    .DOUT_VALID(pal_dout_valid),
-    .A(A),
-
-    .RED(r_out),
-    .GRN(g_out),
-    .BLU(b_out)
-);
-
-assign RED = en_palette ? r_out : b_opaque ? { BITB, BITB[3] } : { BITA, BITA[3] };
-assign GREEN = en_palette ? g_out : b_opaque ? { BITB, BITB[3] } : { BITA, BITA[3] };
-assign BLUE = en_palette ? b_out : b_opaque ? { BITB, BITB[3] } : { BITA, BITA[3] };
+assign color_index = pf_color[0] != 4'b0000 ? { pf_palette[0], pf_color[0] } : pf_color[1] != 4'b0000 ? { pf_palette[1], pf_color[1] } : { pf_palette[2], pf_color[2] };
 
 endmodule
 

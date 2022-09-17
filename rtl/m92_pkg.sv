@@ -27,33 +27,25 @@ package m92_pkg;
     } region_t;
 
     parameter region_t REGION_CPU_ROM = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00000 };
-    parameter region_t REGION_SPRITE =  '{ base_addr:'h010_0000, reorder_64:1, bram_cs:5'b00000 };
-    parameter region_t REGION_BG_A =    '{ base_addr:'h100_0000, reorder_64:0, bram_cs:5'b00000 };
-    parameter region_t REGION_BG_B =    '{ base_addr:'h020_0000, reorder_64:0, bram_cs:5'b00000 };
-    parameter region_t REGION_MCU =     '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00001 };
-    parameter region_t REGION_SAMPLES = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00010 };
-    parameter region_t REGION_OFFSETS = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00100 };
-    parameter region_t REGION_PROTECT = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b01000 };
-    parameter region_t REGION_SOUND   = '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b10000 };
+    parameter region_t REGION_CPU_RAM = '{ base_addr:'h010_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_SOUND =   '{ base_addr:'h020_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_GA20 =    '{ base_addr:'h030_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_SPRITE =  '{ base_addr:'h040_0000, reorder_64:1, bram_cs:5'b00000 };
+    parameter region_t REGION_TILE =    '{ base_addr:'h080_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_CRYPT =   '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00001 };
 
-    parameter region_t LOAD_REGIONS[9] = '{
+    parameter region_t LOAD_REGIONS[6] = '{
         REGION_CPU_ROM,
+        REGION_TILE,
         REGION_SPRITE,
-        REGION_BG_A,
-        REGION_BG_B,
-        REGION_MCU,
-        REGION_SAMPLES,
-        REGION_OFFSETS,
-        REGION_PROTECT,
-        REGION_SOUND
+        REGION_SOUND,
+        REGION_GA20,
+        REGION_CRYPT
     };
 
-    parameter region_t REGION_CPU_RAM = '{ 'h400000, 0, 5'b00000 };
-
+    
     typedef struct packed {
-        bit [2:0] reserved;
-        bit m84;
-        bit main_mculatch;
+        bit [4:0] reserved;
         bit [2:0] memory_map;
     } board_cfg_t;
 endpackage
