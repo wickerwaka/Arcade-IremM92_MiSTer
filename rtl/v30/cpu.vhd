@@ -545,6 +545,7 @@ begin
       variable jumpNow           : std_logic;
       variable jumpAddr          : unsigned(15 downto 0);
       variable bcdResult         : unsigned(7 downto 0);
+      variable varspAdjust       : unsigned(15 downto 0);
    begin
       if rising_edge(clk) then
          
@@ -1763,7 +1764,7 @@ begin
                               bus_read         <= '0';
                               bus_write        <= '1';
                               bus_be           <= "11";
-                              bus_addr         <= resize(regs.reg_ss * 16 + regs.reg_sp - 2, 20);
+                              bus_addr         <= resize(regs.reg_ss * 16 + resize(regs.reg_sp - 2,16), 20);
                               bus_datawrite    <= pushValue;
                               prefetchAllow    <= '0';
                               cpustage         <= CPUSTAGE_CHECKDATAREADY;
@@ -1772,7 +1773,7 @@ begin
                               bus_read         <= '0';
                               bus_write        <= '1';
                               bus_be           <= "01";
-                              bus_addr         <= resize(regs.reg_ss * 16 + regs.reg_sp - 2, 20);
+                              bus_addr         <= resize(regs.reg_ss * 16 + resize(regs.reg_sp - 2,16), 20);
                               bus_datawrite    <= pushValue;
                               prefetchAllow    <= '0';
                               pushFirst        <= '0';
@@ -1782,7 +1783,7 @@ begin
                            bus_read         <= '0';
                            bus_write        <= '1';
                            bus_be           <= "01";
-                           bus_addr         <= resize(regs.reg_ss * 16 + regs.reg_sp - 1, 20);
+                           bus_addr         <= resize(regs.reg_ss * 16 + resize(regs.reg_sp - 1,16), 20);
                            bus_datawrite    <= x"00" & pushValue(15 downto 8);
                            prefetchAllow    <= '0';
                            cpustage         <= CPUSTAGE_CHECKDATAREADY;
@@ -1813,7 +1814,7 @@ begin
                         if (popFirst = '1') then
                            bus_addr         <= resize(regs.reg_ss * 16 + regs.reg_sp, 20);
                         else
-                           bus_addr         <= resize(regs.reg_ss * 16 + regs.reg_sp + 1, 20);
+                           bus_addr         <= resize(regs.reg_ss * 16 + resize(regs.reg_sp + 1, 16), 20);
                         end if;
                         prefetchAllow    <= '0';
                         
