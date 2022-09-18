@@ -44,7 +44,7 @@ module sprite (
     input DMA_ON,
     output reg TNSL,
 
-    output [7:0] pix_test,
+    output [11:0] pixel_out,
 
     input [63:0] sdr_data,
     output [24:0] sdr_addr,
@@ -57,10 +57,10 @@ wire [7:0] dout_h, dout_l;
 assign DOUT = { dout_h, dout_l };
 assign DOUT_VALID = MRD & BUFDBEN;
 
-dpramv #(.widthad_a(9)) ram_h
+dpramv #(.widthad_a(10)) ram_h
 (
     .clock_a(CLK_32M),
-    .address_a(A[9:1]),
+    .address_a(A[10:1]),
     .q_a(dout_h),
     .wren_a(MWR & BUFDBEN & BYTE_SEL[1]),
     .data_a(DIN[15:8]),
@@ -72,7 +72,7 @@ dpramv #(.widthad_a(9)) ram_h
     .q_b(dma_h)
 );
 
-dpramv #(.widthad_a(9)) ram_l
+dpramv #(.widthad_a(10)) ram_l
 (
     .clock_a(CLK_32M),
     .address_a(A[9:1]),
@@ -87,17 +87,17 @@ dpramv #(.widthad_a(9)) ram_l
     .q_b(dma_l)
 );
 
-reg [63:0] objram[128];
+reg [63:0] objram[256];
 
 reg [7:0] dma_l, dma_h;
-reg [10:0] dma_counter;
-wire [9:0] dma_rd_addr = dma_counter[10:1];
+reg [11:0] dma_counter;
+wire [10:0] dma_rd_addr = dma_counter[11:1];
 
 always_ff @(posedge CLK_32M) begin
     reg [7:0] b[6];
     if (DMA_ON & TNSL) begin
         TNSL <= 0;
-        dma_counter <= 11'd0;
+        dma_counter <= 12'd0;
     end
 
     if (~TNSL) begin
@@ -114,16 +114,16 @@ always_ff @(posedge CLK_32M) begin
             b[4] <= dma_l;
             b[5] <= dma_h;
         end
-        3'b111: objram[dma_counter[10:3]] <= { dma_h, dma_l, b[5], b[4], b[3], b[2], b[1], b[0] };
+        3'b111: objram[dma_counter[11:3]] <= { dma_h, dma_l, b[5], b[4], b[3], b[2], b[1], b[0] };
         endcase
 
-        dma_counter <= dma_counter + 11'd1;
-        if (dma_counter == 11'h3ff) TNSL <= 1;
+        dma_counter <= dma_counter + 12'd1;
+        if (dma_counter == 12'h7ff) TNSL <= 1;
     end
 end
 
 reg line_buffer_ack, line_buffer_req;
-reg [3:0] line_buffer_color;
+reg [6:0] line_buffer_color;
 reg [63:0] line_buffer_in;
 reg [9:0] line_buffer_x;
 
@@ -141,7 +141,7 @@ line_buffer line_buffer(
     .color_in(line_buffer_color),
     .position_in(line_buffer_x),
 
-    .pixel_out(pix_test)
+    .pixel_out(pixel_out)
 );
 
 // d is 16 pixels stored as 2 sets of 4 bitplanes
@@ -167,13 +167,15 @@ endfunction
 
 reg [63:0] cur_obj;
 wire [8:0] obj_org_y = cur_obj[8:0];
+wire [1:0] obj_height = cur_obj[10:9];
+wire [1:0] obj_width = cur_obj[12:11];
+wire obj_layer = cur_obj[15:13];
 wire [15:0] obj_code = cur_obj[31:16];
-wire [3:0] obj_color = cur_obj[35:32];
-wire obj_flipx = cur_obj[43];
-wire obj_flipy = cur_obj[42];
-wire [1:0] obj_height = cur_obj[45:44];
-wire [1:0] obj_width = cur_obj[47:46];
-wire [9:0] obj_org_x = cur_obj[57:48];
+wire [6:0] obj_color = cur_obj[38:32];
+wire obj_pri = cur_obj[39];
+wire obj_flipx = cur_obj[40];
+wire obj_flipy = cur_obj[41];
+wire [9:0] obj_org_x = cur_obj[56:48];
 reg [8:0] width_px, height_px;
 reg [3:0] width, height;
 reg [8:0] rel_y;
@@ -268,27 +270,27 @@ module line_buffer(
     input wr_req,
     output reg wr_ack,
     input [63:0] data_in,
-    input [3:0] color_in,
+    input [6:0] color_in,
     input [9:0] position_in,
 
-    output reg [7:0] pixel_out
+    output reg [11:0] pixel_out
 );
 
 reg       scan_buffer;
 reg [9:0] scan_pos = 0;
 wire [9:0] scan_pos_nl = scan_pos ^ {10{NL}};
-reg [7:0] line_pixel;
+reg [11:0] line_pixel;
 reg [9:0] line_position;
 reg line_write = 0;
 
-wire [7:0] scan_0, scan_1, scan_2;
-dpramv #(.widthad_a(10)) buffer_0
+wire [11:0] scan_0, scan_1;
+dpramv #(.widthad_a(10), .width_a(12)) buffer_0
 (
     .clock_a(CLK_32M),
     .address_a(scan_pos_nl),
     .q_a(scan_0),
     .wren_a(!scan_buffer && CE_PIX),
-    .data_a(8'd0),
+    .data_a(12'd0),
 
     .clock_b(CLK_96M),
     .address_b(line_position),
@@ -297,13 +299,13 @@ dpramv #(.widthad_a(10)) buffer_0
     .q_b()
 );
 
-dpramv #(.widthad_a(10)) buffer_1
+dpramv #(.widthad_a(10), .width_a(12)) buffer_1
 (
     .clock_a(CLK_32M),
     .address_a(scan_pos_nl),
     .q_a(scan_1),
     .wren_a(scan_buffer && CE_PIX),
-    .data_a(8'd0),
+    .data_a(12'd0),
 
     .clock_b(CLK_96M),
     .address_b(line_position),
@@ -314,7 +316,7 @@ dpramv #(.widthad_a(10)) buffer_1
 
 always_ff @(posedge CLK_96M) begin
     reg [63:0] data;
-    reg [3:0] color;
+    reg [6:0] color;
     reg [9:0] position;
     reg [4:0] count = 0;
 

@@ -153,7 +153,7 @@ wire IORD = cpu_io_read; // IO Read
 wire MWR = cpu_mem_write; // Mem Write
 wire MRD = cpu_mem_read; // Mem Read
 
-wire TNSL = 1;
+wire TNSL;
 
 wire [15:0] cpu_mem_out;
 wire [19:0] cpu_mem_addr;
@@ -338,9 +338,6 @@ cpu v30(
     .sleep_savestate(paused)
 );
 
-wire sprite_dma;
-wire snd_latch1_wr, snd_latch2_wr;
-
 address_translator address_translator(
     .A(cpu_mem_addr),
     .board_cfg(board_cfg),
@@ -374,7 +371,7 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({5'd0, HINT, 1'b0, VBLK})
+    .intp({5'd0, HINT, TNSL, VBLK})
 );
 
 wire [8:0] VE, V;
@@ -463,6 +460,8 @@ board_b_d board_b_d(
     .en_palette(en_layer_palette)
 );
 
+wire [10:0] final_color_index = |sprite_color_index[3:0] ? sprite_color_index[10:0] : pf_color_index;
+
 wire [15:0] palette_dout;
 wire [4:0] pal_r, pal_g, pal_b;
 palette palette(
@@ -473,7 +472,7 @@ palette palette(
     .word_in(cpu_word_out),
     .word_out(palette_dout),
 
-    .color_index(pf_color_index),
+    .color_index(final_color_index),
     .red(pal_r),
     .green(pal_g),
     .blue(pal_b)
@@ -484,21 +483,9 @@ assign G = ~CBLK ? { pal_g, pal_g[4:2] } : 8'h00;
 assign B = ~CBLK ? { pal_b, pal_b[4:2] } : 8'h00;
 
 wire [15:0] sprite_dout;
+wire [11:0] sprite_color_index;
 
-/*
-wire [4:0] obj_r = en_sprite_palette ? obj_pal_r : { obj_pix[3:0], 1'b0 };
-wire [4:0] obj_g = en_sprite_palette ? obj_pal_g : { obj_pix[3:0], 1'b0 };
-wire [4:0] obj_b = en_sprite_palette ? obj_pal_b : { obj_pix[3:0], 1'b0 };
-
-wire P0L = (|obj_pix[3:0]) && en_sprites;
-
-assign R = ~CBLK ? ( (P0L & P1L) ? {obj_r[4:0], obj_r[4:2]} : {char_r[4:0], char_r[4:2]} ) : 8'h00;
-assign G = ~CBLK ? ( (P0L & P1L) ? {obj_g[4:0], obj_g[4:2]} : {char_g[4:0], char_g[4:2]} ) : 8'h00;
-assign B = ~CBLK ? ( (P0L & P1L) ? {obj_b[4:0], obj_b[4:2]} : {char_b[4:0], char_b[4:2]} ) : 8'h00;
-
-wire sprite_dout_valid;
-
-wire [7:0] obj_pix;
+wire sprite_dma = MWR && cpu_word_byte_sel[0] && cpu_word_addr == 20'hf9008;
 
 sprite sprite(
     .CLK_32M(CLK_32M),
@@ -518,16 +505,32 @@ sprite sprite(
     .VE(VE),
     .NL(NL),
     .HBLK(HBLK),
-    .pix_test(obj_pix),
+    .pixel_out(sprite_color_index),
 
     .TNSL(TNSL),
-    .DMA_ON(sprite_dma & ~sprite_freeze),
+    .DMA_ON(sprite_dma),
 
     .sdr_data(sdr_sprite_dout),
     .sdr_addr(sdr_sprite_addr),
     .sdr_req(sdr_sprite_req),
     .sdr_rdy(sdr_sprite_rdy)
 );
+
+/*
+wire [4:0] obj_r = en_sprite_palette ? obj_pal_r : { obj_pix[3:0], 1'b0 };
+wire [4:0] obj_g = en_sprite_palette ? obj_pal_g : { obj_pix[3:0], 1'b0 };
+wire [4:0] obj_b = en_sprite_palette ? obj_pal_b : { obj_pix[3:0], 1'b0 };
+
+wire P0L = (|obj_pix[3:0]) && en_sprites;
+
+assign R = ~CBLK ? ( (P0L & P1L) ? {obj_r[4:0], obj_r[4:2]} : {char_r[4:0], char_r[4:2]} ) : 8'h00;
+assign G = ~CBLK ? ( (P0L & P1L) ? {obj_g[4:0], obj_g[4:2]} : {char_g[4:0], char_g[4:2]} ) : 8'h00;
+assign B = ~CBLK ? ( (P0L & P1L) ? {obj_b[4:0], obj_b[4:2]} : {char_b[4:0], char_b[4:2]} ) : 8'h00;
+
+wire sprite_dout_valid;
+
+wire [7:0] obj_pix;
+
 */
 
 /*
