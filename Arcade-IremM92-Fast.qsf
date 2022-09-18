@@ -315,41 +315,10 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED_*
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to BTN_*
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to BTN_*
 source files.qip
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pkg.sv
-set_global_assignment -name SDC_FILE "Arcade-IremM92.sdc"
-set_global_assignment -name SYSTEMVERILOG_FILE "Arcade-IremM92.sv"
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/dpramv.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/kna6034201.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/kna70h015.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/kna91h014.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d_layer.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d_sdram.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/rom.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/sample_rom.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/sprite.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/pal.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_frac_cen.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_resync.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/pause.v
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/mcu_emulator.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/dualport_mailbox.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/ddr_debug.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pic.sv
-set_global_assignment -name VHDL_FILE rtl/v30/export.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/bus_savestates.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/reg_savestates.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/cpu.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/divider.vhd
-set_global_assignment -name QIP_FILE rtl/jt51/jt51.qip
-set_global_assignment -name QIP_FILE rtl/T80/T80.qip
-set_global_assignment -name QIP_FILE rtl/8051/mc8051.qip
 set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
 
 set_global_assignment -name FITTER_AGGRESSIVE_ROUTABILITY_OPTIMIZATION NEVER
 set_global_assignment -name ADVANCED_PHYSICAL_OPTIMIZATION OFF
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING OFF
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

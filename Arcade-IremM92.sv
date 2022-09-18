@@ -567,8 +567,6 @@ m92 m92(
 
     .pause_rq(system_pause),
 
-    .ddr_debug_data(ddr_debug_data),
-    
     .en_layer_a(en_layer_a),
     .en_layer_b(en_layer_b),
     .en_sprites(en_sprites),
@@ -682,9 +680,5 @@ pause pause(
 );
 
 screen_rotate screen_rotate(.*);
-
-
-
-ddr_debug_data_t ddr_debug_data;
 
 endmodule

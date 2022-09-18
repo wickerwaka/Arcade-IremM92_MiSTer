@@ -88,9 +88,7 @@ module m92 (
 
     input video_60hz,
     input video_57hz,
-    input video_50hz,
-
-    output ddr_debug_data_t ddr_debug_data
+    input video_50hz
 );
 
 // Divide 32Mhz clock by 4 for pixel clock
