@@ -75,7 +75,7 @@ dpramv #(.widthad_a(10)) ram_h
 dpramv #(.widthad_a(10)) ram_l
 (
     .clock_a(CLK_32M),
-    .address_a(A[9:1]),
+    .address_a(A[10:1]),
     .q_a(dout_l),
     .wren_a(MWR & BUFDBEN & BYTE_SEL[0]),
     .data_a(DIN[7:0]),
@@ -175,7 +175,7 @@ wire [6:0] obj_color = cur_obj[38:32];
 wire obj_pri = cur_obj[39];
 wire obj_flipx = cur_obj[40];
 wire obj_flipy = cur_obj[41];
-wire [9:0] obj_org_x = cur_obj[56:48];
+wire [9:0] obj_org_x = cur_obj[57:48];
 reg [8:0] width_px, height_px;
 reg [3:0] width, height;
 reg [8:0] rel_y;
@@ -228,7 +228,7 @@ always_ff @(posedge CLK_96M) begin
             code <= obj_code + row_y[8:4] + ( ( obj_flipx ? ( width - span - 16'd1 ) : span ) * 16'd8 );
         end
         3: begin
-            sdr_addr <= REGION_SPRITE.base_addr[24:0] + { code[12:0], row_y[3:0], 3'b000 };
+            sdr_addr <= REGION_SPRITE.base_addr[24:0] + { code[15:0], row_y[3:0], 3'b000 };
             sdr_req <= 1;
             sdr_wait <= 1;
         end
@@ -342,7 +342,7 @@ always_ff @(posedge CLK_32M) begin
     reg old_v0 = 0;
 
     if (old_v0 != V0) begin
-        scan_pos <= 249; // TODO why?
+        scan_pos <= 0; // TODO why?
         old_v0 <= V0;
         scan_buffer <= ~scan_buffer;
     end else if (CE_PIX) begin
