@@ -35,10 +35,9 @@ module board_b_d_layer(
     input [31:0] tile_data,
     output reg [12:0] tile_index,
 
+    output prio,
     output [3:0] color,
-    output reg [5:0] palette,
-    output reg CP15,
-    output reg CP8,
+    output reg [6:0] palette,
 
     input [31:0] sdr_data,
     output [20:0] sdr_addr,
@@ -74,13 +73,14 @@ kna6034201 kna6034201(
 wire [9:0] SV = VE + v_adj;
 wire [9:0] SH = ( HE + h_adj ) ^ { 7'b0, {3{NL}} };
 
-reg HREV2;
+reg HREV2, CP8, CP15;
 
 wire [2:0] RV = SV[2:0] ^ {3{VREV}};
 wire VREV = tile_data[26];
 wire HREV1 = tile_data[25];
 wire [16:0] COD = {tile_data[31], tile_data[15:0]};
 
+assign prio = CP15 ? |color : CP8 ? color[3] : 1'b0;
 assign color = (HREV2 ^ NL) ? BITR : BITF;
 
 always @(posedge CLK_32M) begin
@@ -109,7 +109,7 @@ always @(posedge CLK_32M) begin
         end
         
         if (SH[2:0] == 3'b111) begin
-            palette <= tile_data[21:16]; // TODO 7-bit palette
+            palette <= tile_data[22:16]; // TODO 7-bit palette
             CP15 <= tile_data[24];
             CP8 <= tile_data[23];
             HREV2 <= HREV1;

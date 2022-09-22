@@ -444,7 +444,7 @@ board_b_d board_b_d(
     .H({H[9], H[7:0]}),
 
     .color_index(pf_color_index),
-    .P1L(P1L),
+    .prio(pf_priority),
 
     .sdr_data(sdr_bg_dout),
     .sdr_addr(sdr_bg_addr),
@@ -458,7 +458,7 @@ board_b_d board_b_d(
     .en_palette(en_layer_palette)
 );
 
-wire [10:0] final_color_index = |sprite_color_index[3:0] ? sprite_color_index[10:0] : pf_color_index;
+wire [10:0] final_color_index = (|sprite_color_index[3:0] & (sprite_priority | ~pf_priority)) ? sprite_color_index : pf_color_index;
 
 wire [15:0] palette_dout;
 wire [4:0] pal_r, pal_g, pal_b;
@@ -482,6 +482,7 @@ assign B = ~CBLK ? { pal_b, pal_b[4:2] } : 8'h00;
 
 wire [15:0] sprite_dout;
 wire [11:0] sprite_color_index;
+wire sprite_priority;
 
 wire sprite_dma = MWR && cpu_word_byte_sel[0] && cpu_word_addr == 20'hf9008;
 
@@ -504,6 +505,7 @@ sprite sprite(
     .NL(NL),
     .HBLK(HBLK),
     .pixel_out(sprite_color_index),
+    .prio_out(sprite_priority),
 
     .TNSL(TNSL),
     .DMA_ON(sprite_dma),

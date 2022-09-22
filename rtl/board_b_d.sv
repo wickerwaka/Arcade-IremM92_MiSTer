@@ -46,7 +46,7 @@ module board_b_d (
     input [8:0] H,
 
     output [10:0] color_index,
-    output P1L,
+    output prio,
 
     input [63:0] sdr_data,
     output [24:0] sdr_addr,
@@ -169,8 +169,9 @@ wire [20:0] addr[3];
 wire [31:0] data[3];
 wire req[3], rdy[3];
 
+wire pf_priority[3];
 wire [3:0] pf_color[3];
-wire [5:0] pf_palette[3];
+wire [6:0] pf_palette[3];
 wire pf_cp8[3], pf_cp15[3];
 
 board_b_d_sdram board_b_d_sdram(
@@ -219,8 +220,7 @@ generate
 
             .color(pf_color[i]),
             .palette(pf_palette[i]),
-            .CP15(pf_cp15[i]),
-            .CP8(pf_cp8[i]),
+            .prio(pf_priority[i]),
 
             .sdr_addr(addr[i]),
             .sdr_data(data[i]),
@@ -233,7 +233,13 @@ generate
     end
 endgenerate
 
-assign color_index = pf_color[0] != 4'b0000 ? { pf_palette[0], pf_color[0] } : pf_color[1] != 4'b0000 ? { pf_palette[1], pf_color[1] } : { pf_palette[2], pf_color[2] };
+wire [11:0] color_and_prio = 
+    pf_color[0] != 4'b0000 ? { pf_priority[0], pf_palette[0], pf_color[0] } :
+    pf_color[1] != 4'b0000 ? { pf_priority[1], pf_palette[1], pf_color[1] } :
+    { pf_priority[2], pf_palette[2], pf_color[2] };
+
+assign color_index = color_and_prio[10:0];
+assign prio = color_and_prio[11];
 
 endmodule
 
