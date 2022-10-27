@@ -1,0 +1,22 @@
+; JED2EQN -- JEDEC file to Boolean Equations disassembler (Version V063)
+; Copyright (c) National Semiconductor Corporation 1990-1993
+; Disassembled from M92-C-7H-C.IC43.jed. Date: 10-27-122
+;$GALMODE SMALL
+
+chip M92-C-7H-C GAL16V8
+
+i1=1 i2=2 i3=3 i4=4 i5=5 i6=6 i7=7 i8=8 i9=9 GND=10 !nc11=11 
+o12=12 o13=13 o14=14 o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20 
+
+@ues 522d54797065204c
+@ptd unused
+
+equations
+
+o19 = i2 & !i1 & i4 & i5 & !i6
+!o15 = i2 & !i1 & i4 & !i5
+!o14 = i2 & !i1 & i5 & i6 & i7 & i8 & i9
+    # i2 & !i1 & !i4
+!o13 = i2 & !i1 & !i3 & i4 & i6 & i7 & i8 & i9
+    # i2 & !i1 & !i3 & !i4 & i5
+    # i2 & !i1 & !i3 & !i5
