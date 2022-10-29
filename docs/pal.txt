@@ -1,0 +1,133 @@
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// M92 A-3M-
+/// IC11
+
+
+/** Inputs **/
+Pin	1 = i1;
+Pin	2 = VID_CTRL12;
+Pin	3 = i3;
+Pin	4 = i4;
+Pin	5 = B_BRD;
+Pin	6 = DMA_BUSY;
+Pin	7 = i7;
+Pin	8 = VID_CTRL12;
+Pin	9 = VID_CTRL7;
+Pin	11 = VID_CTRL6;
+Pin	16 = i16;
+Pin	17 = i17;
+
+/** Outputs **/
+Pin	12 = n_VID_CTRL6; /**(Combinatorial, No output feedback, Active high) **/
+Pin	13 = A0_2; /**(Combinatorial, Output feedback output, Active high) **/
+Pin	14 = o14; /**(Combinatorial, Output feedback output, Active high) **/
+Pin	15 = o15; /**(Combinatorial, Output feedback output, Active high) **/
+Pin	18 = SELA; /**(Combinatorial, Output feedback output, Active low) **/
+Pin	19 = SELB; /**(Combinatorial, No output feedback, Active high) **/
+
+/** Equations **/
+
+n_VID_CTRL6 = !VID_CTRL6;
+
+A0_2 = !VID_CTRL12 & i3;
+
+o14 = VID_CTRL12 & i3 & i4 & i7 & !VID_CTRL12 & !VID_CTRL7;
+
+o15 = i4 & B_BRD & i7 & !VID_CTRL12 & !VID_CTRL7;
+
+X = !VID_CTRL7 & i4
+!SELA = !DMA_BUSY & ( VID_CTRL12 & i3 & X
+     | !i3 & B_BRD & X
+     | !VID_CTRL12 & i3 & B_BRD & X
+     | VID_CTRL12
+     | !i7 );
+
+!SELA = VID_CTRL12 & i3 & i4 & !DMA_BUSY & !VID_CTRL7
+     # !i3 & i4 & B_BRD & !DMA_BUSY & !VID_CTRL7
+     # !VID_CTRL12 & i3 & i4 & B_BRD & !DMA_BUSY & !VID_CTRL7
+     # !DMA_BUSY & VID_CTRL12
+     # !DMA_BUSY & !i7;
+
+SELB = !DMA_BUSY & i7 & !VID_CTRL12;
+
+
+
+//
+!SELA !SELB - CPU
+ SELA !SELB - IC42, DMA_BUSY high
+!SELA  SELB - IC36, read only
+ SELA  SELB - B_BRD, read only
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// M92 A-7J-
+/// IC41
+
+/** Inputs **/
+Pin	1 = i1; // 9J/14
+Pin	2 = i2; // M/IO
+Pin	3 = i3; // IC62 / 8
+Pin	4 = i4; // a19
+Pin	5 = i5; // a18
+Pin	6 = i6; // a17
+Pin	7 = i7; // a16
+Pin	8 = i8; // a15
+Pin	9 = i9; // a14
+Pin	11 = i11; // a13
+Pin	13 = i13; // a12
+Pin	14 = i14; // a11
+Pin	15 = i15; // IC51/18
+
+/** Outputs **/
+Pin	16 = o16; // IC21 & IC29 Flip-flop CLK
+Pin	17 = o17; // sprite & palette ram
+Pin	18 = o18; // sprite control
+
+/** Equations **/
+
+// 1111_1001_1xxx_xxxx_xxxx
+// 0xf9800-0xf9fff - videocontrol
+!o16 = !i1 & M_IO & A19 & A18 & A17 & A16 & A15 & !A14 & !A13 & A12 & A11 & !n_WE;
+
+// 1111_1000_xxxx_xxxx_xxxx
+// 0xf8000 - 0xf8fff - sprite and palette ram
+!o17 = !i1 & M_IO & A19 & A18 & A17 & A16 & A15 & !A14 & !A13 & !A12;
+
+// 1111_1001_0xxx_xxxx_xxxx
+// 0xf9000 - 0xf97ff - sprite control
+!o18 = !i1 & M_IO & A19 & A18 & A17 & A16 & A15 & !A14 & !A13 & A12 & !A11;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+/// M92 A-9J-
+/// IC51
+
+/** Inputs **/
+Pin	1 = MREQ;
+Pin	2 = CPU_RW; // CPU_R/W
+Pin	4 = BUSST1;
+Pin	5 = BUSST0;
+Pin	7 = DSTB; // /DSTB - 
+Pin	8 = BCYST; // /BCYST - low at start of bus cycle
+
+/** Outputs **/
+Pin	12 = INTAK; /**(Combinatorial, No output feedback, Active low) **/
+Pin	14 = o14; /**(Combinatorial, Output feedback output, Active high) **/
+Pin	16 = IO_WR; /**(Combinatorial, Output feedback output, Active low) **/
+Pin	17 = IO_RD; /**(Combinatorial, Output feedback output, Active low) **/
+Pin	18 = MEM_WR; // active low
+Pin	19 = MEM_RD; /**(Combinatorial, No output feedback, Active low) **/
+
+/** Equations **/
+
+!INTAK = !MREQ & CPU_RW & !BUSST1 & !BUSST0 & !DSTB;
+
+o14 = DSTB & BCYST;
+
+!IO_WR = !MREQ & !CPU_RW & !BUSST1 & BUSST0 & !DSTB;
+
+!IO_RD = !MREQ & CPU_RW & !BUSST1 & BUSST0;
+
+!MEM_WR = MREQ & !CPU_RW & !BUSST1 & BUSST0 & !DSTB;
+
+!MEM_RD = MREQ & CPU_RW & !BUSST1;
