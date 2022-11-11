@@ -6,11 +6,11 @@
 /** Inputs **/
 Pin	1 = i1;
 Pin	2 = VID_CTRL12;
-Pin	3 = i3;
-Pin	4 = i4;
-Pin	5 = B_BRD;
+Pin	3 = IC53_158;
+Pin	4 = IC53_13;
+Pin	5 = CN1_17A;
 Pin	6 = DMA_BUSY;
-Pin	7 = i7;
+Pin	7 = IC42_136;
 Pin	8 = VID_CTRL12;
 Pin	9 = VID_CTRL7;
 Pin	11 = VID_CTRL6;
@@ -29,26 +29,26 @@ Pin	19 = SELB; /**(Combinatorial, No output feedback, Active high) **/
 
 n_VID_CTRL6 = !VID_CTRL6;
 
-A0_2 = !VID_CTRL12 & i3;
+A0_2 = !VID_CTRL12 & IC53_158;
 
-o14 = VID_CTRL12 & i3 & i4 & i7 & !VID_CTRL12 & !VID_CTRL7;
+o14 = VID_CTRL12 & IC53_158 & IC53_13 & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
 
-o15 = i4 & B_BRD & i7 & !VID_CTRL12 & !VID_CTRL7;
+o15 = IC53_13 & CN1_17A & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
 
-X = !VID_CTRL7 & i4
-!SELA = !DMA_BUSY & ( VID_CTRL12 & i3 & X
-     | !i3 & B_BRD & X
-     | !VID_CTRL12 & i3 & B_BRD & X
+X = !VID_CTRL7 & IC53_13
+!SELA = !DMA_BUSY & ( VID_CTRL12 & IC53_158 & X
+     | !IC53_158 & CN1_17A & X
+     | !VID_CTRL12 & IC53_158 & CN1_17A & X
      | VID_CTRL12
-     | !i7 );
+     | !IC42_136 );
 
-!SELA = VID_CTRL12 & i3 & i4 & !DMA_BUSY & !VID_CTRL7
-     # !i3 & i4 & B_BRD & !DMA_BUSY & !VID_CTRL7
-     # !VID_CTRL12 & i3 & i4 & B_BRD & !DMA_BUSY & !VID_CTRL7
+!SELA = VID_CTRL12 & IC53_158 & IC53_13 & !DMA_BUSY & !VID_CTRL7
+     # !IC53_158 & IC53_13 & CN1_17A & !DMA_BUSY & !VID_CTRL7
+     # !VID_CTRL12 & IC53_158 & IC53_13 & CN1_17A & !DMA_BUSY & !VID_CTRL7
      # !DMA_BUSY & VID_CTRL12
-     # !DMA_BUSY & !i7;
+     # !DMA_BUSY & !IC42_136;
 
-SELB = !DMA_BUSY & i7 & !VID_CTRL12;
+SELB = !DMA_BUSY & IC42_136 & !VID_CTRL12;
 
 
 

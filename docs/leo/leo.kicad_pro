@@ -324,6 +324,10 @@
     [
       "3f170781-d744-477d-adf1-ed36cff99e11",
       "Shared Memory"
+    ],
+    [
+      "e1b825f4-123a-44fe-9974-9687a3e7c3da",
+      "Clock Generation"
     ]
   ],
   "text_variables": {}
