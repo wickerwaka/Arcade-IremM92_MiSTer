@@ -1,0 +1,20 @@
+VID_CTRL0 - OBJ bank select for CPU writing
+VID_CTRL1 - PALETTE bank select for CPU writing
+VID_CTRL2 - PALETTE buffer select for CPU color writing
+VID_CTRL3 - Read OBJ bank select for DMA transfer 
+VID_CTRL4 - Read PALETTE bank select for DMA transfer
+VID_CTRL5 - PALETTE read buffer select for color DMA transfer
+
+VID_CTRL6 - Maybe forces blanking?
+
+VID_CTRL7 - Disable OBJ. Causes OBJ data to be ignored when deciding whether to output PF or OBJ color
+VID_CTRL8 - PALETTE RAM A3 for CPU access.
+VID_CTRL9 - PALETTE RAM A0 for CPU access.
+VID_CTRL10 - PALETTE RAM A4 for CPU access.
+
+VID_CTRL11 - Unused?
+
+VID_CTRL12 - Enable CPU access to PALETTE ram
+VID_CTRL13 - Enable OBJ priority.
+VID_CTRL14 - PALETTE RAM A0 for PF
+VID_CTRL15 - PALETTE RAM A4 for OBJ and PF.

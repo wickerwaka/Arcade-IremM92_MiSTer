@@ -37,10 +37,12 @@ PAL16L8. Generates the select signals for the shared ram multiplexers (IC17, 18,
 ## IC13
 72LS244, Octal Buffer. SW1. Lower Byte
 
-## IC15 & IC16 "Shared RAM"
-MB81C78A, 8k x 8bit SRAM. Two 8K RAMs that are used for palette storage and the CPU sprite buffer. This RAM is shared by (at least?) four different ICs. The ICs 17, 18, 19, 25, 26, 27, 28 multiplex the address lines, which are selected by IC11.
+## IC15 & IC16 "Palette RAM"
+MB81C78A, 8k x 8bit SRAM. Two 8K RAMs that are used to store the active color palettes. The ICs 17, 18, 19, 25, 26, 27, 28 multiplex the address lines, which are selected by IC11.
 
-The output enable and chip select signals are always asserted. The data signals are connected to color output FF (IC9 & 10) and the bidirectional drivers (IC22 & 23). A variety of address signals are tweaked based on the video control register in mapped but not understood ways. The order of operations is not well understood.
+IC63 and the B Board address this RAM in order to latch color output values to the output flipflops (IC9 & IC10). The CPU and IC42 have read and write access to this RAM, but in general use the CPU does not access it and IC42 only writes to it during its DMA transfer.
+
+The output enable and chip select signals are always asserted. 
 
 ## IC17, IC18, IC19, IC25, IC26, IC27, IC28
 74LS153, multiplexers. Multiplexes shared ram address lines and write enable.

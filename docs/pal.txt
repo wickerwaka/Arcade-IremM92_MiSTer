@@ -5,7 +5,7 @@
 
 /** Inputs **/
 Pin	1 = i1;
-Pin	2 = VID_CTRL12;
+Pin	2 = VID_CTRL13;
 Pin	3 = IC53_158;
 Pin	4 = IC53_13;
 Pin	5 = CN1_17A;
@@ -29,34 +29,51 @@ Pin	19 = SELB; /**(Combinatorial, No output feedback, Active high) **/
 
 n_VID_CTRL6 = !VID_CTRL6;
 
-A0_2 = !VID_CTRL12 & IC53_158;
+A0_2 = !VID_CTRL12 & IC53_158; // WHY?
 
-o14 = VID_CTRL12 & IC53_158 & IC53_13 & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
+o14 = VID_CTRL13 & IC53_158 & IC53_13 & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
 
 o15 = IC53_13 & CN1_17A & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
 
-X = !VID_CTRL7 & IC53_13
-!SELA = !DMA_BUSY & ( VID_CTRL12 & IC53_158 & X
-     | !IC53_158 & CN1_17A & X
-     | !VID_CTRL12 & IC53_158 & CN1_17A & X
+HAS_OBJ = !VID_CTRL7 & IC53_13
+
+n_SELA = !DMA_BUSY & ( VID_CTRL13 & IC53_158 & HAS_OBJ
+     | !IC53_158 & CN1_17A & HAS_OBJ
+     | !VID_CTRL13 & IC53_158 & CN1_17A & HAS_OBJ
      | VID_CTRL12
      | !IC42_136 );
-
-!SELA = VID_CTRL12 & IC53_158 & IC53_13 & !DMA_BUSY & !VID_CTRL7
-     # !IC53_158 & IC53_13 & CN1_17A & !DMA_BUSY & !VID_CTRL7
-     # !VID_CTRL12 & IC53_158 & IC53_13 & CN1_17A & !DMA_BUSY & !VID_CTRL7
-     # !DMA_BUSY & VID_CTRL12
-     # !DMA_BUSY & !IC42_136;
 
 SELB = !DMA_BUSY & IC42_136 & !VID_CTRL12;
 
 
+ n_SELA, ~SELB = CPU      when VID_CTRL12 or ~IC42_136 
+~n_SELA, ~SELB = IC42     when DMA_BUSY
+ n_SELA,  SELB = IC63     when ~DMA_BUSY and 
+~n_SELA,  SELB = B Board
 
 //
 !SELA !SELB - CPU
  SELA !SELB - IC42, DMA_BUSY high
 !SELA  SELB - IC36, read only
  SELA  SELB - B_BRD, read only
+
+VID_CTRL13 - Enable OBJ priority
+IC53_158 - OBJ High priority
+CN1_17A - PF Low priority
+IC53_13 - OBJ Data present
+
+C13, 158, 17A, HAS_OBJ  n_SELA
+X    X    X    F        F
+
+T    F    F    T        F
+T    F    T    T        T
+T    T    F    T        T *
+T    T    T    T        T
+
+F    F    F    T        F
+F    F    T    T        T
+F    T    F    T        F *
+F    T    T    T        T
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
