@@ -29,7 +29,7 @@ M51953A, Reset controller. Holds /RESET (pin 5) signal low for a short time afte
 74ALS273N, Octal flip-flip. Latches RGB value from palette data in IC16. Connected directly to IC16 data lines. CLK/CLR source unknown. Pin 155 on IC63, B2 on CN2.
 
 ## IC11
-PAL16L8. Generates the select signals for the shared ram multiplexers (IC17, 18, etc). Inputs are from the three custom ICs and the videocontrol register. 
+PAL16L8. Generates the select signals for the palette ram multiplexers (IC17, 18, etc). Inputs are from the three custom ICs and the videocontrol register. 
 
 ## IC12
 72LS244, Octal Buffer. CN5 (3P). Lower Byte
@@ -54,10 +54,22 @@ The output enable and chip select signals are always asserted.
 | 2 | IC63 |
 | 3 | B Board |
 
-All ICs follow the same pattern with the exception of IC17. IC17 uses video control values for some address signals. Only signals from IC42 are used directly. VID_CTRL8 and 9 appear to control the color bank switching, but this differs from MAME which has it as VID_CTRL0 and 1. Are the bytes flipped? This implies that the sprite data is also bank switched, but is the sprite DMA aware of that?
+
+
+## IC37 & IC38 Buffer RAM
+Buffers palette and obj data before being copied to palette RAM (IC15/16) and OBJ RAM (IC43/44). All access to it is through IC42.
+
+## IC43/44 OBJ RAM
+OBJ data copied from IC37/38. Addressed by IC42, read by IC63.
 
 ## IC46
 74LS138, 3-8 decoder. Selects 244 buffers based on IO port address. Address lines A1-A3 are hooked up to ABC inputs. Not sure how enables are hooked up.
 
 ## IC55
 72LS244, Octal Buffer. SW3. Upper Byte
+
+## IC56 & IC57
+CPU data bus drivers.
+
+## IC58, IC59, IC60
+CPU address bus drivers.
