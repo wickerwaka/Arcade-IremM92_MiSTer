@@ -56,10 +56,10 @@ kna6034201 kna6034201(
     .clock(CLK_32M),
     .CE_PIXEL(CE_PIX),
     .LOAD(SH[2:0] == 3'b111),
-    .byte_1(enabled ? rom_data[7:0] : 8'h00),
-    .byte_2(enabled ? rom_data[15:8] : 8'h00),
-    .byte_3(enabled ? rom_data[23:16] : 8'h00),
-    .byte_4(enabled ? rom_data[31:24] : 8'h00),
+    .byte_1(rom_data[7:0]),
+    .byte_2(rom_data[15:8]),
+    .byte_3(rom_data[23:16]),
+    .byte_4(rom_data[31:24]),
     .bit_1(BITF[0]),
     .bit_2(BITF[1]),
     .bit_3(BITF[2]),
@@ -80,8 +80,8 @@ wire VREV = tile_data[26];
 wire HREV1 = tile_data[25];
 wire [16:0] COD = {tile_data[31], tile_data[15:0]};
 
-assign prio = CP15 ? |color : CP8 ? color[3] : 1'b0;
-assign color = (HREV2 ^ NL) ? BITR : BITF;
+assign prio = enabled ? ( CP15 ? |color : CP8 ? color[3] : 1'b0 ) : 1'b0;
+assign color = enabled ? ( (HREV2 ^ NL) ? BITR : BITF ) : 4'b0000;
 
 always @(posedge CLK_32M) begin
     reg do_rom;

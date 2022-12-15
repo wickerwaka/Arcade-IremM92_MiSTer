@@ -55,9 +55,7 @@ module board_b_d (
 
     input paused,
     
-    input en_layer_a,
-    input en_layer_b,
-    input en_palette
+    input [2:0] en_layers
 );
 
 wire [15:0] prolog_addr;
@@ -84,9 +82,9 @@ always_comb begin
 	prolog_addr = 16'h0;
     if (prolog) begin
         case (H[2:0])
-        0: prolog_addr = 16'hf400 + VE;
-        2: prolog_addr = 16'hf800 + VE;
-        4: prolog_addr = 16'hfc00 + VE;
+        0,1: prolog_addr = 16'hf400 + VE;
+        2,3: prolog_addr = 16'hf800 + VE;
+        4,5: prolog_addr = 16'hfc00 + VE;
         default: prolog_addr = 16'h0;
         endcase
     end
@@ -119,8 +117,8 @@ reg [31:0] tile_data[3];
 
 wire [1:0] vram_base[3] = '{ control[0][1:0], control[1][1:0], control[2][1:0] };
 wire wide[3] = '{ control[0][2], control[1][2], control[1][2] };
-wire enabled[3] = '{ control[0][3], control[1][3], control[1][3] };
-wire row_scrolled[3] = '{ control[0][4], control[1][4], control[1][4] };
+wire enabled[3] = '{ ~control[0][4], ~control[1][4], ~control[1][4] };
+wire row_scrolled[3] = '{ control[0][6], control[1][6], control[1][6] };
 
 always_ff @(posedge CLK_32M) begin
     if (CE_PIX) begin
@@ -227,7 +225,7 @@ generate
             .sdr_req(req[i]),
             .sdr_rdy(rdy[i]),
 
-            .enabled(en_layer_a),
+            .enabled(en_layers[i] & enabled[i]),
             .paused(paused)
         );
     end

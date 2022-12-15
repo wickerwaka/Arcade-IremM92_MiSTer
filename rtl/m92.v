@@ -77,11 +77,8 @@ module m92 (
     input [19:0] bram_addr,
     input [4:0] bram_cs,
 
-    input en_layer_a,
-    input en_layer_b,
+    input [2:0] en_layers,
     input en_sprites,
-    input en_layer_palette,
-    input en_sprite_palette,
     input en_audio_filters,
 
     input sprite_freeze,
@@ -411,6 +408,7 @@ kna70h015 kna70h015(
 
 wire [15:0] pf_vram_dout;
 wire [10:0] pf_color_index;
+wire pf_priority;
 
 wire P1L;
 
@@ -453,12 +451,10 @@ board_b_d board_b_d(
 
     .paused(paused),
 
-    .en_layer_a(en_layer_a),
-    .en_layer_b(en_layer_b),
-    .en_palette(en_layer_palette)
+    .en_layers(en_layers)
 );
 
-wire [10:0] final_color_index = (|sprite_color_index[3:0] & (sprite_priority | ~pf_priority)) ? sprite_color_index : pf_color_index;
+wire [10:0] final_color_index = (|sprite_color_index[3:0] & (sprite_priority | ~pf_priority) & en_sprites) ? sprite_color_index : pf_color_index;
 
 wire [15:0] palette_dout;
 wire [4:0] pal_r, pal_g, pal_b;
