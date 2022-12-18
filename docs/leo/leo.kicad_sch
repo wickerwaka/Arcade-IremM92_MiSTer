@@ -6973,6 +6973,18 @@
     (pin "9" (uuid 1d20d729-1918-4d17-8633-9722d80fc676))
   )
 
+  (sheet (at 285.75 41.91) (size 68.58 45.72) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid) (color 0 0 0 0))
+    (fill (color 0 0 0 0.0000))
+    (uuid 0bd61519-701e-4675-a889-b424ac477c32)
+    (property "Sheet name" "GA 21" (id 0) (at 285.75 41.1984 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheet file" "ga_21.kicad_sch" (id 1) (at 285.75 88.2146 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+  )
+
   (sheet (at 205.74 41.91) (size 68.58 46.99) (fields_autoplaced)
     (stroke (width 0.1524) (type solid) (color 0 0 0 0))
     (fill (color 0 0 0 0.0000))
@@ -7014,6 +7026,7 @@
     (path "/3f170781-d744-477d-adf1-ed36cff99e11" (page "2"))
     (path "/e1b825f4-123a-44fe-9974-9687a3e7c3da" (page "3"))
     (path "/3c8e9905-8b74-4eb3-9c18-3105ee09a33f" (page "4"))
+    (path "/0bd61519-701e-4675-a889-b424ac477c32" (page "5"))
   )
 
   (symbol_instances
@@ -7241,6 +7254,9 @@
     )
     (path "/faa4d280-d166-4f33-bad0-5db3a71be618"
       (reference "IC41") (unit 1) (value "GAL16V8") (footprint "")
+    )
+    (path "/0bd61519-701e-4675-a889-b424ac477c32/96db101b-ae4d-43b3-916e-917ab5e9ffef"
+      (reference "IC42") (unit 1) (value "GA21") (footprint "")
     )
     (path "/433b0e72-de3e-455f-a050-17638acf1723"
       (reference "IC51") (unit 1) (value "GAL16V8") (footprint "")
