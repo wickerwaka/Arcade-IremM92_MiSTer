@@ -6977,10 +6977,10 @@
     (stroke (width 0.1524) (type solid) (color 0 0 0 0))
     (fill (color 0 0 0 0.0000))
     (uuid 0bd61519-701e-4675-a889-b424ac477c32)
-    (property "Sheet name" "GA 21" (id 0) (at 285.75 41.1984 0)
+    (property "Sheet name" "GA21" (id 0) (at 285.75 41.1984 0)
       (effects (font (size 1.27 1.27)) (justify left bottom))
     )
-    (property "Sheet file" "ga_21.kicad_sch" (id 1) (at 285.75 88.2146 0)
+    (property "Sheet file" "ga21.kicad_sch" (id 1) (at 285.75 88.2146 0)
       (effects (font (size 1.27 1.27)) (justify left top))
     )
   )
@@ -7009,6 +7009,18 @@
     )
   )
 
+  (sheet (at 363.22 41.91) (size 66.04 45.72) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid) (color 0 0 0 0))
+    (fill (color 0 0 0 0.0000))
+    (uuid c1977d2d-8f37-45fb-befe-52187747618e)
+    (property "Sheet name" "GA22" (id 0) (at 363.22 41.1984 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheet file" "ga22.kicad_sch" (id 1) (at 363.22 88.2146 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+  )
+
   (sheet (at 130.81 41.91) (size 64.77 46.99) (fields_autoplaced)
     (stroke (width 0.1524) (type solid) (color 0 0 0 0))
     (fill (color 0 0 0 0.0000))
@@ -7027,6 +7039,7 @@
     (path "/e1b825f4-123a-44fe-9974-9687a3e7c3da" (page "3"))
     (path "/3c8e9905-8b74-4eb3-9c18-3105ee09a33f" (page "4"))
     (path "/0bd61519-701e-4675-a889-b424ac477c32" (page "5"))
+    (path "/c1977d2d-8f37-45fb-befe-52187747618e" (page "6"))
   )
 
   (symbol_instances
@@ -7308,6 +7321,9 @@
     )
     (path "/82668dd3-6d37-4ca9-bb21-d09f56ae2fef"
       (reference "IC62") (unit 2) (value "74LS20") (footprint "")
+    )
+    (path "/c1977d2d-8f37-45fb-befe-52187747618e/7af1c0a0-2edc-4a0d-88a7-73759f63a8a1"
+      (reference "IC63") (unit 1) (value "GA22") (footprint "")
     )
     (path "/3c8e9905-8b74-4eb3-9c18-3105ee09a33f/1a77a52a-b972-45fe-b376-224bbc5471ec"
       (reference "J?") (unit 1) (value "Conn_01x03") (footprint "")
