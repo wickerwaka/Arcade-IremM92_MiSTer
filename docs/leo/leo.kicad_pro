@@ -340,6 +340,14 @@
     [
       "c1977d2d-8f37-45fb-befe-52187747618e",
       "GA22"
+    ],
+    [
+      "0f7b84fe-b888-4f3d-a575-5ad84e7ff4af",
+      "B Interface"
+    ],
+    [
+      "95da80d1-f524-4dae-9bdb-cc834e22a0a6",
+      "VRAM"
     ]
   ],
   "text_variables": {}

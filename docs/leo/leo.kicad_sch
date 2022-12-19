@@ -6985,6 +6985,18 @@
     )
   )
 
+  (sheet (at 53.34 728.98) (size 86.36 58.42) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid) (color 0 0 0 0))
+    (fill (color 0 0 0 0.0000))
+    (uuid 0f7b84fe-b888-4f3d-a575-5ad84e7ff4af)
+    (property "Sheet name" "B Interface" (id 0) (at 53.34 728.2684 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheet file" "b_interface.kicad_sch" (id 1) (at 53.34 787.9846 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+  )
+
   (sheet (at 205.74 41.91) (size 68.58 46.99) (fields_autoplaced)
     (stroke (width 0.1524) (type solid) (color 0 0 0 0))
     (fill (color 0 0 0 0.0000))
@@ -7005,6 +7017,18 @@
       (effects (font (size 1.27 1.27)) (justify left bottom))
     )
     (property "Sheet file" "palette_ram.kicad_sch" (id 1) (at 55.88 89.4846 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+  )
+
+  (sheet (at 153.67 728.98) (size 90.17 59.69) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid) (color 0 0 0 0))
+    (fill (color 0 0 0 0.0000))
+    (uuid 95da80d1-f524-4dae-9bdb-cc834e22a0a6)
+    (property "Sheet name" "VRAM" (id 0) (at 153.67 728.2684 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheet file" "vram.kicad_sch" (id 1) (at 153.67 789.2546 0)
       (effects (font (size 1.27 1.27)) (justify left top))
     )
   )
@@ -7040,6 +7064,8 @@
     (path "/3c8e9905-8b74-4eb3-9c18-3105ee09a33f" (page "4"))
     (path "/0bd61519-701e-4675-a889-b424ac477c32" (page "5"))
     (path "/c1977d2d-8f37-45fb-befe-52187747618e" (page "6"))
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af" (page "7"))
+    (path "/95da80d1-f524-4dae-9bdb-cc834e22a0a6" (page "8"))
   )
 
   (symbol_instances
@@ -7217,8 +7243,14 @@
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/67263d0f-a492-4d36-83e2-ce10774430c9"
       (reference "IC23") (unit 1) (value "74LS245") (footprint "")
     )
+    (path "/95da80d1-f524-4dae-9bdb-cc834e22a0a6/1185a2dc-4144-4173-929c-52e62db8defd"
+      (reference "IC25") (unit 1) (value "UPD43256AC-10L") (footprint "Package_DIP:DIP-28_W15.24mm")
+    )
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/f833f0c3-4fce-4dd4-96ab-bbcda0f1502d"
       (reference "IC25") (unit 1) (value "74153") (footprint "")
+    )
+    (path "/95da80d1-f524-4dae-9bdb-cc834e22a0a6/8af29618-263d-45e7-bd96-94facbb1c9d0"
+      (reference "IC26") (unit 1) (value "UPD43256AC-10L") (footprint "Package_DIP:DIP-28_W15.24mm")
     )
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/bf475103-d728-4ea9-902f-25e477fa41f3"
       (reference "IC26") (unit 1) (value "74153") (footprint "")
@@ -7238,11 +7270,23 @@
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/3be7a7e4-dc43-4016-88a4-123bf7e89b22"
       (reference "IC31") (unit 1) (value "74LS374") (footprint "")
     )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/538305b1-8ea6-46ec-b47f-6402c327973d"
+      (reference "IC37") (unit 1) (value "74LS245") (footprint "")
+    )
     (path "/543537a5-77fb-40a8-8960-21af55848bb6"
       (reference "IC37") (unit 1) (value "MB81C78A") (footprint "Package_DIP:DIP-28_W15.24mm")
     )
     (path "/9250b986-8418-4718-b834-7c170dcb65d0"
       (reference "IC38") (unit 1) (value "MB81C78A") (footprint "Package_DIP:DIP-28_W15.24mm")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/f72d3c1c-bfd6-4c99-8f0a-4247bbba3a83"
+      (reference "IC38") (unit 1) (value "74LS244") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/f9f51c86-e26f-4635-b036-e42dcb471624"
+      (reference "IC39") (unit 1) (value "74LS374") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/75378f28-a645-48c3-b1e7-a067a94de93b"
+      (reference "IC40") (unit 1) (value "74LS245") (footprint "")
     )
     (path "/aa3a8dc9-cc96-45e0-a99d-26be5c30776b"
       (reference "IC40") (unit 1) (value "74LS04") (footprint "")
@@ -7270,6 +7314,18 @@
     )
     (path "/0bd61519-701e-4675-a889-b424ac477c32/96db101b-ae4d-43b3-916e-917ab5e9ffef"
       (reference "IC42") (unit 1) (value "GA21") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/ffe01a4e-09f3-498e-89f2-93367b330ac7"
+      (reference "IC46") (unit 1) (value "74LS161") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/a437b037-fbfa-4e63-8307-90129b34e9a9"
+      (reference "IC47") (unit 1) (value "GAL16V8") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/e21bd9bf-5a4c-459e-97f8-8b53fe815d4d"
+      (reference "IC48") (unit 1) (value "74LS374") (footprint "")
+    )
+    (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/7787d4fe-8fb1-4b6b-aa92-6e104aeb2f07"
+      (reference "IC49") (unit 1) (value "74LS244") (footprint "")
     )
     (path "/433b0e72-de3e-455f-a050-17638acf1723"
       (reference "IC51") (unit 1) (value "GAL16V8") (footprint "")
