@@ -7051,6 +7051,18 @@
     )
   )
 
+  (sheet (at 384.81 727.71) (size 91.44 60.96) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid) (color 0 0 0 0))
+    (fill (color 0 0 0 0.0000))
+    (uuid a247e571-a252-4b17-b29c-33153965b7ae)
+    (property "Sheet name" "Bank Switching" (id 0) (at 384.81 726.9984 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheet file" "bank_switching.kicad_sch" (id 1) (at 384.81 789.2546 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+  )
+
   (sheet (at 363.22 41.91) (size 66.04 45.72) (fields_autoplaced)
     (stroke (width 0.1524) (type solid) (color 0 0 0 0))
     (fill (color 0 0 0 0.0000))
@@ -7085,6 +7097,7 @@
     (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af" (page "7"))
     (path "/95da80d1-f524-4dae-9bdb-cc834e22a0a6" (page "8"))
     (path "/179d7767-9223-42a1-9464-f2f519087c7e" (page "9"))
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae" (page "10"))
   )
 
   (symbol_instances
@@ -7166,6 +7179,9 @@
     (path "/9b6f8285-6a81-4874-b589-73198412d6a1"
       (reference "#PWR?") (unit 1) (value "VCC") (footprint "")
     )
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/a3719e5c-576f-4695-ab5a-602a06fbbb7d"
+      (reference "#PWR?") (unit 1) (value "VCC") (footprint "")
+    )
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/bb643d94-c0fc-4900-87e8-52fdcfa2623a"
       (reference "#PWR?") (unit 1) (value "GND") (footprint "")
     )
@@ -7174,6 +7190,9 @@
     )
     (path "/179d7767-9223-42a1-9464-f2f519087c7e/beb61fd4-017a-4806-b8de-53b203a2a546"
       (reference "#PWR?") (unit 1) (value "VCC") (footprint "")
+    )
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/bef1a978-183f-466d-9f9e-5959f87a8db5"
+      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
     )
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/c7de3329-b4e8-4d45-a030-6104281a2e4a"
       (reference "#PWR?") (unit 1) (value "VCC") (footprint "")
@@ -7343,7 +7362,7 @@
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/6798dae1-8806-4367-a73f-10f0d7b128f4"
       (reference "IC28") (unit 1) (value "74153") (footprint "")
     )
-    (path "/179d7767-9223-42a1-9464-f2f519087c7e/80a98361-1417-4d31-b88a-253c2c6fff83"
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/80a98361-1417-4d31-b88a-253c2c6fff83"
       (reference "IC28") (unit 1) (value "74LS138") (footprint "")
     )
     (path "/3dbda79e-5a9c-4b53-90e5-eb6e514f3b8f"
@@ -7364,10 +7383,10 @@
     (path "/3f170781-d744-477d-adf1-ed36cff99e11/3be7a7e4-dc43-4016-88a4-123bf7e89b22"
       (reference "IC31") (unit 1) (value "74LS374") (footprint "")
     )
-    (path "/179d7767-9223-42a1-9464-f2f519087c7e/4c91eaa6-f6d2-4815-8cde-e92e109c05a9"
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/4c91eaa6-f6d2-4815-8cde-e92e109c05a9"
       (reference "IC35") (unit 1) (value "74LS175") (footprint "")
     )
-    (path "/179d7767-9223-42a1-9464-f2f519087c7e/a7e426fa-892b-4004-b7ff-4f56096c99b6"
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/a7e426fa-892b-4004-b7ff-4f56096c99b6"
       (reference "IC36") (unit 1) (value "74LS157") (footprint "")
     )
     (path "/0f7b84fe-b888-4f3d-a575-5ad84e7ff4af/538305b1-8ea6-46ec-b47f-6402c327973d"
@@ -7481,7 +7500,10 @@
     (path "/c1977d2d-8f37-45fb-befe-52187747618e/7af1c0a0-2edc-4a0d-88a7-73759f63a8a1"
       (reference "IC63") (unit 1) (value "GA22") (footprint "")
     )
-    (path "/179d7767-9223-42a1-9464-f2f519087c7e/41f1ebb1-cb26-42fd-97b2-04e392551d7a"
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/446f1ba9-c82b-40a0-ba4a-c5ae2e5dc5ff"
+      (reference "J16") (unit 1) (value "Jumper_3_Open") (footprint "")
+    )
+    (path "/a247e571-a252-4b17-b29c-33153965b7ae/41f1ebb1-cb26-42fd-97b2-04e392551d7a"
       (reference "J20") (unit 1) (value "Jumper_3_Bridged12") (footprint "")
     )
     (path "/3c8e9905-8b74-4eb3-9c18-3105ee09a33f/1a77a52a-b972-45fe-b376-224bbc5471ec"
