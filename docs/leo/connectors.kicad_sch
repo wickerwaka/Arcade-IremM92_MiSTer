@@ -451,7 +451,7 @@
       (effects (font (size 1.27 1.27)) (justify right) hide)
     )
   )
-  (global_label "BUF_EN" (shape input) (at 35.56 49.53 180) (fields_autoplaced)
+  (global_label "~{LS245_EN}" (shape input) (at 35.56 49.53 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid 13302f12-7c12-4120-80d3-57c1c3a497ad)
     (property "Intersheet References" "${INTERSHEET_REFS}" (id 0) (at 25.1036 49.4506 0)

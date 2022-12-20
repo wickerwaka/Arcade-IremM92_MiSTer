@@ -348,6 +348,10 @@
     [
       "95da80d1-f524-4dae-9bdb-cc834e22a0a6",
       "VRAM"
+    ],
+    [
+      "179d7767-9223-42a1-9464-f2f519087c7e",
+      "B Board Support"
     ]
   ],
   "text_variables": {}
