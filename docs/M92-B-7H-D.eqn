@@ -1,0 +1,39 @@
+; JED2EQN -- JEDEC file to Boolean Equations disassembler (Version V063)
+; Copyright (c) National Semiconductor Corporation 1990-1993
+; Disassembled from MT2-B-~1.JED. Date: 12-19-122
+;$GALMODE MEDIUM
+
+chip MT2-B-~1 GAL16V8
+
+i1=1 CPU_MIO=2 n_LS245_EN=3 A19=4 A18=5 A17=6 A16=7 A15=8 A14=9 GND=10 !nc11=11 
+o12=12 o13=13 o14=14 o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20 
+
+@ues 0000000000000000
+@ptd unused
+
+equations
+
+// o19
+VRAM_CS = CPU_MIO & !i1 & A19 & A18 & !A17 & A16 // 0xd0000 - 0xdffff
+
+// o17
+!BANKED_CS = CPU_MIO & !i1 & A19 & !A18 & A17 // 0xa0000 - 0xbffff
+
+// o16
+EEPROM_CS = CPU_MIO & !i1 & A19 & A18 & A17 & A16 & !A15 // 0xf0000 - 0xf3fff
+
+// o15
+!EEPROM_CS = CPU_MIO & !i1 & A19 & A18 & A17 & A16 & !A15 // 0xf0000 - 0xf3fff
+
+// o14
+!ROM1_CS = CPU_MIO & !i1 & A19 & !A18 // 0x80000 - 0xbffff
+
+// o13
+!ROM0_CS = CPU_MIO & !i1 & A18 & A17 & A16 & A15 & A14  // 0xfc000 - 0xfffff
+         | CPU_MIO & !i1 & !A19                         // 0x00000 - 0x7ffff
+
+// o12
+!ROM_CS = CPU_MIO & !i1 & !n_LS245_EN & A19 & A17 & A16 & A15 & A14 // 0x00000 - 0xbffff, 0xfc000 - 0xfffff
+    | CPU_MIO & !i1 & !n_LS245_EN & A19 & A17 & A16 & !A15
+    | CPU_MIO & !i1 & !n_LS245_EN & !A19 & A18
+    | CPU_MIO & !i1 & !n_LS245_EN & !A18
