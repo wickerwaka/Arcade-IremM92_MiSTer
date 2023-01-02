@@ -81,18 +81,15 @@ module m92 (
     input en_sprites,
     input en_audio_filters,
 
-    input sprite_freeze,
-
-    input video_60hz,
-    input video_57hz,
-    input video_50hz
+    input sprite_freeze
 );
 
-// Divide 32Mhz clock by 4 for pixel clock
 reg paused = 0;
 reg [8:0] paused_v;
 reg [9:0] paused_h;
 
+// TODO FIX pause
+/*
 always @(posedge CLK_32M) begin
     if (pause_rq & ~paused) begin
         if (~cpu_mem_read & ~cpu_mem_write & ~mem_rq_active) begin
@@ -104,20 +101,19 @@ always @(posedge CLK_32M) begin
         paused <= ~(V == paused_v && H == paused_h);
     end
 end
+*/
 
-reg [1:0] ce_counter_cpu, ce_counter_mcu;
-reg ce_cpu, ce_4x_cpu, ce_mcu;
+reg [1:0] ce_counter_cpu;
+reg ce_cpu, ce_4x_cpu;
 
 always @(posedge CLK_32M) begin
     if (!reset_n) begin
         ce_cpu <= 0;
         ce_4x_cpu <= 0;
         ce_counter_cpu <= 0;
-        ce_counter_mcu <= 0;
     end else begin
         ce_cpu <= 0;
         ce_4x_cpu <= 0;
-        ce_mcu <= 0;
 
         if (~paused) begin
             if (~(ram_rom_memrq & (cpu_mem_read | cpu_mem_write)) & ~mem_rq_active) begin // stall main cpu while fetching from sdram
@@ -125,8 +121,6 @@ always @(posedge CLK_32M) begin
                 ce_4x_cpu <= 1;
                 ce_cpu <= &ce_counter_cpu;
             end
-            ce_counter_mcu <= ce_counter_mcu + 2'd1;
-            ce_mcu <= &ce_counter_mcu;
         end
     end
 end
@@ -135,8 +129,8 @@ wire ce_pix_half;
 jtframe_frac_cen #(2) pixel_cen
 (
     .clk(CLK_32M),
-    .n(video_57hz ? 10'd115 : video_60hz ? 10'd207 : 10'd1),
-    .m(video_57hz ? 10'd444 : video_60hz ? 10'd760 : 10'd4),
+    .n(10'd1),
+    .m(10'd4),
     .cen({ce_pix_half, ce_pix})
 );
 
@@ -148,7 +142,7 @@ wire IORD = cpu_io_read; // IO Read
 wire MWR = cpu_mem_write; // Mem Write
 wire MRD = cpu_mem_read; // Mem Read
 
-wire TNSL;
+wire dma_busy;
 
 wire [15:0] cpu_mem_out;
 wire [19:0] cpu_mem_addr;
@@ -239,7 +233,7 @@ wire rom0_ce, rom1_ce, ram_cs2;
 
 wire [15:0] switches_p1_p2 = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
 wire [15:0] switches_p3_p4 = 16'hffff;
-wire [15:0] flags = { 8'hff, TNSL, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
+wire [15:0] flags = { 8'hff, dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
 
 reg [7:0] sys_flags = 0;
 wire COIN0 = sys_flags[0];
@@ -273,8 +267,7 @@ always_comb begin
     bit [15:0] d16;
     bit [15:0] io16;
 
-    if (palette_memrq) d16 = palette_dout;
-    else if (sprite_memrq) d16 = sprite_dout;
+    if (buffer_memrq) d16 = ga22_dout;
     else if(pf_vram_memrq) d16 = pf_vram_dout;
     else d16 = cpu_ram_rom_data;
     cpu_mem_in = word_shuffle(cpu_mem_addr, d16);
@@ -340,8 +333,7 @@ address_translator address_translator(
     .sdr_addr(cpu_region_addr),
     .writable(cpu_region_writable),
 
-    .sprite_memrq(sprite_memrq),
-    .palette_memrq(palette_memrq),
+    .buffer_memrq(buffer_memrq),
     .sprite_control_memrq(sprite_control_memrq),
     .video_control_memrq(video_control_memrq),
     .pf_vram_memrq(pf_vram_memrq)
@@ -366,45 +358,15 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({5'd0, HINT, TNSL, VBLK})
+    .intp({5'd0, HINT, dma_busy, vblank})
 );
 
-wire [8:0] VE, V;
-wire [9:0] HE, H;
-wire HBLK, VBLK, HS, VS;
-wire HINT, CLD;
+wire vblank, hblank, vsync, hsync, vpulse, hpulse;
 
-assign HSync = HS;
-assign HBlank = HBLK;
-assign VSync = VS;
-assign VBlank = VBLK;
-
-kna70h015 kna70h015(
-    .CLK_32M(CLK_32M),
-
-    .CE_PIX(ce_pix),
-    .iset(iset),
-    .iset_data(iset_data),
-    .NL(NL),
-    .S24H(0),
-
-    .CLD(CLD),
-    .CPBLK(),
-
-    .VE(VE),
-    .V(V),
-    .HE(HE),
-    .H(H),
-
-    .HBLK(HBLK),
-    .VBLK(VBLK),
-    .HINT(HINT),
-
-    .HS(HS),
-    .VS(VS),
-
-    .video_50hz(video_50hz)
-);
+assign HSync = hsync;
+assign HBlank = hblank;
+assign VSync = vsync;
+assign VBlank = vblank;
 
 wire [15:0] pf_vram_dout;
 wire [10:0] pf_color_index;
@@ -413,16 +375,15 @@ wire pf_priority;
 wire P1L;
 
 board_b_d board_b_d(
-    .CLK_32M(CLK_32M),
-    .CLK_96M(CLK_96M),
+    .clk(CLK_32M),
+    .clk_ram(CLK_96M),
 
-    .CE_PIX(ce_pix),
+    .ce_pix(ce_pix),
 
     .DOUT(pf_vram_dout),
 
     .DIN(cpu_word_out),
     .A(cpu_word_addr),
-    .BYTE_SEL(cpu_word_byte_sel),
 
     .IO_DIN(cpu_io_out),
     .IO_A(cpu_io_addr),
@@ -431,15 +392,10 @@ board_b_d board_b_d(
     .MWR(MWR),
     .IORD(IORD),
     .IOWR(IOWR),
-    .CLD(CLD),
 
     .vram_memrq(pf_vram_memrq),
     
     .NL(NL),
-
-    .VE(VE),
-    .HE({HE[9], HE[7:0]}),
-    .H({H[9], H[7:0]}),
 
     .color_index(pf_color_index),
     .prio(pf_priority),
@@ -451,144 +407,127 @@ board_b_d board_b_d(
 
     .paused(paused),
 
-    .en_layers(en_layers)
+    .en_layers(en_layers),
+
+    .vblank(vblank),
+    .hblank(hblank),
+    .vsync(vsync),
+    .hsync(hsync),
+    .hpulse(hpulse),
+    .vpulse(vpulse)
 );
 
-wire [10:0] final_color_index = (|sprite_color_index[3:0] & (sprite_priority | ~pf_priority) & en_sprites) ? sprite_color_index : pf_color_index;
+wire objram_we;
+wire [15:0] objram_data, objram_q;
+wire [63:0] objram_q64;
+wire [10:0] objram_addr;
 
-wire [15:0] palette_dout;
-wire [4:0] pal_r, pal_g, pal_b;
-palette palette(
+objram objram(
     .clk(CLK_32M),
-    .bank(0), // TODO
-    .cpu_we(palette_memrq & MWR ? cpu_word_byte_sel : 2'b00),
-    .cpu_word_addr(cpu_word_addr),
-    .word_in(cpu_word_out),
-    .word_out(palette_dout),
 
-    .color_index(final_color_index),
-    .red(pal_r),
-    .green(pal_g),
-    .blue(pal_b)
+    .addr(objram_addr),
+    .we(objram_we),
+
+    .data(objram_data),
+
+    .q(objram_q),
+    .q64(objram_q64)
 );
 
-assign R = ~CBLK ? { pal_r, pal_r[4:2] } : 8'h00;
-assign G = ~CBLK ? { pal_g, pal_g[4:2] } : 8'h00;
-assign B = ~CBLK ? { pal_b, pal_b[4:2] } : 8'h00;
+wire bufram_we;
+wire [15:0] bufram_data, bufram_q;
+wire [10:0] bufram_addr;
+wire [12:0] bufram_full_addr = { 2'b00, bufram_addr }; // TODO - IC20 address line selection
 
-wire [15:0] sprite_dout;
-wire [11:0] sprite_color_index;
-wire sprite_priority;
+dpramv #(.widthad_a(13), .width_a(16)) bufram
+(
+    .clock_a(CLK_32M),
+    .address_a(bufram_full_addr),
+    .q_a(bufram_q),
+    .wren_a(bufram_we),
+    .data_a(bufram_data),
 
-wire sprite_dma = MWR && cpu_word_byte_sel[0] && cpu_word_addr == 20'hf9008;
+    .clock_b(CLK_32M),
+    .address_b(0),
+    .data_b(0),
+    .wren_b(0),
+    .q_b()
+);
 
-sprite sprite(
-    .CLK_32M(CLK_32M),
-    .CLK_96M(CLK_96M),
-    .CE_PIX(ce_pix),
+dpramv #(.widthad_a(13), .width_a(16)) palram
+(
+    .clock_a(CLK_32M),
+    .address_a(bufram_full_addr),
+    .q_a(bufram_q),
+    .wren_a(bufram_we),
+    .data_a(bufram_data),
 
-    .DIN(cpu_word_out),
-    .DOUT(sprite_dout),
-    
-    .A(cpu_word_addr),
-    .BYTE_SEL(cpu_word_byte_sel),
+    .clock_b(CLK_32M),
+    .address_b(0),
+    .data_b(0),
+    .wren_b(0),
+    .q_b()
+);
 
-    .BUFDBEN(sprite_memrq),
-    .MRD(MRD),
-    .MWR(MWR),
+GA21 ga21(
+    .clk(CLK_32M),
+    .ce(ce_9m),
 
-    .VE(VE),
+    .reset(),
+
+    .din(cpu_word_out),
+    .dout(ga21_dout),
+
+    .addr(cpu_mem_addr[11:1]),
+
+    .reg_cs(sprite_control_memrq),
+    .buf_cs(buffer_memrq),
+    .wr(MWR),
+
+    .busy(dma_busy),
+
+    .obj_dout(objram_data),
+    .obj_din(objram_q),
+    .obj_addr(objram_addr),
+    .obj_we(objram_we),
+
+    .buffer_dout(bufram_data),
+    .buffer_din(bufram_q),
+    .buffer_addr(bufram_addr),
+    .buffer_we(bufram_we),
+
+    .count(ga22_count),
+
+    .pal_addr(ga21_palram_addr),
+    .pal_dout(palram_data),
+    .pal_din(palram_q),
+    .pal_we(ga21_palram_we)
+);
+
+GA22 ga22(
+    .clk(CLK_32M),
+    .clk_ram(CLK_96M),
+
+    .ce(ce_13m), // 13.33Mhz
+
+    .ce_pix(ce_pix), // 6.66Mhz
+
+    .reset(~n_reset),
+
+    .color(ga22_color),
+
     .NL(NL),
-    .HBLK(HBLK),
-    .pixel_out(sprite_color_index),
-    .prio_out(sprite_priority),
+    .hpulse(hpulse),
+    .vpulse(vpulse),
 
-    .TNSL(TNSL),
-    .DMA_ON(sprite_dma),
+    .count(ga22_count),
+
+    .obj_data(objram_q64),
 
     .sdr_data(sdr_sprite_dout),
     .sdr_addr(sdr_sprite_addr),
     .sdr_req(sdr_sprite_req),
     .sdr_rdy(sdr_sprite_rdy)
 );
-
-/*
-wire [4:0] obj_r = en_sprite_palette ? obj_pal_r : { obj_pix[3:0], 1'b0 };
-wire [4:0] obj_g = en_sprite_palette ? obj_pal_g : { obj_pix[3:0], 1'b0 };
-wire [4:0] obj_b = en_sprite_palette ? obj_pal_b : { obj_pix[3:0], 1'b0 };
-
-wire P0L = (|obj_pix[3:0]) && en_sprites;
-
-assign R = ~CBLK ? ( (P0L & P1L) ? {obj_r[4:0], obj_r[4:2]} : {char_r[4:0], char_r[4:2]} ) : 8'h00;
-assign G = ~CBLK ? ( (P0L & P1L) ? {obj_g[4:0], obj_g[4:2]} : {char_g[4:0], char_g[4:2]} ) : 8'h00;
-assign B = ~CBLK ? ( (P0L & P1L) ? {obj_b[4:0], obj_b[4:2]} : {char_b[4:0], char_b[4:2]} ) : 8'h00;
-
-wire sprite_dout_valid;
-
-wire [7:0] obj_pix;
-
-*/
-
-/*
-// 3.5Khz 2nd order low pass filter with additional 10dB attenuation
-IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00004185087102461337 * 0.31622776601), .coeff_x0(2), .coeff_x1(1), .coeff_x2(0), .coeff_y0(-1.99222499379830120247), .coeff_y1(0.99225510233860669818), .coeff_y2(0)) samples_lpf (
-	.clk(CLK_32M),
-	.reset(~reset_n),
-
-	.ce(ce_filter),
-	.sample_ce(1),
-
-	.cx(),
-	.cx0(),
-	.cx1(),
-	.cx2(),
-	.cy0(),
-	.cy1(),
-	.cy2(),
-
-	.input_l({signed_mcu_sample[7:0], 8'd0}),
-    .input_r(),
-	.output_l(filtered_mcu_sample),
-    .output_r()
-);
-
-
-// 9khz 1st order, 10khz 2nd order
-IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00000476166826258131), .coeff_x0(3), .coeff_x1(3), .coeff_x2(1), .coeff_y0(-2.96374831301152275032), .coeff_y1(2.92805248787211569450), .coeff_y2(-0.96430074919997255112)) music_lpf (
-	.clk(CLK_32M),
-	.reset(~reset_n),
-
-	.ce(ce_filter),
-	.sample_ce(1),
-
-	.cx(),
-	.cx0(),
-	.cx1(),
-	.cx2(),
-	.cy0(),
-	.cy1(),
-	.cy2(),
-
-	.input_l(ym_audio),
-    .input_r(),
-	.output_l(filtered_ym_audio),
-    .output_r()
-);
-
-reg [16:0] audio_out;
-
-assign AUDIO_L = audio_out[16:1];
-assign AUDIO_R = audio_out[16:1];
-
-always @(posedge CLK_32M) begin
-    ce_filter_counter <= ce_filter_counter + 3'd1;
-  
-    if (en_audio_filters)
-        audio_out <= {filtered_ym_audio[15], filtered_ym_audio[15:0]} + {filtered_mcu_sample[15], filtered_mcu_sample[15:0]};
-    else
-        audio_out <= {ym_audio[15], ym_audio[15:0]} + {{signed_mcu_sample[7], signed_mcu_sample[7:0], 8'd0}};
-end
-
-*/
 
 endmodule

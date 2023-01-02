@@ -1,4 +1,4 @@
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pkg.sv
 set_global_assignment -name SDC_FILE Arcade-IremM92.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE Arcade-IremM92.sv
@@ -10,15 +10,17 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d_layer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d_sdram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/board_b_d.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/rom.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/sprite.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/pal.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_frac_cen.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_resync.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/pause.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pic.sv
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/palette.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga21.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga22.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga22_linebuffer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/objram.sv
 
 
 set_global_assignment -name VHDL_FILE rtl/v30/export.vhd

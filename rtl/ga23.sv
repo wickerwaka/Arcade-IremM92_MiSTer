@@ -1,5 +1,7 @@
 module GA23(
     input clk,
+    input clk_ram,
+    
     input ce,
 
     input reset,

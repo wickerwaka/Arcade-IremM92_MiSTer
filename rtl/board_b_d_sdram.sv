@@ -25,23 +25,23 @@ module board_b_d_sdram(
     input clk_ram,
 
     input [20:0] addr_a,
-    output [31:0] data_a,
+    output reg [31:0] data_a,
     input req_a,
-    output rdy_a,
+    output reg rdy_a,
 
     input [20:0] addr_b,
-    output [31:0] data_b,
+    output reg [31:0] data_b,
     input req_b,
-    output rdy_b,
+    output reg rdy_b,
 
     input [20:0] addr_c,
-    output [31:0] data_c,
+    output reg [31:0] data_c,
     input req_c,
-    output rdy_c,
+    output reg rdy_c,
 
-    output [24:0] sdr_addr,
+    output reg [24:0] sdr_addr,
     input [31:0] sdr_data,
-    output sdr_req,
+    output reg sdr_req,
     input sdr_rdy
 );
 

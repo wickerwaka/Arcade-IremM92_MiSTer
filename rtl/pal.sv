@@ -31,8 +31,7 @@ module address_translator
     output writable,
     output ram_rom_memrq,
 
-    output sprite_memrq,
-    output palette_memrq,
+    output buffer_memrq,
     output sprite_control_memrq,
     output video_control_memrq,
     output pf_vram_memrq
@@ -44,8 +43,7 @@ always_comb begin
     writable = 0;
     sdr_addr = 0;
 
-    sprite_memrq = 0;
-    palette_memrq = 0;
+    buffer_memrq = 0;
     sprite_control_memrq = 0;
     video_control_memrq = 0;
     pf_vram_memrq = 0;
@@ -60,9 +58,7 @@ always_comb begin
         // 0xe0000-0xeffff
         20'b1110_xxxx_xxxx_xxxx_xxxx: begin ram_rom_memrq = 1; writable = 1; sdr_addr = REGION_CPU_RAM.base_addr[24:0] | A[15:0]; end
         // 0xf8000-0xf87ff
-        20'b1111_1000_0xxx_xxxx_xxxx: sprite_memrq = 1;
-        // 0xf8800-0xf8fff
-        20'b1111_1000_1xxx_xxxx_xxxx: palette_memrq = 1;
+        20'b1111_1000_xxxx_xxxx_xxxx: buffer_memrq = 1;
         // 0xf9000-0xf900f
         20'b1111_1001_0000_0000_xxxx: sprite_control_memrq = 1;
         // 0xf9800-0xf9801
