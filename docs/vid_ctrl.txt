@@ -1,20 +1,20 @@
-VID_CTRL0 - OBJ bank select for CPU writing
-VID_CTRL1 - PALETTE bank select for CPU writing
-VID_CTRL2 - PALETTE buffer select for CPU color writing
-VID_CTRL3 - Read OBJ bank select for DMA transfer 
-VID_CTRL4 - Read PALETTE bank select for DMA transfer
-VID_CTRL5 - PALETTE read buffer select for color DMA transfer
+VID_CTRL0, VC_CPU_OBJ_BANK - OBJ bank select for CPU writing
+VID_CTRL1, VC_CPU_PAL_BANK0 - PALETTE bank0 select for CPU writing
+VID_CTRL2, VC_CPU_PAL_BANK1 - PALETTE bank1 select for CPU writing
+VID_CTRL3, VC_SRC_OBJ_BANK - OBJ bank select for DMA transfer 
+VID_CTRL4, VC_SRC_PAL_BANK0 - PALETTE bank0 select for DMA transfer
+VID_CTRL5, VC_SRC_PAL_BANK1 - PALETTE bank1 select for DMA transfer
 
 VID_CTRL6 - Maybe forces blanking?
 
-VID_CTRL7 - Disable OBJ. Causes OBJ data to be ignored when deciding whether to output PF or OBJ color
-VID_CTRL8 - PALETTE RAM A3 for CPU access.
-VID_CTRL9 - PALETTE RAM A0 for CPU access.
-VID_CTRL10 - PALETTE RAM A4 for CPU access.
+VID_CTRL7, /VC_OBJ_EN - Disable OBJ. Causes OBJ data to be ignored when deciding whether to output PF or OBJ color
+VID_CTRL8, VC_DIRECT_A10 - Upper 1024 colors for CPU access.
+VID_CTRL9, VC_DIRECT_A11 - High priority colors for CPU access.
+VID_CTRL10, VC_DIRECT_A12 - Second palette for CPU access.
 
 VID_CTRL11 - Unused?
 
-VID_CTRL12 - Enable CPU access to PALETTE ram
-VID_CTRL13 - Enable OBJ priority.
-VID_CTRL14 - PALETTE RAM A0 for PF
-VID_CTRL15 - PALETTE RAM A4 for OBJ and PF.
+VID_CTRL12, VC_DIRECT_EN - Enable CPU access to PALETTE ram
+VID_CTRL13, VC_OBJ_PRIO_EN - Enable OBJ priority.
+VID_CTRL14, VC_PF_A11 - Use high priority colors for PF
+VID_CTRL15, VC_ALL_A12 - Use second palette for OBJ and PF.

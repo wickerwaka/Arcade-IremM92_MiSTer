@@ -19,7 +19,7 @@ Pin	17 = i17;
 
 /** Outputs **/
 Pin	12 = n_VID_CTRL6; /**(Combinatorial, No output feedback, Active high) **/
-Pin	13 = A0_2; /**(Combinatorial, Output feedback output, Active high) **/
+Pin	13 = OBJ_PAL_BANK; /**(Combinatorial, Output feedback output, Active high) **/
 Pin	14 = o14; /**(Combinatorial, Output feedback output, Active high) **/
 Pin	15 = o15; /**(Combinatorial, Output feedback output, Active high) **/
 Pin	18 = SELA; /**(Combinatorial, Output feedback output, Active low) **/
@@ -29,7 +29,7 @@ Pin	19 = SELB; /**(Combinatorial, No output feedback, Active high) **/
 
 n_VID_CTRL6 = !VID_CTRL6;
 
-A0_2 = !VID_CTRL12 & IC53_158; // WHY?
+OBJ_PAL_BANK = !VID_CTRL13 & IC53_158;
 
 o14 = VID_CTRL13 & IC53_158 & IC53_13 & IC42_136 & !VID_CTRL12 & !VID_CTRL7;
 

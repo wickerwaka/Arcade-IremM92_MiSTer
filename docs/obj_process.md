@@ -58,3 +58,10 @@ X=415 is the last visible pixel
 31,40,33 hfp, hsync, hbp
 hpulse on 20th hsync clk, every 4 clocks: read from 0xf000, row scroll 1-3. the sync ends
 
+
+## Colors
+System supports a basic palette of 2048 colors. 4 bits from obj or tile data, and 7 bits set on a per-tile or per-obj basis. Colors are copied from the buffer to palette memory as part of the GA21 transfer process. Only 1024 colors are transferred each time, the lower or upper 1024 destination colors are selected using the `0x0100` bit of the `0xf9004` register.
+
+An additional 2048 colors are available for use in two ways. If object priority is disabled by clearing `VID_CTRL13` then the object priority bit is used to select this set of 2048 colors. Which set the playfield uses depends on the value of `VID_CTRL14`. GA21 transfers colors to this region when the `0x0200` bit of the `0xf9004` register is set.
+
+Finally a separate bank of 4096 colors can be selected using `VID_CTRL15`. GA21 transfers colors to this region when the `0x0400` bit of the `0xf9004` register is set.
