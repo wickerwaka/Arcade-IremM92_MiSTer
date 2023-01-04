@@ -67,6 +67,7 @@ _autosave-*
 *-save.pro
 *-save.kicad_pcb
 fp-info-cache
+\#auto_saved_files\#
 
 # Netlist files (exported from Eeschema)
 *.net
@@ -74,3 +75,7 @@ fp-info-cache
 # Autorouter files (exported from Pcbnew)
 *.dsn
 *.ses
+
+# Lints
+work/
+_hdl_checker/
