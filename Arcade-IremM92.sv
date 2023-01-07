@@ -208,10 +208,6 @@ wire [2:0] en_layers = ~status[66:64];
 wire en_sprites = ~status[67];
 wire dbg_sprite_freeze = status[68];
 
-wire video_60hz = status[9:8] == 2'd3;
-wire video_57hz = status[9:8] == 2'd2;
-wire video_50hz = status[9:8] == 2'd1;
-
 // If video timing changes, force mode update
 reg [1:0] video_status;
 reg new_vmode = 0;
@@ -563,11 +559,7 @@ m92 m92(
 
     .en_layers(en_layers),
     .en_sprites(en_sprites),
-    .sprite_freeze(dbg_sprite_freeze),
-
-    .video_50hz(video_50hz),
-    .video_57hz(video_57hz),
-    .video_60hz(video_60hz)
+    .sprite_freeze(dbg_sprite_freeze)
 );
 
 // H/V offset

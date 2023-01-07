@@ -20,7 +20,7 @@
 
 import m92_pkg::*;
 
-module ga22 (
+module GA22 (
     input clk,
     input clk_ram,
 
@@ -95,7 +95,7 @@ endfunction
 wire [8:0] obj_org_y = obj_data[8:0];
 wire [1:0] obj_height = obj_data[10:9];
 wire [1:0] obj_width = obj_data[12:11];
-wire obj_layer = obj_data[15:13];
+wire [2:0] obj_layer = obj_data[15:13];
 wire [15:0] obj_code = obj_data[31:16];
 wire [6:0] obj_color = obj_data[38:32];
 wire obj_pri = ~obj_data[39];
@@ -116,7 +116,7 @@ always_ff @(posedge clk) begin
     reg [8:0] row_y;
 
     if (reset) begin
-        V <= 10'd0;
+        V <= 9'd0;
     end else if (ce) begin
         count <= count + 10'd1;
         if (hpulse) begin

@@ -21,7 +21,7 @@ wire [11:0] even_color = draw_pos[0] ? color1 : color0;
 wire [8:0] odd_addr = draw_pos[9:1];
 wire [8:0] even_addr = draw_pos[0] ? draw_pos[9:1] + 9'd1 : draw_pos[9:1];
 
-dpramv #(.widthad_a(9), .width_a(12)) buffer_odd
+dualport_ram #(.widthad(9), .width(12)) buffer_odd
 (
     .clock_a(clk),
     .address_a(scan_pos[9:1]),
@@ -36,7 +36,7 @@ dpramv #(.widthad_a(9), .width_a(12)) buffer_odd
     .q_b()
 );
 
-dpramv #(.widthad_a(10), .width_a(12)) buffer_even
+dualport_ram #(.widthad(9), .width(12)) buffer_even
 (
     .clock_a(clk),
     .address_a(scan_pos[9:1]),
@@ -90,8 +90,8 @@ always_ff @(posedge clk) begin
     draw_we <= 0;
 
     if (count != 4'd0) begin
-        color0 <= { prio_r, color, bits_r[63], bits_r[47], bits_r[31], bits_r[15] };
-        color1 <= { prio_r, color, bits_r[62], bits_r[46], bits_r[30], bits_r[14] };
+        color0 <= { prio_r, color_r, bits_r[63], bits_r[47], bits_r[31], bits_r[15] };
+        color1 <= { prio_r, color_r, bits_r[62], bits_r[46], bits_r[30], bits_r[14] };
         draw_pos <= draw_pos + 10'd2;
         draw_we <= 1;
 

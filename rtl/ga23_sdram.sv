@@ -20,7 +20,7 @@
 
 import m92_pkg::*;
 
-module board_b_d_sdram(
+module ga23_sdram(
     input clk,
     input clk_ram,
 

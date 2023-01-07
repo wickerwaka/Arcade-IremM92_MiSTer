@@ -62,7 +62,7 @@ GA23 ga23(
     .clk(clk),
     .ce(ce_pix),
     
-    .n_reset(1),
+    .reset(0),
 
     .vblank(vblank),
     .vsync(vsync),
@@ -81,8 +81,8 @@ dpramv_16 #(.widthad_a(15)) vram(
     .data_a(DIN),
 
     .clock_b(clk),
-    .address_b(vram_addr[15:1]),
-    .q_b(vram_data),
+    .address_b(0),
+    .q_b(),
     .wren_b(2'b00),
     .data_b()
 );
