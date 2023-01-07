@@ -11,7 +11,7 @@ module GA23(
     input mem_rd,
     input io_wr,
 
-    output reg busy,
+    output busy,
 
     input [15:0] addr,
     input [15:0] cpu_din,
@@ -85,10 +85,15 @@ wire [1:0] layer_prio[3];
 wire [10:0] layer_color[3];
 reg [15:0] vram_latch;
 
+reg [1:0] cpu_access_st;
+reg cpu_access_we;
+
+assign busy = |cpu_access_st;
+
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         mem_cyc <= 0;
-        busy <= 0;
+        cpu_access_st <= 2'd0;
         vram_we <= 0;
         
         // layer regs
@@ -98,10 +103,9 @@ always_ff @(posedge clk or posedge reset) begin
         hint_line <= 10'd0;
 
     end else begin
-
         if (mem_cs & (mem_rd | mem_wr)) begin
-            busy <= 1;
-            busy_we <= mem_wr;
+            cpu_access_st <= 2'd1;
+            cpu_access_we <= mem_wr;
         end
         vram_we <= 0;
         if (ce) begin
@@ -134,14 +138,17 @@ always_ff @(posedge clk or posedge reset) begin
                 layer_load[2] <= 1;
             end
             3'd6: begin
-                vram_addr <= addr[15:1];
-                vram_we <= busy_we;
-                vram_dout <= cpu_din;
+                if (cpu_access_st == 2'd1) begin
+                    vram_addr <= addr[15:1];
+                    vram_we <= cpu_access_we;
+                    vram_dout <= cpu_din;
+                    cpu_access_st <= 2'd2;
+                end
             end
             3'd7: begin
-                if (busy) begin
-                    busy <= 0;
-                    busy_we <= 0;
+                if (cpu_access_st == 2'd2) begin
+                    cpu_access_st <= 2'd0;
+                    cpu_access_we <= 0;
                     cpu_dout <= vram_din;
                 end
             end
