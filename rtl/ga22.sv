@@ -115,16 +115,24 @@ always_ff @(posedge clk) begin
     reg [8:0] rel_y;
     reg [8:0] row_y;
 
+    sdr_req <= 0;
+
     if (reset) begin
         V <= 9'd0;
     end else if (ce) begin
         count <= count + 10'd1;
-        if (hpulse) begin
-            count <= 10'd0;
-            V <= V + 9'd1;
-            scan_pos <= 10'd0;
-            scan_toggle <= ~scan_toggle;
+
+        if (ce_pix) begin
+            color <= scan_out[11:0];
+            scan_pos <= scan_pos + 10'd1;
+            if (hpulse) begin
+                count <= 10'd0;
+                V <= V + 9'd1;
+                scan_pos <= 10'd0;
+                scan_toggle <= ~scan_toggle;
+            end
         end
+
         if (vpulse) begin
             V <= 9'd0;
         end
@@ -159,9 +167,6 @@ always_ff @(posedge clk) begin
         endcase
     end
 
-    if (ce_pix) begin
-        color <= scan_out[11:0];
-    end
 end
 
 endmodule

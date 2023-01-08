@@ -201,7 +201,7 @@ assign hsync = hcnt < 10'd60 || hcnt > 10'd443;
 assign hblank = hcnt < 10'd93 || hcnt > 10'd412;
 assign vblank = vcnt > 10'd126 && vcnt < 10'd148;
 assign vsync = vcnt > 10'd131 && vcnt < 10'd137;
-assign hpulse = hcnt != 10'd40;
+assign hpulse = hcnt == 10'd40;
 assign vpulse = (vcnt == 10'd136 && hcnt > 10'd252) || (vcnt == 10'd137 && hcnt < 10'd252);
 assign hint = vcnt == hint_line;
 

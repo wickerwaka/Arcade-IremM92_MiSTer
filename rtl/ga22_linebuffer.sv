@@ -32,7 +32,7 @@ dualport_ram #(.widthad(9), .width(12)) buffer_odd
     .clock_b(clk),
     .address_b(odd_addr),
     .data_b(odd_color),
-    .wren_b(~scan_active & draw_we & |odd_color[3:0]),
+    .wren_b((~scan_active) & draw_we), // & |odd_color[3:0]),
     .q_b()
 );
 
@@ -47,7 +47,7 @@ dualport_ram #(.widthad(9), .width(12)) buffer_even
     .clock_b(clk),
     .address_b(even_addr),
     .data_b(even_color),
-    .wren_b(~scan_active & draw_we & |even_color[3:0]),
+    .wren_b((~scan_active) & draw_we), // & |even_color[3:0]),
     .q_b()
 );
 
@@ -78,8 +78,33 @@ reg [11:0] color1;
 reg [9:0] draw_pos;
 reg draw_we = 0;
 
-linebuf buf_0( .scan_active(scan_toggle), .scan_out(scan_out_0), .*);
-linebuf buf_1( .scan_active(~scan_toggle), .scan_out(scan_out_1), .*);
+linebuf buf_0(
+    .clk(clk),
+    .ce_pix(ce_pix),
+
+    .scan_active(scan_toggle),
+    .scan_out(scan_out_0),
+    .scan_pos(scan_pos),
+
+    .color0(color0),
+    .color1(color1),
+    .draw_pos(draw_pos),
+    .draw_we(draw_we)
+);
+
+linebuf buf_1(
+    .clk(clk),
+    .ce_pix(ce_pix),
+    
+    .scan_active(~scan_toggle),
+    .scan_out(scan_out_1),
+    .scan_pos(scan_pos),
+    
+    .color0(color0),
+    .color1(color1),
+    .draw_pos(draw_pos),
+    .draw_we(draw_we)
+);
 
 always_ff @(posedge clk) begin
     reg [63:0] bits_r;
@@ -103,7 +128,7 @@ always_ff @(posedge clk) begin
     if (we) begin
         color0 <= { prio, color, bits[63], bits[47], bits[31], bits[15] };
         color1 <= { prio, color, bits[62], bits[46], bits[30], bits[14] };
-        draw_we <= 0;
+        draw_we <= 1;
         draw_pos <= pos;
 
         bits_r <= { bits[61:0], 2'b00 };
