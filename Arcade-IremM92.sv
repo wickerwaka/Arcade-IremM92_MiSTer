@@ -204,9 +204,10 @@ wire system_pause;
 assign VGA_SL = scandoubler_fx;
 assign HDMI_FREEZE = 0; //system_pause;
 
-wire [2:0] en_layers = ~status[66:64];
-wire en_sprites = ~status[67];
-wire dbg_sprite_freeze = status[68];
+wire [2:0] dbg_en_layers = ~status[66:64];
+wire dbg_solid_sprites = status[67];
+wire en_sprites = 1;
+wire dbg_sprite_freeze = 0;
 
 // If video timing changes, force mode update
 reg [1:0] video_status;
@@ -245,8 +246,7 @@ localparam CONF_STR = {
     "P2O[64],Layer 1,On,Off;",
     "P2O[65],Layer 2,On,Off;",
     "P2O[66],Layer 3,On,Off;",
-    "P2O[67],Sprites,On,Off;",
-    "P2O[68],Sprite Freeze,Off,On;",
+    "P2O[67],Solid Sprites,Off,On;",
     "-;",
     "T[0],Reset;",
     "DEFMRA,/_Arcade/m92.mra;",
@@ -557,7 +557,8 @@ m92 m92(
 
     .pause_rq(system_pause),
 
-    .en_layers(en_layers),
+    .dbg_en_layers(dbg_en_layers),
+    .dbg_solid_sprites(dbg_solid_sprites),
     .en_sprites(en_sprites),
     .sprite_freeze(dbg_sprite_freeze)
 );

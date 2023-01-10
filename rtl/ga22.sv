@@ -38,12 +38,14 @@ module GA22 (
 
     output reg [9:0] count,
 
-    input [63:0] obj_data,
+    input [63:0] obj_in,
 
     input [63:0] sdr_data,
     output reg [24:0] sdr_addr,
     output reg sdr_req,
-    input sdr_rdy
+    input sdr_rdy,
+
+    input dbg_solid_sprites
 );
 
 reg [6:0] linebuf_color;
@@ -92,21 +94,32 @@ function [63:0] deswizzle(input [63:0] d, input rev);
     end
 endfunction
 
+reg [63:0] obj_data;
+
 wire [8:0] obj_org_y = obj_data[8:0];
 wire [1:0] obj_height = obj_data[10:9];
 wire [1:0] obj_width = obj_data[12:11];
 wire [2:0] obj_layer = obj_data[15:13];
 wire [15:0] obj_code = obj_data[31:16];
 wire [6:0] obj_color = obj_data[38:32];
-wire obj_pri = ~obj_data[39];
+wire obj_pri = obj_data[39];
 wire obj_flipx = obj_data[40];
 wire obj_flipy = obj_data[41];
 wire [9:0] obj_org_x = obj_data[57:48];
 
+reg data_rdy;
+
+always_ff @(posedge clk_ram) begin
+    if (sdr_req)
+        data_rdy <= 0;
+    else if (sdr_rdy)
+        data_rdy <= 1;
+end
 
 always_ff @(posedge clk) begin
     reg visible;
     reg [3:0] span;
+    reg [3:0] end_span;
     reg [8:0] V;
 
     reg [15:0] code;
@@ -116,6 +129,7 @@ always_ff @(posedge clk) begin
     reg [8:0] row_y;
 
     sdr_req <= 0;
+    linebuf_write <= 0;
 
     if (reset) begin
         V <= 9'd0;
@@ -128,17 +142,33 @@ always_ff @(posedge clk) begin
             if (hpulse) begin
                 count <= 10'd0;
                 V <= V + 9'd1;
-                scan_pos <= 10'd0;
+                scan_pos <= 10'd44;
                 scan_toggle <= ~scan_toggle;
+                span <= 0;
+                end_span <= 0;
+                visible <= 0;
             end
         end
 
         if (vpulse) begin
-            V <= 9'd0;
+            V <= 9'd114;
         end
         case(count[1:0])
         0: begin
-            span <= 0;
+            linebuf_bits <= dbg_solid_sprites ? 64'hffff_ffff_ffff_ffff : deswizzle(sdr_data, obj_flipx);
+            linebuf_color <= obj_color;
+            linebuf_prio <= obj_pri;
+            linebuf_x <= obj_org_x + ( 10'd16 * span );
+            linebuf_write <= visible;
+            if (span == end_span) begin
+                span <= 4'd0;
+                obj_data <= obj_in;
+            end else begin
+                span <= span + 4'd1;
+            end
+        end
+        1: begin
+            end_span <= ( 4'd1 << obj_width ) - 1;
             height_px = 9'd16 << obj_height;
             width = 4'd1 << obj_width;
             rel_y = V + obj_org_y + ( 9'd16 << obj_height );
@@ -155,14 +185,7 @@ always_ff @(posedge clk) begin
         end
         1: begin
         end
-        2: begin   
-        end
         3: begin
-            linebuf_bits <= deswizzle(sdr_data, obj_flipx);
-            linebuf_color <= obj_color;
-            linebuf_prio <= obj_pri;
-            linebuf_x <= obj_org_x + ( 10'd16 * span );
-            linebuf_write <= visible;
         end
         endcase
     end

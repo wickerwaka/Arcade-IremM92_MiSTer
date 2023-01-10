@@ -38,8 +38,39 @@ module GA23(
     output hint,
 
     output reg [10:0] color_out,
-    output reg [1:0] prio_out
+    output reg prio_out,
+
+    input [2:0] dbg_en_layers
 );
+
+
+//// VIDEO TIMING
+reg [9:0] hcnt, vcnt;
+reg [9:0] hint_line;
+
+assign hsync = hcnt < 10'd60 || hcnt > 10'd443;
+assign hblank = hcnt < 10'd93 || hcnt > 10'd412;
+assign vblank = vcnt > 10'd114 && vcnt < 10'd136;
+assign vsync = vcnt > 10'd119 && vcnt < 10'd125;
+assign hpulse = hcnt == 10'd40;
+assign vpulse = (vcnt == 10'd124 && hcnt > 10'd252) || (vcnt == 10'd125 && hcnt < 10'd252);
+assign hint = vcnt == hint_line;
+
+always_ff @(posedge clk or posedge reset) begin
+    if (reset) begin
+        hcnt <= 10'd40;
+        vcnt <= 10'd114;
+    end else if (ce) begin
+        hcnt <= hcnt + 10'd1;
+        if (hcnt == 10'd463) begin
+            hcnt <= 10'd40;
+            vcnt <= vcnt + 10'd1;
+            if (vcnt == 10'd375) begin
+                vcnt <= 10'd114;
+            end
+        end
+    end
+end
 
 wire [20:0] rom_addr[3];
 wire [31:0] rom_data[3];
@@ -73,24 +104,28 @@ ga23_sdram sdram(
 
 //// MEMORY ACCESS
 reg [2:0] mem_cyc;
+reg [3:0] rs_cyc;
 reg busy_we;
 
 reg [9:0] x_ofs[3], y_ofs[3];
 reg [7:0] control[3];
-reg [9:0] hint_line;
+reg [9:0] rowscroll[3];
 
 wire [14:0] layer_vram_addr[3];
 reg layer_load[3];
-wire [1:0] layer_prio[3];
+wire layer_prio[3];
 wire [10:0] layer_color[3];
 reg [15:0] vram_latch;
 
 reg [1:0] cpu_access_st;
 reg cpu_access_we;
 
+reg rowscroll_active, rowscroll_pending;
+
 assign busy = |cpu_access_st;
 
 always_ff @(posedge clk or posedge reset) begin
+    bit [9:0] rs_y;
     if (reset) begin
         mem_cyc <= 0;
         cpu_access_st <= 2'd0;
@@ -102,67 +137,107 @@ always_ff @(posedge clk or posedge reset) begin
         control[0] <= 8'd0; control[1] <= 8'd0; control[2] <= 8'd0;
         hint_line <= 10'd0;
 
+        rowscroll_pending <= 0;
+        rowscroll_active <= 0;
+
     end else begin
         if (mem_cs & (mem_rd | mem_wr)) begin
             cpu_access_st <= 2'd1;
             cpu_access_we <= mem_wr;
         end
+        
         vram_we <= 0;
+
         if (ce) begin
             layer_load[0] <= 0; layer_load[1] <= 0; layer_load[2] <= 0;
 
-            mem_cyc <= mem_cyc + 3'd1;
-            case(mem_cyc)
-            3'd0: begin
-                vram_addr <= layer_vram_addr[0];
+            if (hpulse) begin
+                mem_cyc <= 3'd6;
+                rowscroll_pending <= 1;
             end
-            3'd1: begin
-                vram_addr[0] <= 1;
-                vram_latch <= vram_din;
-                layer_load[0] <= 1;
-            end
-            3'd2: begin
-                vram_addr <= layer_vram_addr[1];
-            end
-            3'd3: begin
-                vram_addr[0] <= 1;
-                vram_latch <= vram_din;
-                layer_load[1] <= 1;
-            end
-            3'd4: begin
-                vram_addr <= layer_vram_addr[2];
-            end
-            3'd5: begin
-                vram_addr[0] <= 1;
-                vram_latch <= vram_din;
-                layer_load[2] <= 1;
-            end
-            3'd6: begin
-                if (cpu_access_st == 2'd1) begin
-                    vram_addr <= addr[15:1];
-                    vram_we <= cpu_access_we;
-                    vram_dout <= cpu_din;
-                    cpu_access_st <= 2'd2;
-                end
-            end
-            3'd7: begin
-                if (cpu_access_st == 2'd2) begin
-                    cpu_access_st <= 2'd0;
-                    cpu_access_we <= 0;
-                    cpu_dout <= vram_din;
-                end
-            end
-            endcase
 
+            mem_cyc <= mem_cyc + 3'd1;
+
+            if (rowscroll_active) begin
+                rs_cyc <= rs_cyc + 4'd1;
+                case(rs_cyc)
+                0: vram_addr <= 'h7800;
+                4: begin
+                    rs_y = y_ofs[0] + vcnt;
+                    vram_addr <= 'h7a00 + rs_y[8:0];
+                end
+                7: rowscroll[0] <= vram_din[9:0];
+                8: begin
+                    rs_y = y_ofs[1] + vcnt;
+                    vram_addr <= 'h7c00 + rs_y[8:0];
+                end
+                10: rowscroll[1] <= vram_din[9:0];
+                12: begin
+                    rs_y = y_ofs[2] + vcnt;
+                    vram_addr <= 'h7e00 + rs_y[8:0];
+                end
+                14: rowscroll[2] <= vram_din[9:0];
+                15: rowscroll_active <= 0;
+                endcase
+                
+            end else begin
+
+                case(mem_cyc)
+                3'd0: begin
+                    vram_addr <= layer_vram_addr[0];
+                end
+                3'd1: begin
+                    vram_addr[0] <= 1;
+                    vram_latch <= vram_din;
+                    layer_load[0] <= 1;
+                end
+                3'd2: begin
+                    vram_addr <= layer_vram_addr[1];
+                end
+                3'd3: begin
+                    vram_addr[0] <= 1;
+                    vram_latch <= vram_din;
+                    layer_load[1] <= 1;
+                end
+                3'd4: begin
+                    vram_addr <= layer_vram_addr[2];
+                end
+                3'd5: begin
+                    vram_addr[0] <= 1;
+                    vram_latch <= vram_din;
+                    layer_load[2] <= 1;
+                end
+                3'd6: begin
+                    if (cpu_access_st == 2'd1) begin
+                        vram_addr <= addr[15:1];
+                        vram_we <= cpu_access_we;
+                        vram_dout <= cpu_din;
+                        cpu_access_st <= 2'd2;
+                    end
+                end
+                3'd7: begin
+                    if (cpu_access_st == 2'd2) begin
+                        cpu_access_st <= 2'd0;
+                        cpu_access_we <= 0;
+                        cpu_dout <= vram_din;
+                    end
+
+                    if (rowscroll_pending) begin
+                        rowscroll_pending <= 0;
+                        rowscroll_active <= 1;
+                        rs_cyc <= 4'd0;
+                    end
+                end
+                endcase
+            end
+
+            prio_out <= layer_prio[0] | layer_prio[1] | layer_prio[2];
             if (|layer_color[0][3:0]) begin
                 color_out <= layer_color[0];
-                prio_out <= layer_prio[0];
             end else if (|layer_color[1][3:0]) begin
                 color_out <= layer_color[1];
-                prio_out <= layer_prio[1];
             end else begin
                 color_out <= layer_color[2];
-                prio_out <= layer_prio[2];
             end
         end
 
@@ -194,32 +269,7 @@ always_ff @(posedge clk or posedge reset) begin
     end
 end
 
-//// VIDEO TIMING
-reg [9:0] hcnt, vcnt;
 
-assign hsync = hcnt < 10'd60 || hcnt > 10'd443;
-assign hblank = hcnt < 10'd93 || hcnt > 10'd412;
-assign vblank = vcnt > 10'd126 && vcnt < 10'd148;
-assign vsync = vcnt > 10'd131 && vcnt < 10'd137;
-assign hpulse = hcnt == 10'd40;
-assign vpulse = (vcnt == 10'd136 && hcnt > 10'd252) || (vcnt == 10'd137 && hcnt < 10'd252);
-assign hint = vcnt == hint_line;
-
-always_ff @(posedge clk or posedge reset) begin
-    if (reset) begin
-        hcnt <= 10'd40;
-        vcnt <= 10'd126;
-    end else if (ce) begin
-        hcnt <= hcnt + 10'd1;
-        if (hcnt == 10'd463) begin
-            hcnt <= 10'd40;
-            vcnt <= vcnt + 10'd1;
-            if (vcnt == 10'd387) begin
-                vcnt <= 10'd126;
-            end
-        end
-    end
-end
 
 //// LAYERS
 generate
@@ -237,7 +287,7 @@ generate
 
             .x_base({hcnt[9:3], 3'd0}),
             .y(y_ofs[i] + vcnt),
-            .rowscroll(0),
+            .rowscroll(rowscroll[i]),
 
             .vram_addr(layer_vram_addr[i]),
 
@@ -251,7 +301,9 @@ generate
             .sdr_addr(rom_addr[i]),
             .sdr_data(rom_data[i]),
             .sdr_req(rom_req[i]),
-            .sdr_rdy(rom_rdy[i])
+            .sdr_rdy(rom_rdy[i]),
+
+            .dbg_enabled(dbg_en_layers[i])
         );
     end
 endgenerate

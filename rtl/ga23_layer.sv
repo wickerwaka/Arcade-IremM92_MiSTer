@@ -22,20 +22,23 @@ module ga23_layer(
     input [10:0] attrib,
     input [15:0] index,
 
-    output [1:0] prio_out,
+    output prio_out,
     output [10:0] color_out,
 
     input [31:0] sdr_data,
     output reg [20:0] sdr_addr,
     output reg sdr_req,
-    input sdr_rdy
+    input sdr_rdy,
+
+    input dbg_enabled
 );
 
 wire [14:0] vram_base = { control[1:0], 13'd0 };
 wire wide = control[2];
-wire enabled = ~control[4];
+wire enabled = ~control[4] & dbg_enabled;
 wire en_rowscroll = control[6];
-wire [9:0] x = x_base + ( en_rowscroll ? rowscroll : x_ofs );
+wire [9:0] x = x_base + ( en_rowscroll ? rowscroll : x_ofs ) - ( wide ? 10'd256 : 10'd0);
+
 assign vram_addr = vram_base + (wide ? {1'b0, y[8:3], x[9:3], 1'b0} : {2'b00, y[8:3], x[8:3], 1'b0});
 
 reg [3:0] cnt;
@@ -51,7 +54,7 @@ always_ff @(posedge clk) begin
 
     if (ce_pix) begin
         cnt <= cnt + 4'd1;
-        if (load) begin
+        if (load & dbg_enabled) begin
             cnt <= 4'd0;
             sdr_addr <= { index, flip_y ? ~y[2:0] : y[2:0], 2'b00 };
             sdr_req <= 1;
@@ -83,6 +86,6 @@ ga23_shifter shifter(
 );
 
 assign color_out = enabled ? shift_color_out : 11'd0;
-assign prio_out = enabled ? shift_prio_out : 2'b00;
+assign prio_out = enabled ? ( ( shift_prio_out[0] & shift_color_out[3] ) | ( shift_prio_out[1] & |shift_color_out[3:0] ) ) : 1'b0;
 
 endmodule

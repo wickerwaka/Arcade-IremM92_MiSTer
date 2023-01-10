@@ -62,6 +62,7 @@ reg [10:0] copy_obj_addr;
 reg [9:0] copy_pal_addr;
 reg [2:0] copy_obj_word;
 reg [8:0] copy_obj_idx;
+reg [10:0] next_buffer_addr;
 
 reg copy_obj_we, copy_pal_we;
 
@@ -69,6 +70,13 @@ wire direct_access_pal = reg_direct_access[1];
 wire direct_access_obj = reg_direct_access[0];
 
 always_ff @(posedge clk or posedge reset) begin
+    bit [8:0] obj_y;
+    bit [1:0] obj_height;
+    bit [1:0] obj_log2_cols;
+    bit [2:0] obj_layer;
+    bit [3:0] obj_cols;
+    bit [8:0] next_obj_idx;
+
     if (reset) begin
         copy_state <= IDLE;
         reg_direct_access <= 0;
@@ -139,19 +147,29 @@ always_ff @(posedge clk or posedge reset) begin
             COPY_OBJ: begin
                 copy_dout <= buffer_din;
                 buffer_addr <= buffer_addr + 11'd1;
-                if (buffer_addr[1:0] == 0) begin
-                    if (copy_obj_idx == 0) begin
+                copy_obj_word <= copy_obj_word + 2'd1;
+                copy_obj_addr <= {1'b0, copy_obj_idx[7:0], copy_obj_word[1:0]}; 
+                copy_obj_we <= 1;
+
+                if (buffer_addr[1:0] == 2'b00) begin
+                    obj_y = buffer_din[8:0];
+                    obj_height = buffer_din[10:9];
+                    obj_log2_cols = buffer_din[12:11];
+                    obj_layer = buffer_din[15:13];
+                    obj_cols = 4'd1 << obj_log2_cols;
+
+                    next_obj_idx = copy_obj_idx - obj_cols;
+                    if (next_obj_idx[8]) begin // wrapped around
                         copy_state <= IDLE;
+                        copy_obj_we <= 0;
                     end else begin
-                        copy_obj_idx <= copy_obj_idx - 9'd1;
-                        copy_obj_addr <= {1'b0, copy_obj_idx[7:0] - 8'd1, copy_obj_word[1:0]};
-                        copy_obj_word <= 2'b01;
-                        copy_obj_we <= 1;
+                        copy_obj_addr <= {1'b0, next_obj_idx, copy_obj_word[1:0]};
+                        copy_obj_idx <= next_obj_idx;
                     end
-                end else begin
-                    copy_obj_word <= copy_obj_word + 2'd1;
-                    copy_obj_addr <= {1'b0, copy_obj_idx[7:0], copy_obj_word[1:0]}; 
-                    copy_obj_we <= 1;
+
+                    next_buffer_addr <= buffer_addr + { obj_cols, 2'b00 };
+                end else if (buffer_addr[1:0] == 2'b11) begin
+                    buffer_addr <= next_buffer_addr;                     
                 end
             end
             endcase

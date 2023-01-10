@@ -14,7 +14,7 @@ module linebuf(
 );
 
 wire [11:0] scan_odd, scan_even;
-assign scan_out = scan_pos[0] ? scan_even : scan_odd;
+assign scan_out = scan_pos[0] ? scan_odd : scan_even;
 
 wire [11:0] odd_color = draw_pos[0] ? color0 : color1;
 wire [11:0] even_color = draw_pos[0] ? color1 : color0;
@@ -32,7 +32,7 @@ dualport_ram #(.widthad(9), .width(12)) buffer_odd
     .clock_b(clk),
     .address_b(odd_addr),
     .data_b(odd_color),
-    .wren_b((~scan_active) & draw_we), // & |odd_color[3:0]),
+    .wren_b((~scan_active) & draw_we & |odd_color[3:0]),
     .q_b()
 );
 
@@ -47,7 +47,7 @@ dualport_ram #(.widthad(9), .width(12)) buffer_even
     .clock_b(clk),
     .address_b(even_addr),
     .data_b(even_color),
-    .wren_b((~scan_active) & draw_we), // & |even_color[3:0]),
+    .wren_b((~scan_active) & draw_we & |even_color[3:0]),
     .q_b()
 );
 

@@ -77,7 +77,8 @@ module m92 (
     input [19:0] bram_addr,
     input [4:0] bram_cs,
 
-    input [2:0] en_layers,
+    input [2:0] dbg_en_layers,
+    input dbg_solid_sprites,
     input en_sprites,
     input en_audio_filters,
 
@@ -403,6 +404,7 @@ wire [63:0] objram_q64;
 wire [10:0] objram_addr;
 
 wire [11:0] ga22_color, ga23_color;
+wire ga23_prio;
 
 objram objram(
     .clk(CLK_32M),
@@ -456,7 +458,7 @@ palram palram(
     .obj_active(|ga22_color[3:0]),
 
     .pf_color(ga23_color),
-    .pf_prio(1),
+    .pf_prio(~ga23_prio),
 
     .din(ga21_palram_dout),
     .dout(palram_q),
@@ -518,12 +520,14 @@ GA22 ga22(
 
     .count(ga22_count),
 
-    .obj_data(objram_q64),
+    .obj_in(objram_q64),
 
     .sdr_data(sdr_sprite_dout),
     .sdr_addr(sdr_sprite_addr),
     .sdr_req(sdr_sprite_req),
-    .sdr_rdy(sdr_sprite_rdy)
+    .sdr_rdy(sdr_sprite_rdy),
+
+    .dbg_solid_sprites(dbg_solid_sprites)
 );
 
 wire [14:0] vram_addr;
@@ -577,6 +581,9 @@ GA23 ga23(
 
     .hint(hint),
 
-    .color_out(ga23_color)
+    .color_out(ga23_color),
+    .prio_out(ga23_prio),
+
+    .dbg_en_layers(dbg_en_layers)
 );
 endmodule
