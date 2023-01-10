@@ -46,6 +46,7 @@ wire [12:0] pf_addr = {vid_ctrl[15], vid_ctrl[14], pf_color };
 
 reg we = 0;
 reg [12:0] selected_addr;
+reg [15:0] din_reg;
 
 always_ff @(posedge clk) begin
     case(sel)
@@ -54,6 +55,7 @@ always_ff @(posedge clk) begin
     2: begin selected_addr <= obj_addr; we <= 0; end
     3: begin selected_addr <= pf_addr; we <= 0; end
     endcase
+    din_reg <= din;
 end
 
 singleport_unreg_ram #(.widthad(13), .width(16)) ram
@@ -62,7 +64,7 @@ singleport_unreg_ram #(.widthad(13), .width(16)) ram
     .address(selected_addr),
     .q(dout),
     .wren(we),
-    .data(din)
+    .data(din_reg)
 );
 
 always_ff @(posedge clk) begin
