@@ -65,7 +65,7 @@ always_ff @(posedge clk or posedge reset) begin
         if (hcnt == 10'd463) begin
             hcnt <= 10'd40;
             vcnt <= vcnt + 10'd1;
-            if (vcnt == 10'd375) begin
+            if (vcnt == 10'd374) begin
                 vcnt <= 10'd114;
             end
         end

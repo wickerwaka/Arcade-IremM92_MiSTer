@@ -50,7 +50,7 @@ module m92 (
     input [3:0] p1_buttons,
     input [3:0] p2_buttons,
     input service_button,
-    input [15:0] dip_sw,
+    input [23:0] dip_sw,
 
     input pause_rq,
 
@@ -173,6 +173,7 @@ wire buffer_memrq;
 wire sprite_control_memrq;
 wire video_control_memrq;
 wire pf_vram_memrq;
+wire banked_memrq;
 
 reg [1:0] ce_counter_cpu;
 reg ce_cpu, ce_4x_cpu;
@@ -252,9 +253,11 @@ wire rom0_ce, rom1_ce, ram_cs2;
 
 reg [7:0] dbg_io_latch;
 
+reg [3:0] bank_select = 4'd0;
+
 wire [15:0] switches_p1_p2 = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
 wire [15:0] switches_p3_p4 = { dbg_io_latch, dbg_io_latch };
-wire [15:0] flags = { 8'hff, ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
+wire [15:0] flags = { dip_sw[23:16], ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
 
 reg [7:0] sys_flags = 0;
 wire COIN0 = sys_flags[0];
@@ -268,6 +271,7 @@ wire NL = SOFT_NL ^ dip_sw[8];
 // TODO BANK, CBLK, NL
 always @(posedge CLK_32M) begin
     if (IOWR && cpu_io_addr == 8'h02) sys_flags <= cpu_io_out[7:0];
+    if (IOWR && cpu_io_addr == 8'h20) bank_select <= cpu_io_out[3:0];
 end
 
 reg [15:0] vid_ctrl;
@@ -311,7 +315,7 @@ always_comb begin
     case ({cpu_io_addr[7:1], 1'b0})
     8'h00: io16 = switches_p1_p2;
     8'h02: io16 = flags;
-    8'h04: io16 = dip_sw;
+    8'h04: io16 = dip_sw[15:0];
     8'h06: io16 = switches_p3_p4;
     8'h08: io16 = 16'hffff; // soundlatch2 TODO
     default: io16 = 16'hffff;
@@ -377,7 +381,9 @@ address_translator address_translator(
     .buffer_memrq(buffer_memrq),
     .sprite_control_memrq(sprite_control_memrq),
     .video_control_memrq(video_control_memrq),
-    .pf_vram_memrq(pf_vram_memrq)
+    .pf_vram_memrq(pf_vram_memrq),
+
+    .bank_select(bank_select)
 );
 
 wire vblank, hblank, vsync, hsync, vpulse, hpulse, hint;
@@ -398,7 +404,7 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({5'd0, hint, ~dma_busy, vblank}) // TODO dma_busy?
+    .intp({5'd0, hint, 1'b0, vblank}) // TODO dma_busy?
 );
 
 

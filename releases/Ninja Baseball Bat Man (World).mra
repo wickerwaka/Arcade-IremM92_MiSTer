@@ -25,10 +25,10 @@
 
     <rom index="0" zip="nbbatman.zip" md5="None">
         <!-- board type -->
-        <part>00</part>
+        <part>06</part>
 
         <!-- maincpu -->
-        <part>00 0c 00 00</part>
+        <part>00 10 00 00</part>
         <interleave output="16">
             <part name="6_h0.34" crc="5c4a1e3f" map="10" />
             <part name="3_l0.31" crc="3d6d70ae" map="01" />

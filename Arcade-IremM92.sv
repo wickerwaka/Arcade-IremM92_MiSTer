@@ -533,7 +533,7 @@ m92 m92(
     .p1_buttons({~m_btna1, ~m_btnb1, ~m_btnx1, ~m_btny1}),
     .p2_buttons({~m_btna2, ~m_btnb2, ~m_btnx2, ~m_btny2}),
     
-    .dip_sw({~dip_sw[1], ~dip_sw[0]}),
+    .dip_sw({~dip_sw[2], ~dip_sw[1], ~dip_sw[0]}),
 
     .sdr_sprite_addr(sdr_sprite_addr),
     .sdr_sprite_dout(sdr_sprite_dout),
