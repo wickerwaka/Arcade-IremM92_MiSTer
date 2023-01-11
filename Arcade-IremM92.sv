@@ -340,7 +340,7 @@ wire reset = RESET | status[0] | buttons[1];
 ///////////////////////////////////////////////////////////////////////
 wire [63:0] sdr_sprite_dout;
 wire [24:0] sdr_sprite_addr;
-wire sdr_sprite_req, sdr_sprite_rdy;
+wire sdr_sprite_req, sdr_sprite_rdy, sdr_sprite_refresh;
 
 wire [31:0] sdr_bg_dout;
 wire [24:0] sdr_bg_addr;
@@ -376,7 +376,7 @@ board_cfg_t board_cfg;
 sdram sdram
 (
     .*,
-    .doRefresh(0),
+    .doRefresh(sdr_sprite_refresh),
     .init(~pll_locked),
     .clk(CLK_96M),
 
@@ -539,6 +539,7 @@ m92 m92(
     .sdr_sprite_dout(sdr_sprite_dout),
     .sdr_sprite_req(sdr_sprite_req),
     .sdr_sprite_rdy(sdr_sprite_rdy),
+    .sdr_sprite_refresh(sdr_sprite_refresh),
 
     .sdr_bg_addr(sdr_bg_addr),
     .sdr_bg_dout(sdr_bg_dout),

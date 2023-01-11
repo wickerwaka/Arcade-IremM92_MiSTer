@@ -58,6 +58,7 @@ module m92 (
     input [63:0] sdr_sprite_dout,
     output sdr_sprite_req,
     input sdr_sprite_rdy,
+    output sdr_sprite_refresh,
 
     output [24:0] sdr_bg_addr,
     input [31:0] sdr_bg_dout,
@@ -534,6 +535,7 @@ GA22 ga22(
     .sdr_addr(sdr_sprite_addr),
     .sdr_req(sdr_sprite_req),
     .sdr_rdy(sdr_sprite_rdy),
+    .sdr_refresh(sdr_sprite_refresh),
 
     .dbg_solid_sprites(dbg_solid_sprites)
 );

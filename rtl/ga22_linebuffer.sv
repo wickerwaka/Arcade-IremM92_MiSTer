@@ -63,11 +63,14 @@ module double_linebuf(
     input scan_toggle,
     output [11:0] scan_out,
 
-    input [63:0] bits,
+    input [63:0] bitplanes,
+    input flip,
     input [6:0] color,
     input prio,
     input [9:0] pos,
-    input we
+    input we,
+
+    output idle
 );
 
 wire [11:0] scan_out_0, scan_out_1;
@@ -106,11 +109,35 @@ linebuf buf_1(
     .draw_we(draw_we)
 );
 
+// d is 16 pixels stored as 2 sets of 4 bitplanes
+// d[31:0] is 8 pixels, made up from planes d[7:0], d[15:8], etc
+// d[63:32] is 8 pixels made up from planes d[39:32], d[47:40], etc
+// Returns 16 pixels stored as 4 bit planes d[15:0], d[31:16], etc
+function [63:0] deswizzle(input [63:0] d, input rev);
+    begin
+        integer i;
+        bit [7:0] plane[8];
+        bit [7:0] t;
+        for( i = 0; i < 8; i = i + 1 ) begin
+            t = d[(i*8) +: 8];
+            plane[i] = rev ? { t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7] } : t;
+        end
+
+        deswizzle[15:0]  = rev ? { plane[4], plane[0] } : { plane[0], plane[4] };
+        deswizzle[31:16] = rev ? { plane[5], plane[1] } : { plane[1], plane[5] };
+        deswizzle[47:32] = rev ? { plane[6], plane[2] } : { plane[2], plane[6] };
+        deswizzle[63:48] = rev ? { plane[7], plane[3] } : { plane[3], plane[7] };
+    end
+endfunction
+
+reg [3:0] count = 0;
+assign idle = count == 4'd0;
+
 always_ff @(posedge clk) begin
     reg [63:0] bits_r;
+    bit [63:0] bits;
     reg [6:0] color_r;
     reg prio_r;
-    reg [3:0] count = 0;
 
     draw_we <= 0;
 
@@ -126,6 +153,8 @@ always_ff @(posedge clk) begin
     end
     
     if (we) begin
+        bits = deswizzle(bitplanes, flip);
+        
         color0 <= { prio, color, bits[63], bits[47], bits[31], bits[15] };
         color1 <= { prio, color, bits[62], bits[46], bits[30], bits[14] };
         draw_we <= 1;

@@ -44,15 +44,16 @@ module GA22 (
     output reg [24:0] sdr_addr,
     output reg sdr_req,
     input sdr_rdy,
+    output reg sdr_refresh,
 
     input dbg_solid_sprites
 );
 
 reg [6:0] linebuf_color;
 reg linebuf_prio;
-reg [63:0] linebuf_bits;
 reg [9:0] linebuf_x;
 reg linebuf_write;
+reg linebuf_flip;
 reg scan_toggle = 0;
 reg [9:0] scan_pos = 0;
 wire [9:0] scan_pos_nl = scan_pos ^ {10{NL}};
@@ -66,33 +67,15 @@ double_linebuf line_buffer(
     .scan_toggle(scan_toggle),
     .scan_out(scan_out),
 
-    .bits(linebuf_bits),
+    .bitplanes(dbg_solid_sprites ? 64'hffff_ffff_ffff_ffff : sdr_data),
+    .flip(linebuf_flip),
     .color(linebuf_color),
     .prio(linebuf_prio),
     .pos(linebuf_x),
-    .we(linebuf_write)
+    .we(linebuf_write),
+    
+    .idle()
 );
-
-// d is 16 pixels stored as 2 sets of 4 bitplanes
-// d[31:0] is 8 pixels, made up from planes d[7:0], d[15:8], etc
-// d[63:32] is 8 pixels made up from planes d[39:32], d[47:40], etc
-// Returns 16 pixels stored as 4 bit planes d[15:0], d[31:16], etc
-function [63:0] deswizzle(input [63:0] d, input rev);
-    begin
-        integer i;
-        bit [7:0] plane[8];
-        bit [7:0] t;
-        for( i = 0; i < 8; i = i + 1 ) begin
-            t = d[(i*8) +: 8];
-            plane[i] = rev ? { t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7] } : t;
-        end
-
-        deswizzle[15:0]  = rev ? { plane[4], plane[0] } : { plane[0], plane[4] };
-        deswizzle[31:16] = rev ? { plane[5], plane[1] } : { plane[1], plane[5] };
-        deswizzle[47:32] = rev ? { plane[6], plane[2] } : { plane[2], plane[6] };
-        deswizzle[63:48] = rev ? { plane[7], plane[3] } : { plane[3], plane[7] };
-    end
-endfunction
 
 reg [63:0] obj_data;
 
@@ -136,6 +119,8 @@ always_ff @(posedge clk) begin
     end else if (ce) begin
         count <= count + 10'd1;
 
+        sdr_refresh <= 0;
+
         if (ce_pix) begin
             color <= scan_out[11:0];
             scan_pos <= scan_pos + 10'd1;
@@ -147,6 +132,7 @@ always_ff @(posedge clk) begin
                 span <= 0;
                 end_span <= 0;
                 visible <= 0;
+                sdr_refresh <= 1;
             end
         end
 
@@ -155,7 +141,7 @@ always_ff @(posedge clk) begin
         end
         case(count[1:0])
         0: begin
-            linebuf_bits <= dbg_solid_sprites ? 64'hffff_ffff_ffff_ffff : deswizzle(sdr_data, obj_flipx);
+            linebuf_flip <= obj_flipx;
             linebuf_color <= obj_color;
             linebuf_prio <= obj_pri;
             linebuf_x <= obj_org_x + ( 10'd16 * span );
@@ -181,11 +167,14 @@ always_ff @(posedge clk) begin
                 visible <= 1;
             end else begin
                 visible <= 0;
+                sdr_refresh <= 1;
             end
         end
-        1: begin
+        2: begin
+            sdr_refresh <= 1;
         end
         3: begin
+            sdr_refresh <= 0;
         end
         endcase
     end
