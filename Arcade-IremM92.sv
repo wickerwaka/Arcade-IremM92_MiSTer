@@ -258,6 +258,9 @@ wire  [1:0] buttons;
 wire [128:0] status;
 wire [10:0] ps2_key;
 
+wire ioctl_rom_wait;
+wire ioctl_dbg_wait;
+
 wire        ioctl_download;
 wire        ioctl_upload;
 wire        ioctl_upload_req = 0;
@@ -266,7 +269,7 @@ wire        ioctl_wr;
 wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
 wire  [7:0] ioctl_din = 0;
-wire        ioctl_wait;
+wire        ioctl_wait = ioctl_rom_wait | ioctl_dbg_wait;
 
 wire [15:0] joystick_0, joystick_1;
 wire [15:0] joy = joystick_0 | joystick_1;
@@ -404,7 +407,7 @@ rom_loader rom_loader(
     .ioctl_wr(ioctl_wr && !ioctl_index),
     .ioctl_data(ioctl_dout[7:0]),
 
-    .ioctl_wait(ioctl_wait),
+    .ioctl_wait(ioctl_rom_wait),
 
     .sdr_addr(sdr_rom_addr),
     .sdr_data(sdr_rom_data),
@@ -560,7 +563,11 @@ m92 m92(
     .dbg_en_layers(dbg_en_layers),
     .dbg_solid_sprites(dbg_solid_sprites),
     .en_sprites(en_sprites),
-    .sprite_freeze(dbg_sprite_freeze)
+    .sprite_freeze(dbg_sprite_freeze),
+
+    .dbg_io_write(ioctl_wr && (ioctl_index == 'd92)),
+    .dbg_io_data(ioctl_dout[7:0]),
+    .dbg_io_wait(ioctl_dbg_wait)
 );
 
 // H/V offset

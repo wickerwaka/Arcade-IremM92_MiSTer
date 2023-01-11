@@ -218,21 +218,21 @@ always @(posedge clk) begin
                 refresh_count <= refresh_count - cycles_per_refresh + 1'd1;
                 chip          <= 0;
             end 
-            else if(ch1_rq) begin
-                {cas_addr[12:9],SDRAM_BA,SDRAM_A,cas_addr[8:0]} <= {2'b00, 1'b1, ch1_addr[25:1]};
-                chip       <= ch1_addr[26];
-                saved_wr   <= 0;
-                ch         <= 0;
-                ch1_rq     <= 0;
-                command    <= CMD_ACTIVE;
-                state      <= STATE_WAIT;
-            end
             else if(ch2_rq) begin
                 {cas_addr[12:9],SDRAM_BA,SDRAM_A,cas_addr[8:0]} <= {2'b00, 1'b1, ch2_addr[25:1]};
                 chip       <= ch2_addr[26];
                 saved_wr   <= 0;
                 ch         <= 1;
                 ch2_rq     <= 0;
+                command    <= CMD_ACTIVE;
+                state      <= STATE_WAIT;
+            end
+            else if(ch1_rq) begin
+                {cas_addr[12:9],SDRAM_BA,SDRAM_A,cas_addr[8:0]} <= {2'b00, 1'b1, ch1_addr[25:1]};
+                chip       <= ch1_addr[26];
+                saved_wr   <= 0;
+                ch         <= 0;
+                ch1_rq     <= 0;
                 command    <= CMD_ACTIVE;
                 state      <= STATE_WAIT;
             end

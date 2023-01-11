@@ -151,7 +151,7 @@ always_ff @(posedge clk) begin
         end
 
         if (vpulse) begin
-            V <= 9'd114;
+            V <= 9'd126;
         end
         case(count[1:0])
         0: begin

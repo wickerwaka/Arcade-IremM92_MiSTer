@@ -82,7 +82,11 @@ module m92 (
     input en_sprites,
     input en_audio_filters,
 
-    input sprite_freeze
+    input sprite_freeze,
+
+    input dbg_io_write,
+    input [7:0] dbg_io_data,
+    output reg dbg_io_wait
 );
 
 wire [15:0] rgb_color;
@@ -245,9 +249,10 @@ end
 
 wire rom0_ce, rom1_ce, ram_cs2;
 
+reg [7:0] dbg_io_latch;
 
 wire [15:0] switches_p1_p2 = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
-wire [15:0] switches_p3_p4 = 16'hffff;
+wire [15:0] switches_p3_p4 = { dbg_io_latch, dbg_io_latch };
 wire [15:0] flags = { 8'hff, ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
 
 reg [7:0] sys_flags = 0;
@@ -259,22 +264,9 @@ wire BRQ = ~sys_flags[4];
 wire BANK = sys_flags[5];
 wire NL = SOFT_NL ^ dip_sw[8];
 
-reg [1:0] iset;
-reg [15:0] iset_data;
-
 // TODO BANK, CBLK, NL
 always @(posedge CLK_32M) begin
-    iset <= 2'b00;
     if (IOWR && cpu_io_addr == 8'h02) sys_flags <= cpu_io_out[7:0];
-    if (IOWR && cpu_io_addr == 8'h9e) begin
-        iset <= 2'b01;
-        iset_data <= { 8'h00, cpu_io_out };
-    end
-    if (IOWR && cpu_io_addr == 8'h9f) begin
-        iset <= 2'b10;
-        iset_data <= { cpu_io_out, 8'h00 };
-    end
-
 end
 
 reg [15:0] vid_ctrl;
@@ -283,6 +275,22 @@ always @(posedge CLK_32M or negedge reset_n) begin
         vid_ctrl <= 0;
     end else if (video_control_memrq & MWR) begin
         vid_ctrl <= cpu_word_out;
+    end
+end
+
+always @(posedge CLK_32M or negedge reset_n) begin
+    if (~reset_n) begin
+        dbg_io_wait <= 0;
+        dbg_io_latch <= 8'hff;
+    end else begin
+        if (IORD && cpu_io_addr == 8'h06) begin
+            dbg_io_wait <= 0;
+        end
+
+        if (dbg_io_write) begin
+            dbg_io_wait <= 1;
+            dbg_io_latch <= dbg_io_data;
+        end
     end
 end
 
@@ -318,10 +326,10 @@ wire [8:0] int_vector;
 
 cpu v30(
     .clk(CLK_32M),
-    .ce(ce_cpu), // TODO
-    .ce_4x(ce_4x_cpu), // TODO
+    .ce(ce_cpu),
+    .ce_4x(ce_4x_cpu),
     .reset(~reset_n),
-    .turbo(0),
+    .turbo(1),
     .SLOWTIMING(0),
 
     .cpu_idle(),
