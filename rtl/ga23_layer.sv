@@ -77,7 +77,7 @@ ga23_shifter shifter(
 
     .offset(offset),
 
-    .load(cnt == 4'd3),
+    .load(load),
     .reverse(flip_x),
     .row(sdr_data),
     .palette(palette),

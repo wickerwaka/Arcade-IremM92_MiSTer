@@ -48,24 +48,24 @@ module GA23(
 reg [9:0] hcnt, vcnt;
 reg [9:0] hint_line;
 
-assign hsync = hcnt < 10'd60 || hcnt > 10'd443;
-assign hblank = hcnt < 10'd93 || hcnt > 10'd412;
-assign vblank = vcnt > 10'd114 && vcnt < 10'd136;
+assign hsync = hcnt < 10'd71 || hcnt > 10'd454;
+assign hblank = hcnt < 10'd104 || hcnt > 10'd423;
+assign vblank = vcnt > 10'd113 && vcnt < 10'd136;
 assign vsync = vcnt > 10'd119 && vcnt < 10'd125;
-assign hpulse = hcnt == 10'd40;
-assign vpulse = (vcnt == 10'd124 && hcnt > 10'd252) || (vcnt == 10'd125 && hcnt < 10'd252);
+assign hpulse = hcnt == 10'd48;
+assign vpulse = (vcnt == 10'd124 && hcnt > 10'd260) || (vcnt == 10'd125 && hcnt < 10'd260);
 assign hint = vcnt == hint_line;
 
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
-        hcnt <= 10'd40;
+        hcnt <= 10'd48;
         vcnt <= 10'd114;
     end else if (ce) begin
         hcnt <= hcnt + 10'd1;
-        if (hcnt == 10'd463) begin
-            hcnt <= 10'd40;
+        if (hcnt == 10'd471) begin
+            hcnt <= 10'd48;
             vcnt <= vcnt + 10'd1;
-            if (vcnt == 10'd374) begin
+            if (vcnt == 10'd375) begin
                 vcnt <= 10'd114;
             end
         end
@@ -150,13 +150,12 @@ always_ff @(posedge clk or posedge reset) begin
 
         if (ce) begin
             layer_load[0] <= 0; layer_load[1] <= 0; layer_load[2] <= 0;
+            mem_cyc <= mem_cyc + 3'd1;
 
             if (hpulse) begin
-                mem_cyc <= 3'd6;
+                mem_cyc <= 3'd7;
                 rowscroll_pending <= 1;
             end
-
-            mem_cyc <= mem_cyc + 3'd1;
 
             if (rowscroll_active) begin
                 rs_cyc <= rs_cyc + 4'd1;

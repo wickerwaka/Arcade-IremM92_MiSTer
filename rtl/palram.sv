@@ -42,7 +42,7 @@ wire [1:0] sel = { selb, ~n_sela };
 
 wire [12:0] full_cpu_addr = { vid_ctrl[10:8], cpu_addr[9:0] };
 wire [12:0] obj_addr = { vid_ctrl[15], obj_pal_bank, obj_color };
-wire [12:0] pf_addr = {vid_ctrl[15], vid_ctrl[14], pf_color };
+wire [12:0] pf_addr = { vid_ctrl[15], vid_ctrl[14], pf_color };
 
 reg we = 0;
 reg [12:0] selected_addr;
