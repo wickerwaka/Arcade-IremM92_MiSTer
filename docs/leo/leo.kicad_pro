@@ -360,6 +360,10 @@
     [
       "b5ecf4f5-37e7-4ad7-9baa-3bb64132264e",
       "Sample Filters"
+    ],
+    [
+      "c673e5be-e29a-456a-8c34-38ff648b606d",
+      "Audio CPU"
     ]
   ],
   "text_variables": {}
