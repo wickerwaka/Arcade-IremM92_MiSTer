@@ -5,7 +5,7 @@
 
 chip M92-C-2L- GAL16V8
 
-i1=1 i2=2 i3=3 i4=4 i5=5 i6=6 GND=10 !nc11=11 o12=12 o13=13 o14=14 
+A19=1 A18=2 A17=3 A16=4 A15=5 n_MREQ=6 GND=10 !nc11=11 o12=12 o13=13 o14=14 
 o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20 
 
 @ues 0000000000000000
@@ -13,20 +13,8 @@ o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20
 
 equations
 
-!o19 = gnd
-o19.oe = gnd
-!o18 = !i2 & i1 & i3 & !i4 & i5 & !i6
-o18.oe = vcc
-!o17 = gnd
-o17.oe = gnd
-!o16 = !i2 & i1 & i3 & !i4 & i5 & !i6
-o16.oe = vcc
-!o15 = !i2 & i1 & i3 & !i4 & !i5 & !i6
-o15.oe = vcc
-!o14 = gnd
-o14.oe = gnd
-!o13 = i2 & i1 & i3 & i4 & !i6
-    # !i2 & !i1 & !i6
-o13.oe = vcc
-!o12 = gnd
-o12.oe = gnd
+!o18 = !A18 & A19 & A17 & !A16 & A15 & !n_MREQ  // 0b10101   0xa8000 - 0xaffff
+!o16 = !A18 & A19 & A17 & !A16 & A15 & !n_MREQ  // 0b10101   0xa8000 - 0xaffff
+!o15 = !A18 & A19 & A17 & !A16 & !A15 & !n_MREQ // 0b10100   0xa0000 - 0xa7fff
+!o13 = A18 & A19 & A17 & A16 & !n_MREQ          // 0b1111x   0xf0000 - 0xfffff
+    # !A18 & !A19 & !n_MREQ                     // 0b00xxx   0x00000 - 0x3ffff
