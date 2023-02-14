@@ -364,6 +364,10 @@
     [
       "c673e5be-e29a-456a-8c34-38ff648b606d",
       "Audio CPU"
+    ],
+    [
+      "e7fa0426-e133-475c-bdf2-c63fe5b0066a",
+      "Audio"
     ]
   ],
   "text_variables": {}
