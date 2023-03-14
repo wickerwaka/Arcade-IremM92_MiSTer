@@ -19,7 +19,7 @@
 //============================================================================
 
 module board_b_d_layer(
-    input CLK_32M,
+    input clk_sys,
     input CE_PIX,
 
     input NL,
@@ -53,7 +53,7 @@ reg [31:0] rom_data;
 wire [3:0] BITF, BITR;
 
 kna6034201 kna6034201(
-    .clock(CLK_32M),
+    .clock(clk_sys),
     .CE_PIXEL(CE_PIX),
     .LOAD(SH[2:0] == 3'b111),
     .byte_1(rom_data[7:0]),
@@ -83,7 +83,7 @@ wire [16:0] COD = {tile_data[31], tile_data[15:0]};
 assign prio = enabled ? ( CP15 ? |color : CP8 ? color[3] : 1'b0 ) : 1'b0;
 assign color = enabled ? ( (HREV2 ^ NL) ? BITR : BITF ) : 4'b0000;
 
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     reg do_rom;
 
     sdr_req <= 0;

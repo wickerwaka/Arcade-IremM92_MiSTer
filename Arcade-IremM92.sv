@@ -181,7 +181,7 @@ assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
-assign CLK_VIDEO = CLK_32M;
+assign CLK_VIDEO = clk_sys;
 
 assign VGA_F1 = 0;
 assign VGA_SCALER = 0;
@@ -286,8 +286,6 @@ wire        crop_240p = allow_crop_240p & status[11];
 wire [4:0]  crop_offset = status[16:12] < 9 ? {status[16:12]} : ( status[16:12] + 5'd15 );
 
 
-wire clk_sys = CLK_32M;
-
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
     .clk_sys(clk_sys),
@@ -321,15 +319,15 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
-wire CLK_32M;
-wire CLK_96M;
+wire clk_sys;
+wire clk_ram;
 wire pll_locked;
 pll pll
 (
     .refclk(CLK_50M),
     .rst(0),
-    .outclk_0(CLK_96M),
-    .outclk_1(CLK_32M),
+    .outclk_0(clk_ram),
+    .outclk_1(clk_sys),
     .locked(pll_locked)
 );
 
@@ -378,7 +376,7 @@ sdram sdram
     .*,
     .doRefresh(sdr_sprite_refresh),
     .init(~pll_locked),
-    .clk(CLK_96M),
+    .clk(clk_ram),
 
     .ch1_addr(sdr_bg_addr[24:1]),
     .ch1_dout(sdr_bg_dout),
@@ -402,7 +400,7 @@ sdram sdram
 
 rom_loader rom_loader(
     .sys_clk(clk_sys),
-    .ram_clk(CLK_96M),
+    .ram_clk(clk_ram),
 
     .ioctl_wr(ioctl_wr && !ioctl_index),
     .ioctl_data(ioctl_dout[7:0]),
@@ -441,7 +439,7 @@ reg btn_pause    = 0;
 
 wire pressed = ps2_key[9];
 wire [7:0] code = ps2_key[7:0];
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     reg old_state;
     old_state <= ps2_key[10];
     if(old_state != ps2_key[10]) begin
@@ -466,7 +464,7 @@ end
 
 // DIP SWITCHES
 reg [7:0] dip_sw[8];	// Active-LOW
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     if(ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3])
         dip_sw[ioctl_addr[2:0]] <= ioctl_dout;
 end
@@ -508,8 +506,8 @@ wire HBlank, VBlank, HSync, VSync, hs_core, vs_core;
 wire ce_pix;
 
 m92 m92(
-    .CLK_32M(CLK_32M),
-    .CLK_96M(CLK_96M),
+    .clk_sys(clk_sys),
+    .clk_ram(clk_ram),
     .ce_pix(ce_pix),
     .reset_n(~reset),
     .HBlank(HBlank),

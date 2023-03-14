@@ -21,8 +21,8 @@
 import m92_pkg::*;
 
 module m92 (
-    input CLK_32M,
-    input CLK_96M,
+    input clk_sys,
+    input clk_ram,
 
     input reset_n,
     output reg ce_pix,
@@ -101,7 +101,7 @@ reg [9:0] paused_h;
 
 // TODO FIX pause
 /*
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     if (pause_rq & ~paused) begin
         if (~cpu_mem_read & ~cpu_mem_write & ~mem_rq_active) begin
             paused <= 1;
@@ -118,21 +118,21 @@ end
 wire ce_13m;
 jtframe_frac_cen #(2) pixel_cen
 (
-    .clk(CLK_32M),
+    .clk(clk_sys),
     .n(10'd1),
-    .m(10'd2),
+    .m(10'd3),
     .cen({ce_pix, ce_13m})
 );
 
 wire ce_9m, ce_18m;
 jtframe_frac_cen #(2) cpu_cen
 (
-    .clk(CLK_32M),
-    .n(10'd27),
-    .m(10'd40),
+    .clk(clk_sys),
+    .n(10'd9),
+    .m(10'd20),
     .cen({ce_9m, ce_18m})
 );
-wire clock = CLK_32M;
+wire clock = clk_sys;
 
 
 wire dma_busy;
@@ -180,7 +180,7 @@ reg ce_cpu, ce_4x_cpu;
 wire ga23_busy;
 reg mem_rq_active = 0;
 
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     if (!reset_n) begin
         ce_cpu <= 0;
         ce_4x_cpu <= 0;
@@ -206,7 +206,7 @@ function [15:0] word_shuffle(input [19:0] addr, input [15:0] data);
 endfunction
 
 
-always @(posedge CLK_32M or negedge reset_n)
+always @(posedge clk_sys or negedge reset_n)
 begin
     if (!reset_n) begin
     end else begin
@@ -217,7 +217,7 @@ end
 
 reg sdr_cpu_rq, sdr_cpu_ack, sdr_cpu_rq2;
 
-always_ff @(posedge CLK_96M) begin
+always_ff @(posedge clk_ram) begin
     sdr_cpu_req <= 0;
     if (sdr_cpu_rdy) sdr_cpu_ack <= sdr_cpu_rq;
     if (sdr_cpu_rq != sdr_cpu_rq2) begin
@@ -227,7 +227,7 @@ always_ff @(posedge CLK_96M) begin
 end
 
 
-always_ff @(posedge CLK_32M or negedge reset_n) begin
+always_ff @(posedge clk_sys or negedge reset_n) begin
     if (!reset_n) begin
         mem_rq_active <= 0;
     end else begin
@@ -269,13 +269,13 @@ wire BANK = sys_flags[5];
 wire NL = SOFT_NL ^ dip_sw[8];
 
 // TODO BANK, CBLK, NL
-always @(posedge CLK_32M) begin
+always @(posedge clk_sys) begin
     if (IOWR && cpu_io_addr == 8'h02) sys_flags <= cpu_io_out[7:0];
     if (IOWR && cpu_io_addr == 8'h20) bank_select <= cpu_io_out[3:0];
 end
 
 reg [15:0] vid_ctrl;
-always @(posedge CLK_32M or negedge reset_n) begin
+always @(posedge clk_sys or negedge reset_n) begin
     if (~reset_n) begin
         vid_ctrl <= 0;
     end else if (video_control_memrq & MWR) begin
@@ -283,7 +283,7 @@ always @(posedge CLK_32M or negedge reset_n) begin
     end
 end
 
-always @(posedge CLK_32M or negedge reset_n) begin
+always @(posedge clk_sys or negedge reset_n) begin
     if (~reset_n) begin
         dbg_io_wait <= 0;
         dbg_io_latch <= 8'hff;
@@ -330,7 +330,7 @@ wire [8:0] int_vector;
 
 
 cpu v30(
-    .clk(CLK_32M),
+    .clk(clk_sys),
     .ce(ce_cpu),
     .ce_4x(ce_4x_cpu),
     .reset(~reset_n),
@@ -341,10 +341,6 @@ cpu v30(
     .cpu_halt(),
     .cpu_irqrequest(),
     .cpu_prefix(),
-
-    .dma_active(0),
-    .sdma_request(0),
-    .canSpeedup(),
 
     .bus_read(cpu_mem_read_w),
     .bus_write(cpu_mem_write_w),
@@ -389,7 +385,7 @@ address_translator address_translator(
 wire vblank, hblank, vsync, hsync, vpulse, hpulse, hint;
 
 m92_pic m92_pic(
-    .clk(CLK_32M),
+    .clk(clk_sys),
     .ce(ce_cpu),
     .reset(~reset_n),
 
@@ -422,7 +418,7 @@ wire [11:0] ga22_color, ga23_color;
 wire ga23_prio;
 
 objram objram(
-    .clk(CLK_32M),
+    .clk(clk_sys),
 
     .addr(objram_addr),
     .we(objram_we),
@@ -447,7 +443,7 @@ wire [10:0] ga22_count;
 
 
 singleport_unreg_ram #(.widthad(13), .width(16)) bufram(
-    .clock(CLK_32M),
+    .clock(clk_sys),
     .address(bufram_full_addr),
     .q(bufram_q),
     .wren(bufram_we),
@@ -455,7 +451,7 @@ singleport_unreg_ram #(.widthad(13), .width(16)) bufram(
 );
 
 palram palram(
-    .clk(CLK_32M),
+    .clk(clk_sys),
 
     .ce_pix(ce_pix),
 
@@ -482,7 +478,7 @@ palram palram(
 );
 
 GA21 ga21(
-    .clk(CLK_32M),
+    .clk(clk_sys),
     .ce(ce_9m),
 
     .reset(),
@@ -518,8 +514,8 @@ GA21 ga21(
 );
 
 GA22 ga22(
-    .clk(CLK_32M),
-    .clk_ram(CLK_96M),
+    .clk(clk_sys),
+    .clk_ram(clk_ram),
 
     .ce(ce_13m), // 13.33Mhz
 
@@ -552,7 +548,7 @@ wire vram_we;
 
 singleport_unreg_ram #(.widthad(15), .width(16)) vram
 (
-    .clock(CLK_32M),
+    .clock(clk_sys),
     .address(vram_addr),
     .q(vram_q),
     .wren(vram_we),
@@ -560,8 +556,8 @@ singleport_unreg_ram #(.widthad(15), .width(16)) vram
 );
 
 GA23 ga23(
-    .clk(CLK_32M),
-    .clk_ram(CLK_96M),
+    .clk(clk_sys),
+    .clk_ram(clk_ram),
 
     .ce(ce_pix),
 
