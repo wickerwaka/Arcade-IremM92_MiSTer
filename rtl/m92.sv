@@ -329,7 +329,7 @@ wire [8:0] int_vector;
 
 
 
-cpu v30(
+v30 v30(
     .clk(clk_sys),
     .ce(ce_cpu),
     .ce_4x(ce_4x_cpu),
@@ -353,8 +353,6 @@ cpu v30(
     .irqvector_in(int_vector),
     .irqrequest_ack(int_ack),
 
-    .load_savestate(0),
-
     // TODO
     .cpu_done(),
 
@@ -362,9 +360,7 @@ cpu v30(
     .RegBus_Adr(cpu_io_addr),
     .RegBus_wren(cpu_io_write),
     .RegBus_rden(cpu_io_read),
-    .RegBus_Dout(cpu_io_in),
-
-    .sleep_savestate(paused)
+    .RegBus_Dout(cpu_io_in)
 );
 
 address_translator address_translator(

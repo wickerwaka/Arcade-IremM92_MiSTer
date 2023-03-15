@@ -20,10 +20,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23_layer.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/objram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/palram.sv
 
-
-set_global_assignment -name VHDL_FILE rtl/v30/export.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/bus_savestates.vhd
-set_global_assignment -name VHDL_FILE rtl/v30/reg_savestates.vhd
 set_global_assignment -name VHDL_FILE rtl/v30/cpu.vhd
 set_global_assignment -name VHDL_FILE rtl/v30/divider.vhd
 

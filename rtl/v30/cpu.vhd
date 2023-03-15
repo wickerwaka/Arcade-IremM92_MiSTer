@@ -2,37 +2,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-package whatever is
-   type cpu_export_type is record
-      reg_ax           : unsigned(15 downto 0);
-      reg_cx           : unsigned(15 downto 0);
-      reg_dx           : unsigned(15 downto 0);
-      reg_bx           : unsigned(15 downto 0);
-      reg_sp           : unsigned(15 downto 0);
-      reg_bp           : unsigned(15 downto 0);
-      reg_si           : unsigned(15 downto 0);
-      reg_di           : unsigned(15 downto 0);
-      reg_es           : unsigned(15 downto 0);
-      reg_cs           : unsigned(15 downto 0);
-      reg_ss           : unsigned(15 downto 0);
-      reg_ds           : unsigned(15 downto 0);
-      reg_ip           : unsigned(15 downto 0);
-      reg_f            : unsigned(15 downto 0);
-      opcodebyte_last  : std_logic_vector(7 downto 0);
-   end record;
-end package;
-
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
--- use work.pexport.all;
-use work.pBus_savestates.all;
-use work.pReg_savestates.all;
-
-use work.whatever.all;
-
-entity cpu is
+entity v30 is
    port
    (
       clk               : in  std_logic;
@@ -57,34 +27,19 @@ entity cpu is
       irqrequest_in     : in std_logic;
       irqvector_in      : in unsigned(9 downto 0) := (others => '0');
       irqrequest_ack    : out std_logic := '0';
-         
-      load_savestate    : in  std_logic;
             
       cpu_done          : out std_logic := '0'; 
-      cpu_export_opcode : out std_logic_vector(7 downto 0);
-		cpu_export_reg_cs : out unsigned(15 downto 0);
-		cpu_export_reg_ip : out unsigned(15 downto 0);
-		
-         
+
       -- register 
       RegBus_Din        : out std_logic_vector(7 downto 0) := (others => '0');
       RegBus_Adr        : out std_logic_vector(7 downto 0) := (others => '0');
       RegBus_wren       : out std_logic := '0';
       RegBus_rden       : out std_logic := '0';
-      RegBus_Dout       : in  std_logic_vector(7 downto 0);
-         
-      -- savestates        
-      sleep_savestate   : in  std_logic;
-         
-      SSBUS_Din         : in  std_logic_vector(SSBUS_buswidth-1 downto 0);
-      SSBUS_Adr         : in  std_logic_vector(SSBUS_busadr-1 downto 0);
-      SSBUS_wren        : in  std_logic;
-      SSBUS_rst         : in  std_logic;
-      SSBUS_Dout        : out std_logic_vector(SSBUS_buswidth-1 downto 0)
-   );
+      RegBus_Dout       : in  std_logic_vector(7 downto 0)
+);
 end entity;
 
-architecture arch of cpu is
+architecture arch of v30 is
    
    -- push/pop
    constant REGPOS_ax  : std_logic_vector(15 downto 0) := x"0001";
@@ -417,19 +372,6 @@ architecture arch of cpu is
    signal DIVquotient      : signed(32 downto 0);
    signal DIVremainder     : signed(32 downto 0);
    
-   -- savestates
-   signal SS_CPU1          : std_logic_vector(REG_SAVESTATE_CPU1.upper downto REG_SAVESTATE_CPU1.lower);
-   signal SS_CPU2          : std_logic_vector(REG_SAVESTATE_CPU2.upper downto REG_SAVESTATE_CPU2.lower);
-   signal SS_CPU3          : std_logic_vector(REG_SAVESTATE_CPU3.upper downto REG_SAVESTATE_CPU3.lower);
-   signal SS_CPU4          : std_logic_vector(REG_SAVESTATE_CPU4.upper downto REG_SAVESTATE_CPU4.lower);
-   signal SS_CPU_BACK1     : std_logic_vector(REG_SAVESTATE_CPU1.upper downto REG_SAVESTATE_CPU1.lower);
-   signal SS_CPU_BACK2     : std_logic_vector(REG_SAVESTATE_CPU2.upper downto REG_SAVESTATE_CPU2.lower);
-   signal SS_CPU_BACK3     : std_logic_vector(REG_SAVESTATE_CPU3.upper downto REG_SAVESTATE_CPU3.lower);
-   signal SS_CPU_BACK4     : std_logic_vector(REG_SAVESTATE_CPU4.upper downto REG_SAVESTATE_CPU4.lower);
-
-   type t_ss_wired_or is array(0 to 3) of std_logic_vector(63 downto 0);
-   signal ss_wired_or : t_ss_wired_or;
-
    -- debug
    signal executeDone      : std_logic := '0';
   
@@ -460,37 +402,6 @@ begin
    Reg_f(13) <= '1'    ;
    Reg_f(14) <= '1'    ;
    Reg_f(15) <= regs.FlagMod;
-
-   -- savestate
-   iSS_CPU1 : entity work.eReg_SS generic map ( REG_SAVESTATE_CPU1 ) port map (clk, SSBUS_Din, SSBUS_Adr, SSBUS_wren, SSBUS_rst, ss_wired_or(0), SS_CPU_BACK1, SS_CPU1);  
-   iSS_CPU2 : entity work.eReg_SS generic map ( REG_SAVESTATE_CPU2 ) port map (clk, SSBUS_Din, SSBUS_Adr, SSBUS_wren, SSBUS_rst, ss_wired_or(1), SS_CPU_BACK2, SS_CPU2);  
-   iSS_CPU3 : entity work.eReg_SS generic map ( REG_SAVESTATE_CPU3 ) port map (clk, SSBUS_Din, SSBUS_Adr, SSBUS_wren, SSBUS_rst, ss_wired_or(2), SS_CPU_BACK3, SS_CPU3);  
-   iSS_CPU4 : entity work.eReg_SS generic map ( REG_SAVESTATE_CPU4 ) port map (clk, SSBUS_Din, SSBUS_Adr, SSBUS_wren, SSBUS_rst, ss_wired_or(3), SS_CPU_BACK4, SS_CPU4);  
-
-   process (ss_wired_or)
-      variable wired_or : std_logic_vector(63 downto 0);
-   begin
-      wired_or := ss_wired_or(0);
-      for i in 1 to (ss_wired_or'length - 1) loop
-         wired_or := wired_or or ss_wired_or(i);
-      end loop;
-      SSBUS_Dout <= wired_or;
-   end process;
-
-   SS_CPU_BACK1(15 downto  0) <= std_logic_vector(regs.reg_ip);
-   SS_CPU_BACK1(31 downto 16) <= std_logic_vector(regs.reg_ax);
-   SS_CPU_BACK1(47 downto 32) <= std_logic_vector(regs.reg_cx);
-   SS_CPU_BACK1(63 downto 48) <= std_logic_vector(regs.reg_dx);
-   SS_CPU_BACK2(15 downto  0) <= std_logic_vector(regs.reg_bx);
-   SS_CPU_BACK2(31 downto 16) <= std_logic_vector(regs.reg_sp);
-   SS_CPU_BACK2(47 downto 32) <= std_logic_vector(regs.reg_bp);
-   SS_CPU_BACK2(63 downto 48) <= std_logic_vector(regs.reg_si);
-   SS_CPU_BACK3(15 downto  0) <= std_logic_vector(regs.reg_di);
-   SS_CPU_BACK3(31 downto 16) <= std_logic_vector(regs.reg_es);
-   SS_CPU_BACK3(47 downto 32) <= std_logic_vector(regs.reg_cs);
-   SS_CPU_BACK3(63 downto 48) <= std_logic_vector(regs.reg_ss);
-   SS_CPU_BACK4(15 downto  0) <= std_logic_vector(regs.reg_ds);
-   SS_CPU_BACK4(31 downto 16) <= std_logic_vector(Reg_f);      
    
    process (clk)
       variable varPrefetchCount  : integer range 0 to 15;
@@ -569,36 +480,32 @@ begin
          --   DIVstart      <= '1';
          --end if;
          
-         if (sleep_savestate = '1') then
-            prefetchDisturb <= '1';
-         end if;
-      
          if (reset = '1') then
             
-            regs.reg_ip  <= unsigned(SS_CPU1(15 downto  0)); -- x"0000";
-            regs.reg_ax  <= unsigned(SS_CPU1(31 downto 16)); -- x"0000";
-            regs.reg_cx  <= unsigned(SS_CPU1(47 downto 32)); -- x"0000";
-            regs.reg_dx  <= unsigned(SS_CPU1(63 downto 48)); -- x"0000";
-            regs.reg_bx  <= unsigned(SS_CPU2(15 downto  0)); -- x"0000";
-            regs.reg_sp  <= unsigned(SS_CPU2(31 downto 16)); -- x"2000";
-            regs.reg_bp  <= unsigned(SS_CPU2(47 downto 32)); -- x"0000";
-            regs.reg_si  <= unsigned(SS_CPU2(63 downto 48)); -- x"0000";
-            regs.reg_di  <= unsigned(SS_CPU3(15 downto  0)); -- x"0000";
-            regs.reg_es  <= unsigned(SS_CPU3(31 downto 16)); -- x"0000";
-            regs.reg_cs  <= unsigned(SS_CPU3(47 downto 32)); -- x"FFFF";
-            regs.reg_ss  <= unsigned(SS_CPU3(63 downto 48)); -- x"0000";
-            regs.reg_ds  <= unsigned(SS_CPU4(15 downto  0)); -- x"0000";
+            regs.reg_ip  <= x"0000";
+            regs.reg_ax  <= x"0000";
+            regs.reg_cx  <= x"0000";
+            regs.reg_dx  <= x"0000";
+            regs.reg_bx  <= x"0000";
+            regs.reg_sp  <= x"2000";
+            regs.reg_bp  <= x"0000";
+            regs.reg_si  <= x"0000";
+            regs.reg_di  <= x"0000";
+            regs.reg_es  <= x"0000";
+            regs.reg_cs  <= x"FFFF";
+            regs.reg_ss  <= x"0000";
+            regs.reg_ds  <= x"0000";
   
-            regs.FlagCar <= SS_CPU4(16); --'0';
-            regs.FlagPar <= SS_CPU4(18); --'0';
-            regs.FlagHaC <= SS_CPU4(20); --'0';
-            regs.FlagZer <= SS_CPU4(22); --'0';
-            regs.FlagSgn <= SS_CPU4(23); --'0';
-            regs.FlagBrk <= SS_CPU4(24); --'0';
-            regs.FlagIrq <= SS_CPU4(25); --'0';
-            regs.FlagDir <= SS_CPU4(26); --'0';
-            regs.FlagOvf <= SS_CPU4(27); --'0';
-            regs.FlagMod <= SS_CPU4(31); --'1';
+            regs.FlagCar <= '0';
+            regs.FlagPar <= '0';
+            regs.FlagHaC <= '0';
+            regs.FlagZer <= '0';
+            regs.FlagSgn <= '0';
+            regs.FlagBrk <= '0';
+            regs.FlagIrq <= '0';
+            regs.FlagDir <= '0';
+            regs.FlagOvf <= '0';
+            regs.FlagMod <= '1';
             
             halt            <= '0';
             cpustage        <= CPUSTAGE_IDLE;
@@ -3151,11 +3058,6 @@ begin
       quotient  => DIVquotient, 
       remainder => DIVremainder
    );
-
-   cpu_export_reg_cs <= regs.reg_cs;        
-   cpu_export_reg_ip <= regs.reg_ip;        
-   cpu_export_opcode  <= opcodebyte;        
-
 end architecture;
 
 
