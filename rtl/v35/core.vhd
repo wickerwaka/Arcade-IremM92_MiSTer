@@ -2989,7 +2989,7 @@ begin
                   if (prefetchAllow = '1') then
                      prefetchAddrOld <= prefetchAddr;
                      prefetchState <= PREFETCH_WAIT;
-                     bus_addr <= prefetchAddr;
+                     bus_addr <= prefetchAddr(19 downto 1) & "0";
                      bus_read <= '1';
                      if (prefetchAddr(0) = '1') then
                         prefetchAddr  <= PrefetchAddr + 1;
@@ -3008,11 +3008,11 @@ begin
                when PREFETCH_RECEIVE =>
                   prefetchState <= PREFETCH_IDLE;
                   if (prefetchAllow = '1' and prefetchDisturb = '0') then
-                     varprefetchBuffer((PrefetchCount * 8) + 7 downto (PrefetchCount * 8)) := bus_dataread(7 downto 0);
                      if (prefetch1byte = '0') then
-                        varprefetchBuffer((PrefetchCount * 8) + 15 downto (PrefetchCount * 8) + 8) := bus_dataread(15 downto 8);
+                        varprefetchBuffer((PrefetchCount * 8) + 15 downto (PrefetchCount * 8)) := bus_dataread(15 downto 0);
                         varPrefetchCount := varPrefetchCount + 2;
                      else
+                        varprefetchBuffer((PrefetchCount * 8) + 7 downto (PrefetchCount * 8)) := bus_dataread(15 downto 8);
                         varPrefetchCount := varPrefetchCount + 1;
                      end if;
                   else
