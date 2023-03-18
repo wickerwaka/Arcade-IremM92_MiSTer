@@ -594,4 +594,21 @@ GA23 ga23(
 
     .dbg_en_layers(dbg_en_layers)
 );
+
+
+wire [15:0] sound_sample;
+sound sound(
+    .clk_sys(clk_sys),
+    .reset(~reset_n),
+    
+    .rom_addr(bram_addr),
+    .rom_data(bram_data),
+    .rom_wr(bram_wr & bram_cs[1]),
+
+    .sample(sound_sample)
+);
+
+assign AUDIO_L = sound_sample;
+assign AUDIO_R = sound_sample;
+
 endmodule
