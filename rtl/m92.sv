@@ -175,6 +175,9 @@ wire video_control_memrq;
 wire pf_vram_memrq;
 wire banked_memrq;
 
+wire [7:0] snd_latch_dout;
+wire snd_latch_rdy;
+
 reg [1:0] ce_counter_cpu;
 reg ce_cpu, ce_4x_cpu;
 wire ga23_busy;
@@ -317,7 +320,7 @@ always_comb begin
     8'h02: io16 = flags;
     8'h04: io16 = dip_sw[15:0];
     8'h06: io16 = switches_p3_p4;
-    8'h08: io16 = 16'hffff; // soundlatch2 TODO
+    8'h08: io16 = { snd_latch_dout, snd_latch_dout };
     default: io16 = 16'hffff;
     endcase
 
@@ -396,7 +399,7 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({5'd0, hint, 1'b0, vblank}) // TODO dma_busy?
+    .intp({4'd0, snd_latch_rdy, hint, 1'b0, vblank}) // TODO dma_busy?
 );
 
 
@@ -600,6 +603,12 @@ wire [15:0] sound_sample;
 sound sound(
     .clk_sys(clk_sys),
     .reset(~reset_n),
+
+    .latch_wr(IOWR & cpu_io_addr == 8'h00),
+    .latch_rd(IORD & cpu_io_addr == 8'h08),
+    .latch_din(cpu_io_out),
+    .latch_dout(snd_latch_dout),
+    .latch_rdy(snd_latch_rdy),
     
     .rom_addr(bram_addr),
     .rom_data(bram_data),

@@ -2,6 +2,13 @@ module sound(
     input clk_sys, // 40M
     input reset,
 
+    input latch_wr,
+    input latch_rd,
+
+    input [7:0] latch_din,
+    output [7:0] latch_dout,
+    output latch_rdy,
+
     // ioctl load
     input [19:0] rom_addr,
     input [7:0] rom_data,
@@ -12,8 +19,8 @@ module sound(
 
 // TODO
 // Sample ROM
-// Sound RAM
-// YM2151
+// Sound RAM -- Done
+// YM2151 -- Done
 // GA20
 // Sample Filters
 // Output Filters
@@ -32,7 +39,7 @@ jtframe_frac_cen #(6) pixel_cen
 );
 
 wire ram_cs, rom_cs, io_cs;
-wire ym2151_cs, ga21_cs, latch1_cs, latch2_cs;
+wire ym2151_cs, ga20_cs, snd_latch_cs, main_latch_cs;
 wire [1:0] cpu_be;
 wire [15:0] cpu_dout, cpu_din;
 wire [19:0] cpu_addr;
@@ -41,6 +48,12 @@ wire cpu_rd, cpu_wr;
 
 wire [7:0] ym2151_dout;
 wire ym2151_irq_n;
+
+reg [7:0] main_latch, snd_latch;
+reg main_latch_rdy, snd_latch_rdy;
+
+assign latch_rdy = main_latch_rdy;
+assign latch_dout = main_latch;
 
 singleport_ram #(.widthad(13), .width(8)) ram_0(
     .clock(clk_sys),
@@ -80,16 +93,14 @@ assign rom_cs = ~ram_cs & ~io_cs;
 
 assign ga20_cs   = io_cs & cpu_addr[7:6] == 2'b00; // 0xa8000 - 0xa803f
 assign ym2151_cs = io_cs & cpu_addr[7:2] == 6'b010000; // 0xa8040 - 0xa8043
-assign latch1_cs = io_cs & cpu_addr[7:0] == 8'h44;
-assign latch2_cs = io_cs & cpu_addr[7:0] == 8'h46;
+assign snd_latch_cs = io_cs & cpu_addr[7:0] == 8'h44;
+assign main_latch_cs = io_cs & cpu_addr[7:0] == 8'h46;
 
 assign cpu_din = rom_cs ? rom_dout :
             ram_cs ? ( cpu_addr[0] ? { ram_dout[15:8], ram_dout[15:8] } : ram_dout ) :
             ym2151_cs ? { ym2151_dout, ym2151_dout } :
+            snd_latch_cs ? { snd_latch, snd_latch } :
             16'hffff;
-
-
-
 
 v35 v35(
     .clk(clk_sys),
@@ -120,4 +131,29 @@ jt51 ym2151(
     .xright()
 );
 
+
+always_ff @(posedge clk_sys) begin
+    if (reset) begin
+        main_latch_rdy <= 0;
+        snd_latch_rdy <= 0;
+    end else begin
+        if (latch_rd) begin
+            main_latch_rdy <= 0;
+        end
+
+        if (latch_wr) begin
+            snd_latch <= latch_din;
+            snd_latch_rdy <= 1;
+        end
+
+        if (snd_latch_cs & cpu_wr) begin
+            snd_latch_rdy <= 0;
+        end
+
+        if (main_latch_cs & cpu_wr) begin
+            main_latch <= cpu_dout[7:0];
+            main_latch_rdy <= 1;
+        end
+    end
+end
 endmodule
