@@ -1,0 +1,67 @@
+Type,Address,Special function register name,Symbol,RW,Access units (bits),When reset
+Port,00,Port 0,P0,RW,8/1,Undefined
+Port,01,Port 0 mode register,PM0,W,8,FF
+Port,02,Port 0 mode control register,PMC0,W,8,00
+Port,08,Port 1,P1,RW,8/1,Undefined
+Port,09,Port 1 mode register,PM1,W,8,FF
+Port,0A,Port 1 mode control register,PMC1,W,8,00
+Port,10,Port 2,P2,RW,8/1,Undefined
+Port,11,Port 2 mode register,PM2,W,8,FF
+Port,12,Port 2 mode control register,PMC2,W,8,00
+Port,38,Port T,PT,R,8,Undefined
+Port,3B,Port T mode register,PMT,RW,8/1,00
+Interrupt control,40,External interrupt mode register,INTM,RW,8/1,00
+Interrupt control,44,External interrupt macro service control register 0 Note 4,EMS0,RW,8/1,Undefined
+Interrupt control,45,External interrupt macro service control register 1 Note 4,EMS1,RW,8/1,Undefined
+Interrupt control,46,External interrupt macro service control register 2 Note 4,EMS2,RW,8/1,Undefined
+Interrupt control,4C,External interrupt request control register 0 Note 4,EXIC0,RW,8/1,47
+Interrupt control,4D,External interrupt request control register 1 Note 4,EXIC1,RW,8/1,47
+Interrupt control,4E,External interrupt request control register 2 Note 4,EXIC2,RW,8/1,47
+Interrupt control,FC,Interrupt priority register,ISPR,R,8,00
+Serial interface channel 1,60,Receive buffer register 0,RXB0,R,8,Undefined
+Serial interface channel 2,62,Transmit buffer register 0,TXB0,W,8,Undefined
+Serial interface channel 3,65,Serial reception macro service control register 0 Note 4,SRMS0,RW,8/1,Undefined
+Serial interface channel 4,66,Serial transmission macro service control register 0 Note 4,STMS0,RW,8/1,Undefined
+Serial interface channel 5,68,Serial mode register 0,SCM0,RW,8/1,00
+Serial interface channel 6,69,Serial control register 0,SCC0,RW,8/1,00
+Serial interface channel 7,6A,Baud rate generator register 0,BRG0,RW,8/1,00
+Serial interface channel 8,6B,Serial error register 0 Note 6,SCE0,R,8,00
+Serial interface channel 9,6C,Serial error interrupt request control register 0 Note 4,SEIC0,RW,8/1,47
+Serial interface channel 10,6D,Serial reception interrupt request control register 0 Note 4,SRIC0,RW,8/1,47
+Serial interface channel 11,6E,Serial transmission interrupt request control register 0 Note 4,STIC0,RW,8/1,47
+Serial interface channel 2,70,Receive buffer register 1,RXB1,R,8,Undefined
+Serial interface channel 3,72,Transmit buffer register 1,TXB1,W,8,Undefined
+Serial interface channel 4,75,Serial reception macro service control register 1 Note 4,SRMS1,RW,8/1,Undefined
+Serial interface channel 5,76,Serial transmission macro service control register 1 Note 4,STMS1,RW,8/1,Undefined
+Serial interface channel 6,78,Serial mode register 1,SCM1,RW,8/1,00
+Serial interface channel 7,79,Serial control register 1,SCC1,RW,8/1,00
+Serial interface channel 8,7A,Baud rate generator register 1,BRG1,RW,8/1,00
+Serial interface channel 9,7B,Serial error register 1 Note 6,SCE1,R,8,00
+Serial interface channel 10,7C,Serial error interrupt request control register 1 Note 4,SEIC1,RW,8/1,47
+Serial interface channel 11,7D,Serial reception interrupt request control register 1 Note 4,SRIC1,RW,8/1,47
+Serial interface channel 12,7E,Serial transmission interrupt request control register 1 Note 4,STIC1,RW,8/1,47
+Timer unit,80,Timer register 0 Note 5,TM0,RW,16,Undefined
+Timer unit,82,Modulo/timer register 0 Note 5,MD0,RW,16,Undefined
+Timer unit,88,Timer register 1 Note 5,TM1,RW,16,Undefined
+Timer unit,8A,Modulo/timer register 1 Note 5,MD1,RW,16,Undefined
+Timer unit,90,Timer control register 0 Note 5,TMC0,RW,8/1,00
+Timer unit,91,Timer control register 1 Note 5,TMC1,RW,8/1,00
+Timer unit,94,Timer unit macro service control register 0 Note 4,TMMS0,RW,8/1,Undefined
+Timer unit,95,Timer unit macro service control register 1 Note 4,TMMS1,RW,8/1,Undefined
+Timer unit,96,Timer unit macro service control register 2 Note 4,TMMS2,RW,8/1,Undefined
+Timer unit,9C,Timer unit interrupt request control register 0 Note 4,TMIC0,RW,8/1,47
+Timer unit,9D,Timer unit interrupt request control register 1 Note 4,TMIC1,RW,8/1,47
+Timer unit,9E,Timer unit interrupt request control register 2 Note 4,TMIC2,RW,8/1,47
+DMA controller,A0,DMA control register 0,DMAC0,RW,8/1,Undefined
+DMA controller,A1,DMA mode register 0,DMAM0,RW,8/1,00
+DMA controller,A2,DMA control register 1,DMAC1,RW,8/1,Undefined
+DMA controller,A3,DMA mode register 1,DMAM1,RW,8/1,00
+DMA controller,AC,DMA interrupt request control register 0 Note 4,DIC0,RW,8/1,47
+DMA controller,AD,DMA interrupt request control register 1 Note 4,DIC1,RW,8/1,47
+System control,E0,Standby control register,STBC,RW,8/1,00
+System control,E1,Refresh mode register,RFM,RW,8/1,FC
+System control,E8,Wait control register,WTC,RW,16/8,FFFF
+System control,EA,User flag register,FLAG,RW,8/1,00
+System control,EB,Processor control register,PRC,RW,8/1,4E
+System control,EC,Time base interrupt request control register,TBIC,RW,8/1,47
+System control,FF,Internal data area base register,IDB,RW,8/1,FF
