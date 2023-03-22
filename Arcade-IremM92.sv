@@ -346,6 +346,10 @@ wire [31:0] sdr_bg_dout;
 wire [24:0] sdr_bg_addr;
 wire sdr_bg_req, sdr_bg_rdy;
 
+wire [63:0] sdr_audio_dout;
+wire [24:0] sdr_audio_addr;
+wire sdr_audio_req, sdr_audio_rdy;
+
 wire [15:0] sdr_cpu_dout, sdr_cpu_din;
 wire [24:0] sdr_cpu_addr;
 wire sdr_cpu_req;
@@ -397,7 +401,12 @@ sdram sdram
     .ch3_be(sdr_ch3_be),
     .ch3_rnw(sdr_ch3_rnw),
     .ch3_req(sdr_ch3_req),
-    .ch3_ready(sdr_ch3_rdy)
+    .ch3_ready(sdr_ch3_rdy),
+
+    .ch4_addr(sdr_audio_addr[24:1]),
+    .ch4_dout(sdr_audio_dout),
+    .ch4_req(sdr_audio_req),
+    .ch4_ready(sdr_audio_rdy)
 );
 
 rom_loader rom_loader(
@@ -552,6 +561,11 @@ m92 m92(
     .sdr_cpu_req(sdr_cpu_req),
     .sdr_cpu_rdy(sdr_cpu_rdy),
     .sdr_cpu_wr_sel(sdr_cpu_wr_sel),
+
+    .sdr_audio_addr(sdr_audio_addr),
+    .sdr_audio_dout(sdr_audio_dout),
+    .sdr_audio_req(sdr_audio_req),
+    .sdr_audio_rdy(sdr_audio_rdy),
 
     .clk_bram(clk_sys),
     .bram_addr(bram_addr),

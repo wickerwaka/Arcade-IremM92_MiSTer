@@ -53,7 +53,12 @@ module sdram
     input      [ 1:0] ch3_be,
     input             ch3_req,
     input             ch3_rnw,     // 1 - read, 0 - write
-    output reg        ch3_ready
+    output reg        ch3_ready,
+
+    input      [26:1] ch4_addr,
+    output reg [63:0] ch4_dout,
+    input             ch4_req,
+    output reg        ch4_ready
 );
 
 assign SDRAM_nCS  = chip;
@@ -103,7 +108,7 @@ localparam STATE_RFSH    = 10;
 
 
 always @(posedge clk) begin
-    reg [CAS_LATENCY+BURST_LENGTH+1:0] data_ready_delay1, data_ready_delay2, data_ready_delay3;
+    reg [CAS_LATENCY+BURST_LENGTH+1:0] data_ready_delay1, data_ready_delay2, data_ready_delay3, data_ready_delay4;
 
     reg        saved_wr;
     reg [12:0] cas_addr;
@@ -111,8 +116,8 @@ always @(posedge clk) begin
     reg [15:0] dq_reg;
     reg  [3:0] state = STATE_STARTUP;
 
-    reg       ch1_req_1, ch2_req_1, ch3_req_1;
-    reg       ch1_rq, ch2_rq, ch3_rq;
+    reg       ch1_req_1, ch2_req_1, ch3_req_1, ch4_req_1;
+    reg       ch1_rq, ch2_rq, ch3_rq, ch4_rq;
     reg [1:0] ch;
 
     reg        ch3_rnw_1;
@@ -125,6 +130,7 @@ always @(posedge clk) begin
     ch1_req_1 <= ch1_req;
     ch2_req_1 <= ch2_req;
     ch3_req_1 <= ch3_req;
+    ch4_req_1 <= ch4_req;
     
     ch3_rnw_1  <= ch3_rnw;
     ch3_addr_1 <= ch3_addr;
@@ -136,16 +142,19 @@ always @(posedge clk) begin
     if (ch1_req & ~ch1_req_1) ch1_rq <= 1;
     if (ch2_req & ~ch2_req_1) ch2_rq <= 1;
     if (ch3_req & ~ch3_req_1) ch3_rq <= 1;
+    if (ch4_req & ~ch4_req_1) ch4_rq <= 1;
 
     ch1_ready <= 0;
     ch2_ready <= 0;
     ch3_ready <= 0;
+    ch4_ready <= 0;
 
     refresh_count <= refresh_count+1'b1;
 
     data_ready_delay1 <= data_ready_delay1>>1;
     data_ready_delay2 <= data_ready_delay2>>1;
     data_ready_delay3 <= data_ready_delay3>>1;
+    data_ready_delay4 <= data_ready_delay4>>1;
 
     dq_reg <= SDRAM_DQ;
 
@@ -161,6 +170,12 @@ always @(posedge clk) begin
 
     if(data_ready_delay3[4]) ch3_dout[15:00] <= dq_reg;
     if(data_ready_delay3[4]) ch3_ready <= 1;
+
+    if(data_ready_delay4[4]) ch4_dout[15:00] <= dq_reg;
+    if(data_ready_delay4[3]) ch4_dout[31:16] <= dq_reg;
+    if(data_ready_delay4[2]) ch4_dout[47:32] <= dq_reg;
+    if(data_ready_delay4[1]) ch4_dout[63:48] <= dq_reg;
+    if(data_ready_delay4[1]) ch4_ready <= 1;
 
     SDRAM_DQ <= 16'bZ;
 
@@ -249,6 +264,15 @@ always @(posedge clk) begin
                 command    <= CMD_ACTIVE;
                 state      <= STATE_WAIT;
             end
+            else if(ch4_rq) begin
+                {cas_addr[12:9],SDRAM_BA,SDRAM_A,cas_addr[8:0]} <= {2'b00, 1'b1, ch4_addr[25:1]};
+                chip       <= ch4_addr[26];
+                saved_wr   <= 0;
+                ch         <= 3;
+                ch4_rq     <= 0;
+                command    <= CMD_ACTIVE;
+                state      <= STATE_WAIT;
+            end
             else if (doRefresh_1) begin
                 state         <= STATE_RFSH;
                 command       <= CMD_AUTO_REFRESH;
@@ -266,6 +290,7 @@ always @(posedge clk) begin
                 if(ch == 0) ch1_ready  <= 1;
                 if(ch == 1) ch2_ready  <= 1;
                 if(ch == 2) ch3_ready  <= 1;
+                if(ch == 3) ch4_ready  <= 1;
                 state <= STATE_IDLE_2;
             end
             else begin
@@ -273,7 +298,8 @@ always @(posedge clk) begin
                 state   <= STATE_IDLE_5;
                      if(ch == 0) data_ready_delay1[CAS_LATENCY+BURST_LENGTH+1] <= 1;
                 else if(ch == 1) data_ready_delay2[CAS_LATENCY+BURST_LENGTH+1] <= 1;
-                else             data_ready_delay3[CAS_LATENCY+BURST_LENGTH+1] <= 1;
+                else if(ch == 2) data_ready_delay3[CAS_LATENCY+BURST_LENGTH+1] <= 1;
+                else             data_ready_delay4[CAS_LATENCY+BURST_LENGTH+1] <= 1;
             end
         end
       

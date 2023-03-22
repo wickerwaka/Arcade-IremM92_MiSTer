@@ -72,6 +72,11 @@ module m92 (
     input sdr_cpu_rdy,
     output reg [1:0] sdr_cpu_wr_sel,
 
+    output [24:0] sdr_audio_addr,
+    input [63:0] sdr_audio_dout,
+    output sdr_audio_req,
+    input sdr_audio_rdy,
+
     input clk_bram,
     input bram_wr,
     input [7:0] bram_data,
