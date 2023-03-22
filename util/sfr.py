@@ -1,5 +1,16 @@
 from typing import List
 
+import itertools
+
+
+def chunked_iterable(iterable, size):
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, size))
+        if not chunk:
+            break
+        yield chunk
+
 lines = open('docs/v35_sfr.csv', 'rt').readlines()[1:]
 
 class SFR:
@@ -58,11 +69,14 @@ for line in lines:
     
 
 print( "// BEGIN Registers")
-for sfr in sfrs:
-    if sfr.word:
-        print( f"reg [15:0] {sfr.name};")
-    if sfr.byte:
-        print( f"reg [7:0]  {sfr.name};")
+word_sfrs = [ sfr.name for sfr in sfrs if sfr.word ]
+byte_sfrs = [ sfr.name for sfr in sfrs if sfr.byte and not sfr.word ]
+for ch in chunked_iterable(word_sfrs, 8):
+    line = ', '.join(ch)
+    print( f"reg [15:0] {line};")
+for ch in chunked_iterable(byte_sfrs, 8):
+    line = ', '.join(ch)
+    print( f"reg [7:0] {line};")
 print( "// END Registers")
 
 print( "// BEGIN Reset values")
@@ -83,10 +97,10 @@ for sfr in sfrs:
     if not sfr.read:
         continue
     if sfr.word:
-        print(f"8'h{sfr.address:02x}: sfr_data <= {sfr.name};")
-        print(f"8'h{sfr.address + 1:02x}: sfr_data <= {{ 8'd0, {sfr.name}[15:8] }};")
+        print(f"8'h{sfr.address:02x}: internal_din <= {sfr.name};")
+        print(f"8'h{sfr.address + 1:02x}: internal_din <= {{ 8'd0, {sfr.name}[15:8] }};")
     elif sfr.byte:
-        print(f"8'h{sfr.address:02x}: sfr_data <= {{ 8'd0, {sfr.name} }};")
+        print(f"8'h{sfr.address:02x}: internal_din <= {{ 8'd0, {sfr.name} }};")
 print( "endcase" )
 print( "// End Reading case")
 
@@ -96,10 +110,10 @@ for sfr in sfrs:
     if not sfr.write:
         continue
     if sfr.word:
-        print(f"8'h{sfr.address:02x}: begin\n\tif (cpu_be[0]) {sfr.name}[7:0] <= cpu_dout[7:0];\n\tif (cpu_be[1]) {sfr.name}[15:8] <= cpu_dout[15:8];\nend")
-        print(f"8'h{sfr.address + 1:02x}: {sfr.name}[15:8] <= cpu_dout[7:0];")
+        print(f"8'h{sfr.address:02x}: begin\n\tif (be[0]) {sfr.name}[7:0] <= cpu_dout[7:0];\n\tif (be[1]) {sfr.name}[15:8] <= dout[15:8];\nend")
+        print(f"8'h{sfr.address + 1:02x}: {sfr.name}[15:8] <= dout[7:0];")
     elif sfr.byte:
-        print(f"8'h{sfr.address:02x}: {sfr.name} <= cpu_dout[7:0];")
+        print(f"8'h{sfr.address:02x}: {sfr.name} <= dout[7:0];")
 print( "endcase" )
 print( "// End Writing case")
 

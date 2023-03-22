@@ -55,19 +55,22 @@ reg main_latch_rdy, snd_latch_rdy;
 assign latch_rdy = main_latch_rdy;
 assign latch_dout = main_latch;
 
+wire [15:0] cpu_word_dout = cpu_addr[0] ? { cpu_dout[7:0], 8'h00 } : cpu_dout;
+wire [1:0] cpu_word_be = cpu_addr[0] ? { cpu_be[0], 1'b0 } : cpu_be;
+
 singleport_ram #(.widthad(13), .width(8)) ram_0(
     .clock(clk_sys),
-    .wren(ram_cs & cpu_wr & cpu_be[0]),
+    .wren(ram_cs & cpu_wr & cpu_word_be[0]),
     .address(cpu_addr[13:1]),
-    .data(cpu_dout[7:0]),
+    .data(cpu_word_dout[7:0]),
     .q(ram_dout[7:0])
 );
 
 singleport_ram #(.widthad(13), .width(8)) ram_1(
     .clock(clk_sys),
-    .wren(ram_cs & cpu_wr & cpu_be[1]),
+    .wren(ram_cs & cpu_wr & cpu_word_be[1]),
     .address(cpu_addr[13:1]),
-    .data(cpu_dout[15:8]),
+    .data(cpu_word_dout[15:8]),
     .q(ram_dout[15:8])
 );
 
@@ -96,15 +99,16 @@ assign ym2151_cs = io_cs & cpu_addr[7:2] == 6'b010000; // 0xa8040 - 0xa8043
 assign snd_latch_cs = io_cs & cpu_addr[7:0] == 8'h44;
 assign main_latch_cs = io_cs & cpu_addr[7:0] == 8'h46;
 
-assign cpu_din = rom_cs ? rom_dout :
-            ram_cs ? ( cpu_addr[0] ? { ram_dout[15:8], ram_dout[15:8] } : ram_dout ) :
-            ym2151_cs ? { ym2151_dout, ym2151_dout } :
-            snd_latch_cs ? { snd_latch, snd_latch } :
+assign cpu_din = rom_cs ? ( cpu_addr[0] ? { rom_dout[7:0], rom_dout[15:8] } : rom_dout ) :
+            ram_cs ? ( cpu_addr[0] ? { 8'd0, ram_dout[15:8] } : ram_dout ) :
+            ym2151_cs ? { 8'd0, ym2151_dout } :
+            snd_latch_cs ? { 8'd0, snd_latch } :
             16'hffff;
 
 v35 v35(
     .clk(clk_sys),
     .ce(ce_28m),
+    .ce_cycle(ce_7m),
     .reset(reset),
     
     .mem_rd(cpu_rd),
@@ -112,7 +116,11 @@ v35 v35(
     .mem_be(cpu_be),
     .mem_addr(cpu_addr),
     .mem_dout(cpu_dout),
-    .mem_din(cpu_din)
+    .mem_din(cpu_din),
+
+    .intp0(ym2151_irq_n),
+    .intp1(~snd_latch_rdy),
+    .intp2(0)
 );
 
 
@@ -127,8 +135,8 @@ jt51 ym2151(
     .din(cpu_dout[7:0]),
     .dout(ym2151_dout),
     .irq_n(ym2151_irq_n),
-    .xleft(sample),
-    .xright()
+    .xright(sample),
+    .xleft()
 );
 
 

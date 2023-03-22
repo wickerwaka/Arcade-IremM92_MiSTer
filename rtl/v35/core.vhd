@@ -28,6 +28,7 @@ entity v30_core is
       irqrequest_in     : in std_logic;
       irqvector_in      : in unsigned(9 downto 0) := (others => '0');
       irqrequest_ack    : out std_logic := '0';
+      irqrequest_fini   : out std_logic := '0';
             
       cpu_done          : out std_logic := '0'; 
 
@@ -477,6 +478,7 @@ begin
             RegBus_wren    <= '0';
             RegBus_rden    <= '0';
             irqrequest_ack <= '0';
+            irqrequest_fini <= '0';
          end if;
          
          --if (testpcsum(63) = '1' and testcmd(31) = '1') then
@@ -729,6 +731,8 @@ begin
                               when x"33" => cpustage <= CPUSTAGE_IDLE; cpu_done <= '1'; halt <= '1';
                               -- INS
                               when x"39" => cpustage <= CPUSTAGE_IDLE; cpu_done <= '1'; halt <= '1';
+                              -- FINT
+                              when x"92" => newDelay := 2; cpustage <= CPUSTAGE_IDLE; cpu_finished <= '1'; irqrequest_fini <= '1';
                               -- BRKEM
                               when x"ff" => cpustage <= CPUSTAGE_IDLE; cpu_done <= '1'; halt <= '1';
                               
