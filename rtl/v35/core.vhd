@@ -388,7 +388,7 @@ begin
    cpu_irqrequest <= irqrequest;
    cpu_prefix     <= '1' when PrefixIP > 0 else '0';
 
-   bus_prefetch   <= '0' when (prefetchState = PREFETCH_IDLE) else '1';
+   bus_prefetch   <= '0' when (prefetchState = PREFETCH_IDLE or prefetchState = PREFETCH_RECEIVE) else '1';
    
    Reg_f(0 ) <= regs.FlagCar;
    Reg_f(1 ) <= '1'    ;

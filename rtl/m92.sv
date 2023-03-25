@@ -619,7 +619,13 @@ sound sound(
     .rom_data(bram_data),
     .rom_wr(bram_wr & bram_cs[1]),
 
-    .sample(sound_sample)
+    .sample(sound_sample),
+
+    .clk_ram(clk_ram),
+    .sdr_addr(sdr_audio_addr),
+    .sdr_data(sdr_audio_dout),
+    .sdr_req(sdr_audio_req),
+    .sdr_rdy(sdr_audio_rdy)
 );
 
 assign AUDIO_L = sound_sample;

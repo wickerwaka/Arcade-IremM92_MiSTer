@@ -59,12 +59,14 @@ wire internal_rq = ~prefetching && ( addr[19:9] == { IDB, 3'b111 } || addr[19:0]
 wire internal_ram_rq = RAMEN & internal_rq & ~addr[8];
 wire sfr_area_rq = internal_rq & addr[8];
 
+reg internal_rq_latch;
+
 assign mem_rd = rd & ~internal_rq;
 assign mem_wr = wr & ~internal_rq;
 assign mem_be = be;
 assign mem_addr = addr;
 assign mem_dout = dout;
-assign din = internal_rq ? internal_din : mem_din;
+assign din = internal_rq_latch ? internal_din : mem_din;
 
 always_ff @(posedge clk) begin
     if (reset) begin
@@ -274,6 +276,8 @@ always_ff @(posedge clk) begin
             end
         end
 
+        if (rd) internal_rq_latch <= internal_rq;
+
         if (rd | wr) begin
             case(addr[19:16])
             4'h0, 4'h1: wait_cycles <= WTC[1:0];
@@ -343,7 +347,7 @@ end
 v30_core core(
     .clk(clk),
     .ce(ce_cycle & (wait_cycles == 2'd0)),
-    .ce_4x(ce),
+    .ce_4x(ce & (wait_cycles == 2'd0)),
     .reset(reset),
     .turbo(1),
     .SLOWTIMING(),

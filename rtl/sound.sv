@@ -14,20 +14,31 @@ module sound(
     input [7:0] rom_data,
     input rom_wr,
 
-    output [15:0] sample
+    output [15:0] sample,
+
+    // sdr
+    input clk_ram,
+    output [24:0] sdr_addr,
+    input [63:0] sdr_data,
+    output sdr_req,
+    input sdr_rdy
 );
 
 // TODO
-// Sample ROM
+// Sample ROM -- Done
 // Sound RAM -- Done
 // YM2151 -- Done
 // GA20
 // Sample Filters
 // Output Filters
 // V35
-// Latches
+// Latches -- Done
 // Sound ROM -- Done
 // Clock dividers - Done
+
+wire [15:0] sample_out, fm_sample;
+
+assign sample = sample_out | fm_sample;
 
 wire ce_28m, ce_14m, ce_7m, ce_3_5m, ce_1_7m;
 jtframe_frac_cen #(6) pixel_cen
@@ -48,6 +59,8 @@ wire cpu_rd, cpu_wr;
 
 wire [7:0] ym2151_dout;
 wire ym2151_irq_n;
+
+wire [7:0] ga20_dout;
 
 reg [7:0] main_latch, snd_latch;
 reg main_latch_rdy, snd_latch_rdy;
@@ -103,6 +116,7 @@ assign cpu_din = rom_cs ? ( cpu_addr[0] ? { rom_dout[7:0], rom_dout[15:8] } : ro
             ram_cs ? ( cpu_addr[0] ? { 8'd0, ram_dout[15:8] } : ram_dout ) :
             ym2151_cs ? { 8'd0, ym2151_dout } :
             snd_latch_cs ? { 8'd0, snd_latch } :
+            ga20_cs ? { 8'd0, ga20_dout } :
             16'hffff;
 
 v35 v35(
@@ -135,10 +149,54 @@ jt51 ym2151(
     .din(cpu_dout[7:0]),
     .dout(ym2151_dout),
     .irq_n(ym2151_irq_n),
-    .xright(sample),
+    .xright(fm_sample),
     .xleft()
 );
 
+wire [19:0] sample_addr;
+wire [7:0] sample_data;
+wire sample_valid;
+wire sample_rd;
+wire [2:0] sample_index;
+
+ga20_cache ga20_cache(
+    .clk(clk_sys),
+    .reset(reset),
+
+    .rd(sample_rd),
+    .index(sample_index),
+    .addr(sample_addr),
+    .valid(sample_valid),
+    .dout(sample_data),
+
+    .clk_ram(clk_ram),
+    .sdr_addr(sdr_addr),
+    .sdr_data(sdr_data),
+    .sdr_req(sdr_req),
+    .sdr_rdy(sdr_rdy)
+);
+
+ga20 ga20(
+    .clk(clk_sys),
+    .reset(reset),
+
+    .ce(ce_3_5m),
+
+    .cs(ga20_cs),
+    .rd(cpu_rd),
+    .wr(cpu_wr),
+    .addr(cpu_addr[5:1]),
+    .din(cpu_dout[7:0]),
+    .dout(ga20_dout),
+
+    .sample_rd(sample_rd),
+    .sample_index(sample_index),
+    .sample_addr(sample_addr),
+    .sample_valid(sample_valid),
+    .sample_din(sample_data),
+
+    .sample_out(sample_out)
+);
 
 always_ff @(posedge clk_sys) begin
     if (reset) begin
