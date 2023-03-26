@@ -27,7 +27,7 @@ reg [1:0] play;
 reg [8:0] rate_cnt;
 
 reg [15:0] sample_s16;
-wire [15:0] sample_flt_a_s16, sample_flt_b_s16;
+wire [15:0] sample_flt_s16;
 
 
 reg play_set;
@@ -103,8 +103,8 @@ always_ff @(posedge clk) begin
     end
 end
 
-// 9865hz 2nd order
-IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00039693413224479562), .coeff_x0(2), .coeff_x1(1), .coeff_x2(0), .coeff_y0(-1.97595935483028584123), .coeff_y1(0.97624491895420295595), .coeff_y2(0)) lpf_9865 (
+// 9865hz 2nd order 10749hz 1st order
+IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00000741947949554119), .coeff_x0(3), .coeff_x1(3), .coeff_x2(1), .coeff_y0(-2.95726738834813529522), .coeff_y1(2.91526970775390958934), .coeff_y2(-0.95799698165074131939)) lpf_sample (
 	.clk(clk),
 	.reset(reset),
 
@@ -114,24 +114,7 @@ IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00039693413224479562), .coe
 	.cx(), .cx0(), .cx1(), .cx2(), .cy0(), .cy1(), .cy2(),
 
 	.input_l(sample_s16),
-	.output_l(sample_flt_a_s16),
-
-    .input_r(),
-    .output_r()
-);
-
-// 10749hz 2nd order
-IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00048829989440320068), .coeff_x0(2), .coeff_x1(1), .coeff_x2(0), .coeff_y0(-1.97331852444034416827), .coeff_y1(0.97366981932840401814), .coeff_y2(0)) lpf_10749 (
-	.clk(clk),
-	.reset(reset),
-
-	.ce(sample_ce),
-	.sample_ce(sample_ce),
-
-	.cx(), .cx0(), .cx1(), .cx2(), .cy0(), .cy1(), .cy2(),
-
-	.input_l(sample_flt_a_s16),
-	.output_l(sample_flt_b_s16),
+	.output_l(sample_flt_s16),
 
     .input_r(),
     .output_r()
@@ -141,7 +124,7 @@ IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00048829989440320068), .coe
 always_ff @(posedge clk) begin
     reg signed [21:0] scaled;
 
-    scaled <= $signed(sample_flt_b_s16) * $signed({1'b0, volume});
+    scaled <= $signed(sample_flt_s16) * $signed({1'b0, volume});
 
     sample_out <= scaled[21:6];
 end
@@ -198,19 +181,24 @@ ga20_channel ch2( .clk(clk), .reset(reset), .ce(ce & ce2), .sample_ce(ce), .cs(c
 ga20_channel ch3( .clk(clk), .reset(reset), .ce(ce & ce3), .sample_ce(ce), .cs(cs3), .rd(rd), .wr(wr), .addr(addr[2:0]), .din(din), .dout(dout3), .sample_addr(sample_addr3), .sample_valid(sample_valid), .sample_din(sample_din), .sample_out(sample_out3));
 
 always_ff @(posedge clk) begin
-    reg prev_ce = 0;
-    sample_rd <= 0;
+    if (reset) begin
+        step <= 3'd0;
+        sample_rd <= 0;
+    end else begin
+        reg prev_ce = 0;
+        sample_rd <= 0;
 
-    prev_ce <= ce;
-    if (~ce & prev_ce) begin
-        step <= step + 3'd1;
-        case (step)
-        0, 1: sample_addr <= sample_addr0;
-        2, 3: sample_addr <= sample_addr1;
-        4, 5: sample_addr <= sample_addr2;
-        6, 7: sample_addr <= sample_addr3;
-        endcase
-        sample_rd <= 1;
+        prev_ce <= ce;
+        if (~ce & prev_ce) begin
+            step <= step + 3'd1;
+            case (step)
+            0, 1: sample_addr <= sample_addr0;
+            2, 3: sample_addr <= sample_addr1;
+            4, 5: sample_addr <= sample_addr2;
+            6, 7: sample_addr <= sample_addr3;
+            endcase
+            sample_rd <= 1;
+        end
     end
 end
 

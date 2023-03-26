@@ -115,7 +115,7 @@ always_ff @(posedge clk) begin
 
         irq_pending <= 0;
         wait_cycles <= 2'd0;
-    end else if (ce) begin
+    end else begin
         if (sfr_area_rq) begin
             if (wr) begin
                 case(addr[7:0])
