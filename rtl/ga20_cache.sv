@@ -3,7 +3,6 @@ module ga20_cache(
     input reset,
 
     input rd,
-    input [2:0] index,
     input [19:0] addr,
     output reg valid,
     output reg [7:0] dout,
@@ -16,7 +15,6 @@ module ga20_cache(
 );
 
 typedef enum bit[1:0] {
-    INVALID,
     PENDING_RQ,
     PENDING_ACK,
     VALID
@@ -27,14 +25,22 @@ typedef struct {
 
     bit [16:0] addr64;
     bit [63:0] data;
+
+    int stamp;
 } entry_t;
 
-entry_t entry[8];
+localparam N = 12;
+
+entry_t entry[N];
 
 reg rq;
 reg ack;
-reg [2:0] rq_index;
 reg rq_active;
+reg read_missed;
+reg [16:0] read_addr64;
+
+int rq_index;
+int old_index;
 
 always_ff @(posedge clk_ram) begin
     if (reset) begin
@@ -51,12 +57,21 @@ always_ff @(posedge clk) begin
     sdr_req <= 0;
 
     if (reset) begin
-        for(i = 0; i < 8; i++) begin
-            entry[i].state <= INVALID;
+        for(i = 0; i < N; i++) begin
+            entry[i].state <= VALID;
+            entry[i].addr64 <= 17'h1ffff;
         end
         rq_active <= 0;
         rq <= 0;
+        read_missed <= 0;
     end else begin
+        for(i = 0; i < N; i++) begin
+            if (entry[i].state == VALID) begin
+                if (entry[i].stamp == 0) begin
+                    old_index <= i;
+                end
+            end
+        end
 
         if (rq_active) begin
             if (rq == ack) begin
@@ -64,11 +79,12 @@ always_ff @(posedge clk) begin
                 if (entry[rq_index].state == PENDING_ACK) begin
                     entry[rq_index].state <= VALID;
                     entry[rq_index].data <= sdr_data;
+                    entry[rq_index].stamp <= N;
                 end
             end
         end else begin
             found_pending = 0;
-            for(i = 0; i < 8; i++) begin
+            for(i = 0; i < N; i++) begin
                 if (found_pending == 0 && entry[i].state == PENDING_RQ) begin
                     found_pending = 1;
                     rq_index <= i;
@@ -82,23 +98,24 @@ always_ff @(posedge clk) begin
         end
 
         if (rd) begin
-            if (addr[19:3] == entry[index].addr64) begin
-                case (entry[index].state)
-                INVALID: begin
-                    entry[index].state <= PENDING_RQ;
-                    valid <= 0;
+            valid <= 0;
+            read_missed <= 1;
+            read_addr64 <= addr[19:3];
+            for(i = 0; i < N; i++) begin
+                if (entry[i].state == VALID && entry[i].stamp != 0) begin
+                    entry[i].stamp <= entry[i].stamp - 1;
+                    if (addr[19:3] == entry[i].addr64) begin
+                        valid <= 1;
+                        read_missed <= 0;
+                        dout <= entry[i].data[(addr[2:0]*8) +: 8];
+                        entry[i].stamp <= N;
+                    end
                 end
-                PENDING_RQ: valid <= 0;
-                PENDING_ACK: valid <= 0;
-                VALID: begin
-                    valid <= 1;
-                    dout <= entry[index].data[(addr[2:0]*8) +: 8];
-                end
-                endcase
-            end else begin
-                entry[index].state <= PENDING_RQ;
-                entry[index].addr64 <= addr[19:3];
             end
+        end else if (read_missed) begin
+            entry[old_index].state <= PENDING_RQ;
+            entry[old_index].addr64 <= read_addr64;
+            read_missed <= 0;
         end
     end
 end

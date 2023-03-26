@@ -14,7 +14,7 @@ module sound(
     input [7:0] rom_data,
     input rom_wr,
 
-    output [15:0] sample,
+    output reg [15:0] sample,
 
     // sdr
     input clk_ram,
@@ -36,9 +36,14 @@ module sound(
 // Sound ROM -- Done
 // Clock dividers - Done
 
-wire [15:0] sample_out, fm_sample;
+wire [15:0] sample_out, fm_sample, fm_sample_flt;
 
-assign sample = sample_out | fm_sample;
+always_ff @(posedge clk_sys) begin
+    reg [16:0] sum;
+
+    sum <= { sample_out[15], sample_out } + { fm_sample_flt[15], fm_sample_flt[15], fm_sample_flt[15:1] };
+    sample <= sum[16:1];
+end
 
 wire ce_28m, ce_14m, ce_7m, ce_3_5m, ce_1_7m;
 jtframe_frac_cen #(6) pixel_cen
@@ -153,18 +158,34 @@ jt51 ym2151(
     .xleft()
 );
 
+// fc1 = 19020hz
+// fc2 = 8707hz
+IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.000001054852861174913), .coeff_x0(3), .coeff_x1(3), .coeff_x2(1), .coeff_y0(-2.94554610428990093496), .coeff_y1(2.89203308225615352001), .coeff_y2(-0.94647938909674766972)) lpf_ym (
+	.clk(clk_sys),
+	.reset(reset),
+
+	.ce(ce_3_5m),
+	.sample_ce(ce_3_5m),
+
+	.cx(), .cx0(), .cx1(), .cx2(), .cy0(), .cy1(), .cy2(),
+
+	.input_l(fm_sample),
+	.output_l(fm_sample_flt),
+
+    .input_r(),
+    .output_r()
+);
+
 wire [19:0] sample_addr;
 wire [7:0] sample_data;
 wire sample_valid;
 wire sample_rd;
-wire [2:0] sample_index;
 
 ga20_cache ga20_cache(
     .clk(clk_sys),
     .reset(reset),
 
     .rd(sample_rd),
-    .index(sample_index),
     .addr(sample_addr),
     .valid(sample_valid),
     .dout(sample_data),
@@ -190,7 +211,6 @@ ga20 ga20(
     .dout(ga20_dout),
 
     .sample_rd(sample_rd),
-    .sample_index(sample_index),
     .sample_addr(sample_addr),
     .sample_valid(sample_valid),
     .sample_din(sample_data),
