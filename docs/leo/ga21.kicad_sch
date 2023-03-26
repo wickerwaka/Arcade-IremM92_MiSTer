@@ -1,4 +1,4 @@
-(kicad_sch (version 20211123) (generator eeschema)
+(kicad_sch (version 20230121) (generator eeschema)
 
   (uuid 1c760990-f051-42dc-96b0-9700f8605332)
 
@@ -6,21 +6,21 @@
 
   (lib_symbols
     (symbol "Irem:GA21" (in_bom yes) (on_board yes)
-      (property "Reference" "U" (id 0) (at 0 1.27 0)
+      (property "Reference" "U" (at 0 1.27 0)
         (effects (font (size 1.27 1.27)))
       )
-      (property "Value" "GA21" (id 1) (at 0 5.08 0)
+      (property "Value" "GA21" (at 0 5.08 0)
         (effects (font (size 1.27 1.27)))
       )
-      (property "Footprint" "" (id 2) (at 1.27 -66.04 90)
+      (property "Footprint" "" (at 1.27 -66.04 90)
         (effects (font (size 1.27 1.27)) hide)
       )
-      (property "Datasheet" "" (id 3) (at 1.27 -66.04 90)
+      (property "Datasheet" "" (at 1.27 -66.04 90)
         (effects (font (size 1.27 1.27)) hide)
       )
       (symbol "GA21_0_1"
         (rectangle (start -69.85 60.96) (end 74.93 -66.04)
-          (stroke (width 0) (type default) (color 0 0 0 0))
+          (stroke (width 0) (type default))
           (fill (type background))
         )
       )
@@ -575,14 +575,18 @@
 
 
   (symbol (lib_id "Irem:GA21") (at 208.28 133.35 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom yes) (on_board yes) (dnp no)
     (uuid 96db101b-ae4d-43b3-916e-917ab5e9ffef)
-    (property "Reference" "IC42" (id 0) (at 208.28 144.78 0))
-    (property "Value" "GA21" (id 1) (at 208.28 133.35 0))
-    (property "Footprint" "" (id 2) (at 209.55 199.39 90)
+    (property "Reference" "IC42" (at 208.28 144.78 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Value" "GA21" (at 208.28 133.35 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 209.55 199.39 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (id 3) (at 209.55 199.39 90)
+    (property "Datasheet" "" (at 209.55 199.39 90)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid b1ace6ba-4045-49cf-8ba9-01fb8e5d929e))
@@ -721,5 +725,12 @@
     (pin "97" (uuid cb24551a-269d-4b3d-9ecb-3866280b819c))
     (pin "98" (uuid 97247a65-51eb-4f35-9314-f08b837c5efb))
     (pin "99" (uuid 48e2e5b1-08a9-4f3e-9c30-6270698022d4))
+    (instances
+      (project "leo"
+        (path "/57f1770f-9afd-4d17-8261-23e1777a6b1c/0bd61519-701e-4675-a889-b424ac477c32"
+          (reference "IC42") (unit 1)
+        )
+      )
+    )
   )
 )

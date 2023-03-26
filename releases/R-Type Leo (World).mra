@@ -12,15 +12,33 @@
     <joystick>8-way</joystick>
     <num_buttons>2</num_buttons>
     <buttons default="B,A,R,L" names="Fire,Pod Control,-,-,Start,Coin,P2 Start,Pause"></buttons>
-    <switches default="00 00">
-        <dip bits="0,1" ids="3,2,1,5" name="Lives"></dip>
-        <dip bits="2,3" ids="Normal,Easy,Hard,Hardest" name="Difficulty"></dip>
-        <dip bits="4,7" ids="1C/1P,2C/1P,3C/1P,4C/1P,5C/1P,6C/1P,1C/2P,1C/3P,1C/4P,1C/5P,1C/6P,2C/3P,4C/2P,5C/3P,8C/3P,Free Play" name="Coin Mode"></dip>
-        <dip bits="8" ids="Off,On" name="Flip Picture"></dip>
-        <dip bits="9" ids="On,Off" name="Demo Sound"></dip>
-        <dip bits="11,12" ids="Cocktail,Upright,Upright (2P)" name="Cabinet type"></dip>
-        <dip bits="13" ids="Off,On" name="Stop Mode"></dip>
-        <dip bits="15" ids="Off,On" name="Diagnostic Test"></dip>
+    <switches default="00 00 00">
+        <dip bits="0" ids="Off,On" name="Sw1:1"></dip>
+        <dip bits="1" ids="Off,On" name="Sw1:2"></dip>
+        <dip bits="2" ids="Off,On" name="Sw1:3"></dip>
+        <dip bits="3" ids="Off,On" name="Sw1:4"></dip>
+        <dip bits="4" ids="Off,On" name="Sw1:5"></dip>
+        <dip bits="5" ids="Off,On" name="Sw1:6"></dip>
+        <dip bits="6" ids="Off,On" name="Sw1:7"></dip>
+        <dip bits="7" ids="Off,On" name="Sw1:8"></dip>
+
+        <dip bits="8" ids="Off,On" name="Sw2:1"></dip>
+        <dip bits="9" ids="Off,On" name="Sw2:2"></dip>
+        <dip bits="10" ids="Off,On" name="Sw2:3"></dip>
+        <dip bits="11" ids="Off,On" name="Sw2:4"></dip>
+        <dip bits="12" ids="Off,On" name="Sw2:5"></dip>
+        <dip bits="13" ids="Off,On" name="Sw2:6"></dip>
+        <dip bits="14" ids="Off,On" name="Sw2:7"></dip>
+        <dip bits="15" ids="Off,On" name="Sw2:8"></dip>
+
+        <dip bits="16" ids="Off,On" name="Sw3:1"></dip>
+        <dip bits="17" ids="Off,On" name="Sw3:2"></dip>
+        <dip bits="18" ids="Off,On" name="Sw3:3"></dip>
+        <dip bits="19" ids="Off,On" name="Sw3:4"></dip>
+        <dip bits="20" ids="Off,On" name="Sw3:5"></dip>
+        <dip bits="21" ids="Off,On" name="Sw3:6"></dip>
+        <dip bits="22" ids="Off,On" name="Sw3:7"></dip>
+        <dip bits="23" ids="Off,On" name="Sw3:8"></dip>
     </switches>
 
     <rom index="0" zip="rtypeleo.zip" md5="None">
