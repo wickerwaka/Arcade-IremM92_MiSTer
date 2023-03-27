@@ -39,8 +39,8 @@ package m92_pkg;
         REGION_TILE,
         REGION_SPRITE,
         REGION_SOUND,
-        REGION_GA20,
-        REGION_CRYPT
+        REGION_CRYPT,
+        REGION_GA20
     };
 
     

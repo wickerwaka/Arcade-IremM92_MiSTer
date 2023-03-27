@@ -14,6 +14,10 @@ module sound(
     input [7:0] rom_data,
     input rom_wr,
 
+    input [7:0] secure_addr,
+    input [7:0] secure_data,
+    input secure_wr,
+
     output reg [15:0] sample,
 
     // sdr
@@ -139,7 +143,12 @@ v35 v35(
 
     .intp0(ym2151_irq_n),
     .intp1(~snd_latch_rdy),
-    .intp2(0)
+    .intp2(0),
+
+    .secure(1),
+    .secure_wr(secure_wr),
+    .secure_addr(secure_addr),
+    .secure_data(secure_data)
 );
 
 

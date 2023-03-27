@@ -14,7 +14,13 @@ module v35(
 
     input intp0,
     input intp1,
-    input intp2
+    input intp2,
+
+    input secure,
+
+    input secure_wr,
+    input [7:0] secure_addr,
+    input [7:0] secure_data
 );
 
 wire rd, wr;
@@ -370,6 +376,11 @@ v30_core core(
     .irqvector_in({irq_vec, 2'b00}),
     .irqrequest_ack(irq_ack),
     .irqrequest_fini(irq_fini),
+
+    .secure(secure),
+    .secure_wr(secure_wr),
+    .secure_addr(secure_addr),
+    .secure_data(secure_data),
 
     // TODO - m92 doesn't use IO ports, but we want to merge these with data anyway
     .RegBus_Din(),

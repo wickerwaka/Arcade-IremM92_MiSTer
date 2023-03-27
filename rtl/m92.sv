@@ -619,6 +619,10 @@ sound sound(
     .rom_data(bram_data),
     .rom_wr(bram_wr & bram_cs[1]),
 
+    .secure_addr(bram_addr[7:0]),
+    .secure_data(bram_data),
+    .secure_wr(bram_wr & bram_cs[0]),
+
     .sample(sound_sample),
 
     .clk_ram(clk_ram),

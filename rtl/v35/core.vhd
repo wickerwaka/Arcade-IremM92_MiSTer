@@ -30,7 +30,12 @@ entity v30_core is
       irqrequest_ack    : out std_logic := '0';
       irqrequest_fini   : out std_logic := '0';
             
-      cpu_done          : out std_logic := '0'; 
+      cpu_done          : out std_logic := '0';
+
+      secure            : in std_logic;
+      secure_wr         : in std_logic;
+      secure_addr       : in unsigned(7 downto 0);
+      secure_data       : in std_logic_vector(7 downto 0);
 
       -- register 
       RegBus_Din        : out std_logic_vector(7 downto 0) := (others => '0');
@@ -373,7 +378,12 @@ architecture arch of v30_core is
    signal DIVdivisor       : signed(32 downto 0);
    signal DIVquotient      : signed(32 downto 0);
    signal DIVremainder     : signed(32 downto 0);
-   
+
+   type arr_opcode IS ARRAY (0 to 255) OF std_logic_vector(7 downto 0);
+   signal decryption_table : arr_opcode;
+   attribute ramstyle : string;
+   attribute ramstyle OF decryption_table : signal is "logic";
+
    -- debug
    signal executeDone      : std_logic := '0';
   
@@ -479,6 +489,10 @@ begin
             RegBus_rden    <= '0';
             irqrequest_ack <= '0';
             irqrequest_fini <= '0';
+         end if;
+
+         if (secure_wr = '1') then
+            decryption_table(to_integer(secure_addr)) <= secure_data;
          end if;
          
          --if (testpcsum(63) = '1' and testcmd(31) = '1') then
@@ -599,9 +613,17 @@ begin
                            if (repeat = '0') then
                                  exOpcodebyte <= x"00";
                               if (consumePrefetch = 1) then
-                                 opcodebyte   <= prefetchBuffer(15 downto 8);
+                                 if (secure) then
+                                    opcodebyte <= decryption_table(to_integer(unsigned(prefetchBuffer(15 downto 8))));
+                                 else
+                                    opcodebyte   <= prefetchBuffer(15 downto 8);
+                                 end if;
                               else
-                                 opcodebyte   <= prefetchBuffer(7 downto 0);
+                                 if (secure) then
+                                    opcodebyte <= decryption_table(to_integer(unsigned(prefetchBuffer(7 downto 0))));
+                                 else
+                                    opcodebyte   <= prefetchBuffer(7 downto 0);
+                                 end if;
                               end if;
                               if (repeatNext = '0') then
                                  regs.reg_ip     <= regs.reg_ip + 1;
