@@ -393,7 +393,7 @@ m92_pic m92_pic(
     .ce(ce_cpu),
     .reset(~reset_n),
 
-    .cs((IORD | IOWR) & ~cpu_io_addr[7] & cpu_io_addr[6]), // 0x40-0x43
+    .cs((IORD | IOWR) & ~cpu_io_addr[7] & cpu_io_addr[6] & ~cpu_io_addr[0]), // 0x40-0x43
     .wr(IOWR),
     .rd(0),
     .a0(cpu_io_addr[1]),
@@ -404,7 +404,7 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({4'd0, snd_latch_rdy, hint, 1'b0, vblank}) // TODO dma_busy?
+    .intp({4'd0, snd_latch_rdy, hint, ~dma_busy, vblank}) // TODO dma_busy?
 );
 
 

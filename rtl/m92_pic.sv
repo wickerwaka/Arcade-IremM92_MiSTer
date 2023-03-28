@@ -30,7 +30,7 @@ module m92_pic(
 
     input [7:0] din,
 
-    output reg int_req,
+    output int_req,
     output reg [8:0] int_vector,
     input int_ack,
 
@@ -46,9 +46,14 @@ enum {
 } init_state = UNINIT;
 
 reg [7:0] IW1, IW2, IW3, IW4;
-reg [7:0] IMW, IRR, ISR;
+reg [7:0] IMW;
 reg [7:0] PFCW;
 reg [7:0] MCW;
+
+reg [7:0] IRR;
+int ISR;
+
+assign int_req = ISR != 8;
 
 wire iw4_write = IW1[0];
 wire iw4_not_written = ~IW1[0];
@@ -64,8 +69,9 @@ reg [7:0] intp_latch = 0;
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         init_state <= UNINIT;
-        int_req <= 0;
         intp_latch <= 0;
+        IRR <= 8'd0;
+        ISR <= 8;
     end else if (ce) begin
         if (cs & wr) begin
             if (~a0) begin
@@ -76,7 +82,7 @@ always_ff @(posedge clk or posedge reset) begin
                     MCW <= 0;
                     IMW <= 0;
                     IRR <= 0;
-                    ISR <= 0;
+                    ISR <= 8;
                 end else if (~din[4] & ~din[3]) begin
                     PFCW <= din;
                 end else if (~din[4] & din[3]) begin
@@ -109,30 +115,35 @@ always_ff @(posedge clk or posedge reset) begin
         end
 
         if (init_state == INIT_DONE) begin
+            bit [7:0] trig;
+            int p;
+
             intp_latch <= intp;
 
             if (int_req) begin
                 if (int_ack) begin
-                    int_req <= 0;
+                    IRR[ISR] <= 1'b0;
+                    ISR <= 8;
                 end
             end else begin
-                bit [7:0] trig;
                 int p;
-                bit t;
+                for ( p = 7; p >= 0; p = p - 1 ) begin
+                    if (IRR[p]) begin
+                        ISR <= p;
+                        int_vector <= {IW2[6:3], p[2:0], 2'b00};
+                    end
+                end
+            end
 
-                if (edge_triggered)
-                    trig = intp & ~intp_latch;
-                else
-                    trig = intp;
-                
-                t = 0;
-                for( p = 0; p < 8 && !t; p = p + 1 ) begin
-                    if (intp[p]) begin
-                        if (trig[p] & ~IMW[p]) begin
-                            int_req <= 1;
-                            int_vector <= {IW2[6:3], p[2:0], 2'b00};
-                        end
-                        t = 1;
+            if (edge_triggered)
+                trig = intp & ~intp_latch;
+            else
+                trig = intp;
+            
+            for( p = 0; p < 8; p = p + 1 ) begin
+                if (intp[p]) begin
+                    if (trig[p] & ~IMW[p]) begin
+                        IRR[p] <= 1'b1;
                     end
                 end
             end
