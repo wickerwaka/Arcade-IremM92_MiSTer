@@ -46,7 +46,7 @@ always_ff @(posedge clk_sys) begin
     reg [16:0] sum;
 
     sum <= { sample_out[15], sample_out } + { fm_sample_flt[15], fm_sample_flt };
-    sample <= sum[16:1];
+    sample <= sum[16:1] + {sum[16], sum[16], sum[15:2]};
 end
 
 wire ce_28m, ce_14m, ce_7m, ce_3_5m, ce_1_7m;
