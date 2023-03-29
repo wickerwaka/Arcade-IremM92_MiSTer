@@ -54,7 +54,7 @@ assign vblank = vcnt > 10'd113 && vcnt < 10'd136;
 assign vsync = vcnt > 10'd119 && vcnt < 10'd125;
 assign hpulse = hcnt == 10'd48;
 assign vpulse = (vcnt == 10'd124 && hcnt > 10'd260) || (vcnt == 10'd125 && hcnt < 10'd260);
-assign hint = vcnt == hint_line;
+assign hint = vcnt == hint_line && hcnt > 10'd423;
 
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin

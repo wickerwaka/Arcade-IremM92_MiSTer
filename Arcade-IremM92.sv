@@ -211,16 +211,6 @@ wire dbg_solid_sprites = status[67];
 wire en_sprites = 1;
 wire dbg_sprite_freeze = 0;
 
-// If video timing changes, force mode update
-reg [1:0] video_status;
-reg new_vmode = 0;
-always @(posedge clk_sys) begin
-    if (video_status != status[9:8]) begin
-        video_status <= status[9:8];
-        new_vmode <= ~new_vmode;
-    end
-end
-
 `include "build_id.v" 
 localparam CONF_STR = {
     "IremM92;;",
@@ -229,9 +219,6 @@ localparam CONF_STR = {
     "P1O[2:1],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "P1O[4:3],Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
     "P1O[6:5],Scale,Normal,V-Integer,Narrower HV-Integer,Wider HV-Integer;",
-    "P1-;",
-    "P1O[9:8],Video Timing,Normal(55Hz),50Hz,57Hz,60Hz;",
-    "P1O[10],Orientation,Horz,Vert;",
     "P1-;",
     "d1P1O[11],240p Crop,Off,On;",
     "d2P1O[16:12],Crop Offset,0,1,2,3,4,5,6,7,8,-8,-7,-6,-5,-4,-3,-2,-1;",
@@ -278,10 +265,6 @@ wire [15:0] joy = joystick_0 | joystick_1;
 
 wire [21:0] gamma_bus;
 wire        direct_video;
-wire        video_rotated;
-wire        no_rotate = ~status[10];
-wire        flip = 0;
-wire        rotate_ccw = 1;
 
 wire        allow_crop_240p = ~forced_scandoubler && scale == 0;
 wire        crop_240p = allow_crop_240p & status[11];
@@ -297,8 +280,8 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .direct_video(direct_video),
 
     .forced_scandoubler(forced_scandoubler),
-    .new_vmode(new_vmode),
-    .video_rotated(video_rotated),
+    .new_vmode(0),
+    .video_rotated(0),
 
     .buttons(buttons),
     .status(status),
@@ -433,46 +416,6 @@ rom_loader rom_loader(
 );
 
 
-///////////////////         Keyboard           //////////////////
-reg btn_up       = 0;
-reg btn_down     = 0;
-reg btn_left     = 0;
-reg btn_right    = 0;
-reg btn_a        = 0;
-reg btn_b        = 0;
-reg btn_x        = 0;
-reg btn_y        = 0;
-reg btn_coin1    = 0;
-reg btn_coin2    = 0;
-reg btn_1p_start = 0;
-reg btn_2p_start = 0;
-reg btn_pause    = 0;
-
-wire pressed = ps2_key[9];
-wire [7:0] code = ps2_key[7:0];
-always @(posedge clk_sys) begin
-    reg old_state;
-    old_state <= ps2_key[10];
-    if(old_state != ps2_key[10]) begin
-        case(code)
-            'h16: btn_1p_start <= pressed; // 1
-            'h1E: btn_2p_start <= pressed; // 2
-            'h2E: btn_coin1    <= pressed; // 5
-            'h36: btn_coin2    <= pressed; // 6
-            'h4D: btn_pause    <= pressed; // P
-
-            'h75: btn_up      <= pressed; // up
-            'h72: btn_down    <= pressed; // down
-            'h6B: btn_left    <= pressed; // left
-            'h74: btn_right   <= pressed; // right
-            'h14: btn_a       <= pressed; // ctrl
-            'h11: btn_b       <= pressed; // alt
-            'h29: btn_x       <= pressed; // space
-            'h12: btn_y       <= pressed; // shift
-        endcase
-    end
-end
-
 // DIP SWITCHES
 reg [7:0] dip_sw[8];	// Active-LOW
 always @(posedge clk_sys) begin
@@ -484,31 +427,31 @@ end
 //////////////////  Arcade Buttons/Interfaces   ///////////////////////////
 
 //Player 1
-wire m_up1      = btn_up      | joystick_0[3];
-wire m_down1    = btn_down    | joystick_0[2];
-wire m_left1    = btn_left    | joystick_0[1];
-wire m_right1   = btn_right   | joystick_0[0];
-wire m_btna1    = btn_a       | joystick_0[4];
-wire m_btnb1    = btn_b       | joystick_0[5];
-wire m_btnx1    = btn_x       | joystick_0[6];
-wire m_btny1    = btn_y       | joystick_0[7];
+wire m_up1      = joystick_0[3];
+wire m_down1    = joystick_0[2];
+wire m_left1    = joystick_0[1];
+wire m_right1   = joystick_0[0];
+wire m_btna1    = joystick_0[4];
+wire m_btnb1    = joystick_0[5];
+wire m_btnx1    = joystick_0[6];
+wire m_btny1    = joystick_0[7];
 
 //Player 2
-wire m_up2      = btn_up      | joystick_1[3];
-wire m_down2    = btn_down    | joystick_1[2];
-wire m_left2    = btn_left    | joystick_1[1];
-wire m_right2   = btn_right   | joystick_1[0];
-wire m_btna2    = btn_a       | joystick_1[4];
-wire m_btnb2    = btn_b       | joystick_1[5];
-wire m_btnx2    = btn_x       | joystick_1[6];
-wire m_btny2    = btn_y       | joystick_1[7];
+wire m_up2      = joystick_1[3];
+wire m_down2    = joystick_1[2];
+wire m_left2    = joystick_1[1];
+wire m_right2   = joystick_1[0];
+wire m_btna2    = joystick_1[4];
+wire m_btnb2    = joystick_1[5];
+wire m_btnx2    = joystick_1[6];
+wire m_btny2    = joystick_1[7];
 
 //Start/coin
-wire m_start1   = btn_1p_start | joy[8];
-wire m_start2   = btn_2p_start | joy[10];
-wire m_coin1    = btn_coin1    | joy[9];
-wire m_coin2    = btn_coin2;
-wire m_pause    = btn_pause    | joy[11];
+wire m_start1   = joystick_0[8];
+wire m_start2   = joystick_1[8] | joy[10];
+wire m_coin1    = joy[9];
+wire m_coin2    = 0;
+wire m_pause    = joy[11];
 
 //////////////////////////////////////////////////////////////////
 
@@ -665,8 +608,8 @@ video_freak video_freak(
     .VIDEO_ARY(VIDEO_ARY),
 
     .VGA_DE_IN(VGA_DE_MIXER),
-    .ARX((!ar) ? ( no_rotate ? 12'd4 : 12'd3 ) : (ar - 1'd1)),
-    .ARY((!ar) ? ( no_rotate ? 12'd3 : 12'd4 ) : 12'd0),
+    .ARX((!ar) ? 12'd4 : (ar - 1'd1)),
+    .ARY((!ar) ? 12'd3 : 12'd0),
     .CROP_SIZE(crop_240p ? 240 : 0),
     .CROP_OFF(crop_offset),
     .SCALE(scale)
@@ -682,7 +625,5 @@ pause pause(
     .pause_cpu(system_pause),
     .OSD_STATUS(OSD_STATUS)
 );
-
-screen_rotate screen_rotate(.*);
 
 endmodule
