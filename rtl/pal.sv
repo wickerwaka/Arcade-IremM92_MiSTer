@@ -51,27 +51,31 @@ always_comb begin
     video_control_memrq = 0;
     pf_vram_memrq = 0;
 
-	  casex (A[19:0])
-	  // 0xc0000-0xcffff
-	  20'b1100_xxxx_xxxx_xxxx_xxxx: begin ram_rom_memrq = 1; writable = 0; sdr_addr = { REGION_CPU_ROM.base_addr[24:16], A[15:0] }; end
-	  // 0xd0000-0xdffff
-	  20'b1101_xxxx_xxxx_xxxx_xxxx: pf_vram_memrq = 1;
-	  // 0xe0000-0xeffff
-	  20'b1110_xxxx_xxxx_xxxx_xxxx: begin ram_rom_memrq = 1; writable = 1; sdr_addr = { REGION_CPU_RAM.base_addr[24:16], A[15:0] }; end
-	  // 0xf8000-0xf87ff
-	  20'b1111_1000_xxxx_xxxx_xxxx: buffer_memrq = 1;
-	  // 0xf9000-0xf900f
-	  20'b1111_1001_0000_0000_xxxx: sprite_control_memrq = 1;
-	  // 0xf9800-0xf9801
-	  20'b1111_1001_1000_0000_000x: video_control_memrq = 1;
-	  // 0xffff0-0xfffff
-	  20'b1111_1111_1111_1111_xxxx: begin ram_rom_memrq = 1; writable = 0; sdr_addr = { REGION_CPU_ROM.base_addr[24:20], 16'h7fff, A[3:0] }; end
-	  // 0x00000-0xbffff
-	  default: begin
-			ram_rom_memrq = 1;
-			writable = 0;
-			sdr_addr = { REGION_CPU_ROM.base_addr[24:20], A[19:17] == 3'b101 ? bank_a19_16 : A[19:16], A[15:0] };
-	  end
-	  endcase
+		casex (A[19:0])
+		// 0xc0000-0xcffff
+		20'b1100_xxxx_xxxx_xxxx_xxxx: begin ram_rom_memrq = 1; writable = 0; sdr_addr = { REGION_CPU_ROM.base_addr[24:16], A[15:0] }; end
+		// 0xd0000-0xdffff
+		20'b1101_xxxx_xxxx_xxxx_xxxx: pf_vram_memrq = 1;
+		// 0xe0000-0xeffff
+		20'b1110_xxxx_xxxx_xxxx_xxxx: begin ram_rom_memrq = 1; writable = 1; sdr_addr = { REGION_CPU_RAM.base_addr[24:16], A[15:0] }; end
+		// 0xf8000-0xf87ff
+		20'b1111_1000_xxxx_xxxx_xxxx: buffer_memrq = 1;
+		// 0xf9000-0xf900f
+		20'b1111_1001_0000_0000_xxxx: sprite_control_memrq = 1;
+		// 0xf9800-0xf9801
+		20'b1111_1001_1000_0000_000x: video_control_memrq = 1;
+		// 0xffff0-0xfffff
+		20'b1111_1111_1111_1111_xxxx: begin ram_rom_memrq = 1; writable = 0; sdr_addr = { REGION_CPU_ROM.base_addr[24:20], 16'h7fff, A[3:0] }; end
+		// 0x00000-0xbffff
+		default: begin
+			if (board_cfg.alt_map && A[19:16] == 4'h8) begin
+				pf_vram_memrq = 1;
+			end else begin
+				ram_rom_memrq = 1;
+				writable = 0;
+				sdr_addr = { REGION_CPU_ROM.base_addr[24:20], A[19:17] == 3'b101 ? bank_a19_16 : A[19:16], A[15:0] };
+			end
+		end
+		endcase
 end
 endmodule

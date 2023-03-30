@@ -45,7 +45,9 @@ package m92_pkg;
 
     
     typedef struct packed {
-        bit [3:0] reserved;
+        bit [1:0] reserved;
+        bit       wide_sprites;
+        bit       alt_map;
         bit [3:0] bank_mask;
     } board_cfg_t;
 endpackage
