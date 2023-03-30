@@ -84,7 +84,7 @@ always_ff @(posedge clk) begin
                         if (rate_cnt[8]) begin
                             cur_addr <= cur_addr + 20'd1;
                             sample_addr <= cur_addr + 20'd8; // prefetch
-                            rate_cnt <= { 1'b0, rate };
+                            rate_cnt <= rate_cnt + { 1'b1, rate };
 
                             if (cur_addr == end_addr) begin
                                 if (play[0]) begin
