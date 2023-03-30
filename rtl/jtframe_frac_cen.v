@@ -5,6 +5,8 @@
 
 module jtframe_frac_cen #(parameter W=2)(
     input         clk,
+    input         cen_in,
+
     input   [9:0] n,         // numerator
     input   [9:0] m,         // denominator
     output reg [W-1:0] cen,
@@ -36,21 +38,23 @@ always @(posedge clk) begin
     cen  <= {W{1'b0}};
     cenb <= {W{1'b0}};
 
-    if( cencnt >= absmax ) begin
-        // something went wrong: restart
-        cencnt <= 11'd0;
-    end else
-    if( halfway ) begin
-        half <= 1'b1;
-        cenb[0] <= 1'b1;
-    end
-    if( over ) begin
-        cencnt <= next2;
-        half <= 1'b0;
-        edgecnt <= next_edgecnt;
-        cen <= { toggle[W-2:0], 1'b1 };
-    end else begin
-        cencnt <= next;
+    if (cen_in) begin
+        if( cencnt >= absmax ) begin
+            // something went wrong: restart
+            cencnt <= 11'd0;
+        end else
+        if( halfway ) begin
+            half <= 1'b1;
+            cenb[0] <= 1'b1;
+        end
+        if( over ) begin
+            cencnt <= next2;
+            half <= 1'b0;
+            edgecnt <= next_edgecnt;
+            cen <= { toggle[W-2:0], 1'b1 };
+        end else begin
+            cencnt <= next;
+        end
     end
 end
 

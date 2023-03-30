@@ -45,10 +45,13 @@ module m92 (
 
     input [1:0] coin,
     input [1:0] start_buttons,
-    input [3:0] p1_joystick,
-    input [3:0] p2_joystick,
-    input [3:0] p1_buttons,
-    input [3:0] p2_buttons,
+    
+    // 4 button bits followed by directions, active high
+    input [7:0] p1_input,
+    input [7:0] p2_input,
+    input [7:0] p3_input,
+    input [7:0] p4_input,
+
     input service_button,
     input [23:0] dip_sw,
 
@@ -100,30 +103,24 @@ assign R = { rgb_color[4:0], rgb_color[4:2] };
 assign G = { rgb_color[9:5], rgb_color[9:7] };
 assign B = { rgb_color[14:10], rgb_color[14:12] };
 
-wire paused = 0;
-reg [8:0] paused_v;
-reg [9:0] paused_h;
+reg paused = 0;
 
-// TODO FIX pause
-/*
 always @(posedge clk_sys) begin
     if (pause_rq & ~paused) begin
-        if (~cpu_mem_read & ~cpu_mem_write & ~mem_rq_active) begin
+        if (~cpu_mem_read & ~cpu_mem_write & ~mem_rq_active & vpulse) begin
             paused <= 1;
-            paused_v <= V;
-            paused_h <= H;
         end
     end else if (~pause_rq & paused) begin
-        paused <= ~(V == paused_v && H == paused_h);
+        paused <= ~vpulse;
     end
 end
-*/
 
 
 wire ce_13m;
 jtframe_frac_cen #(2) pixel_cen
 (
     .clk(clk_sys),
+    .cen_in(1),
     .n(10'd1),
     .m(10'd3),
     .cen({ce_pix, ce_13m})
@@ -133,6 +130,7 @@ wire ce_9m, ce_18m;
 jtframe_frac_cen #(2) cpu_cen
 (
     .clk(clk_sys),
+    .cen_in(1),
     .n(10'd9),
     .m(10'd20),
     .cen({ce_9m, ce_18m})
@@ -263,9 +261,15 @@ reg [7:0] dbg_io_latch;
 
 reg [3:0] bank_select = 4'd0;
 
-wire [15:0] switches_p1_p2 = { p2_buttons, p2_joystick, p1_buttons, p1_joystick };
+wire [15:0] switches_p1_p2 = { ~p2_input, ~p1_input };
+
+`ifdef M92_DEBUG_IO
 wire [15:0] switches_p3_p4 = { dbg_io_latch, dbg_io_latch };
-wire [15:0] flags = { dip_sw[23:16], ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, coin, start_buttons };
+`else
+wire [15:0] switches_p3_p4 = { ~p4_input, ~p3_input };
+`endif 
+
+wire [15:0] flags = { ~dip_sw[23:16], ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, ~coin, ~start_buttons };
 
 reg [7:0] sys_flags = 0;
 wire COIN0 = sys_flags[0];
@@ -274,7 +278,7 @@ wire SOFT_NL = ~sys_flags[2];
 wire CBLK = sys_flags[3];
 wire BRQ = ~sys_flags[4];
 wire BANK = sys_flags[5];
-wire NL = SOFT_NL ^ dip_sw[8];
+wire NL = SOFT_NL ^ ~dip_sw[8];
 
 // TODO BANK, CBLK, NL
 always @(posedge clk_sys) begin
@@ -323,7 +327,7 @@ always_comb begin
     case ({cpu_io_addr[7:1], 1'b0})
     8'h00: io16 = switches_p1_p2;
     8'h02: io16 = flags;
-    8'h04: io16 = dip_sw[15:0];
+    8'h04: io16 = ~dip_sw[15:0];
     8'h06: io16 = switches_p3_p4;
     8'h08: io16 = { snd_latch_dout, snd_latch_dout };
     default: io16 = 16'hffff;
@@ -404,7 +408,7 @@ m92_pic m92_pic(
     .int_vector(int_vector),
     .int_ack(int_ack),
 
-    .intp({4'd0, snd_latch_rdy, hint, ~dma_busy, vblank}) // TODO dma_busy?
+    .intp({4'd0, snd_latch_rdy, hint, ~dma_busy, vblank})
 );
 
 
@@ -599,6 +603,8 @@ GA23 ga23(
 
     .reset(~reset_n),
 
+    .paused(paused),
+
     .mem_cs(pf_vram_memrq),
     .mem_wr(MWR),
     .mem_rd(MRD),
@@ -640,6 +646,8 @@ wire [15:0] sound_sample;
 sound sound(
     .clk_sys(clk_sys),
     .reset(~reset_n),
+
+    .paused(paused),
 
     .latch_wr(IOWR & cpu_io_addr == 8'h00),
     .latch_rd(IORD & cpu_io_addr == 8'h08),

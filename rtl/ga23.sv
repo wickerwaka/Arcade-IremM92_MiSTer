@@ -4,6 +4,8 @@ module GA23(
 
     input ce,
 
+    input paused,
+
     input reset,
 
     input mem_cs,
@@ -54,9 +56,9 @@ assign vblank = vcnt > 10'd113 && vcnt < 10'd136;
 assign vsync = vcnt > 10'd119 && vcnt < 10'd125;
 assign hpulse = hcnt == 10'd48;
 assign vpulse = (vcnt == 10'd124 && hcnt > 10'd260) || (vcnt == 10'd125 && hcnt < 10'd260);
-assign hint = vcnt == hint_line && hcnt > 10'd423;
+assign hint = vcnt == hint_line && hcnt > 10'd423 && ~paused;
 
-always_ff @(posedge clk or posedge reset) begin
+always_ff @(posedge clk) begin
     if (reset) begin
         hcnt <= 10'd48;
         vcnt <= 10'd114;
@@ -120,11 +122,17 @@ reg [15:0] vram_latch;
 reg [1:0] cpu_access_st;
 reg cpu_access_we;
 
+reg [37:0] control_save_0[512];
+reg [37:0] control_save_1[512];
+reg [37:0] control_save_2[512];
+
+reg [37:0] control_restore[3];
+
 reg rowscroll_active, rowscroll_pending;
 
 assign busy = |cpu_access_st;
 
-always_ff @(posedge clk or posedge reset) begin
+always_ff @(posedge clk) begin
     bit [9:0] rs_y;
     if (reset) begin
         mem_cyc <= 0;
@@ -265,6 +273,16 @@ always_ff @(posedge clk or posedge reset) begin
             'h9f: hint_line[9:8] <= cpu_din[1:0];
             endcase
         end
+
+        if (hcnt == 10'd104 && ~paused) begin // end of hblank
+            control_save_0[vcnt] <= { y_ofs[0], x_ofs[0], control[0], rowscroll[0] };
+            control_save_1[vcnt] <= { y_ofs[1], x_ofs[1], control[1], rowscroll[1] };
+            control_save_2[vcnt] <= { y_ofs[2], x_ofs[2], control[2], rowscroll[2] };
+        end else if (paused) begin
+            control_restore[0] <= control_save_0[vcnt];
+            control_restore[1] <= control_save_1[vcnt];
+            control_restore[2] <= control_save_2[vcnt];
+        end
     end
 end
 
@@ -274,19 +292,24 @@ end
 generate
 	genvar i;
     for(i = 0; i < 3; i = i + 1 ) begin : generate_layer
+        wire [9:0] _y_ofs = paused ? control_restore[i][37:28] : y_ofs[i];
+        wire [9:0] _x_ofs = paused ? control_restore[i][27:18] : x_ofs[i];
+        wire [7:0] _control = paused ? control_restore[i][17:10] : control[i];
+        wire [9:0] _rowscroll = paused ? control_restore[i][9:0] : rowscroll[i];
+
         ga23_layer layer(
             .clk(clk),
             .ce_pix(ce),
 
             .NL(0),
 
-            .x_ofs(x_ofs[i]),
-            .y_ofs(y_ofs[i]),
-            .control(control[i]),
+            .x_ofs(_x_ofs),
+            .y_ofs(_y_ofs),
+            .control(_control),
 
             .x_base({hcnt[9:3], 3'd0}),
-            .y(y_ofs[i] + vcnt),
-            .rowscroll(rowscroll[i]),
+            .y(_y_ofs + vcnt),
+            .rowscroll(_rowscroll),
 
             .vram_addr(layer_vram_addr[i]),
 

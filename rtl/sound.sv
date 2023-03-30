@@ -2,6 +2,8 @@ module sound(
     input clk_sys, // 40M
     input reset,
 
+    input paused,
+
     input latch_wr,
     input latch_rd,
 
@@ -53,6 +55,7 @@ wire ce_28m, ce_14m, ce_7m, ce_3_5m, ce_1_7m;
 jtframe_frac_cen #(6) pixel_cen
 (
     .clk(clk_sys),
+    .cen_in(~paused),
     .n(10'd63),
     .m(10'd88),
     .cen({ce_1_7m, ce_3_5m, ce_7m, ce_14m, ce_28m})

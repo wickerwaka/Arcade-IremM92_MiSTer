@@ -220,6 +220,8 @@ localparam CONF_STR = {
     "P1O[4:3],Scandoubler Fx,None,CRT 25%,CRT 50%,CRT 75%;",
     "P1O[6:5],Scale,Normal,V-Integer,Narrower HV-Integer,Wider HV-Integer;",
     "P1-;",
+    "P1O[10],Orientation,Horz,Vert;",
+    "P1-;",
     "d1P1O[11],240p Crop,Off,On;",
     "d2P1O[16:12],Crop Offset,0,1,2,3,4,5,6,7,8,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1-;",
@@ -260,11 +262,15 @@ wire  [7:0] ioctl_dout;
 wire  [7:0] ioctl_din = 0;
 wire        ioctl_wait = ioctl_rom_wait | ioctl_dbg_wait;
 
-wire [15:0] joystick_0, joystick_1;
-wire [15:0] joy = joystick_0 | joystick_1;
+wire [15:0] joystick_0, joystick_1, joystick_2, joystick_3;
+wire [15:0] joystick_combined = joystick_0 | joystick_1 | joystick_2 | joystick_3;
 
 wire [21:0] gamma_bus;
 wire        direct_video;
+wire        video_rotated;
+wire        no_rotate = ~status[10];
+wire        flip = 0;
+wire        rotate_ccw = 1;
 
 wire        allow_crop_240p = ~forced_scandoubler && scale == 0;
 wire        crop_240p = allow_crop_240p & status[11];
@@ -281,7 +287,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
     .forced_scandoubler(forced_scandoubler),
     .new_vmode(0),
-    .video_rotated(0),
+    .video_rotated(video_rotated),
 
     .buttons(buttons),
     .status(status),
@@ -299,6 +305,9 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
     .joystick_0(joystick_0),
     .joystick_1(joystick_1),
+    .joystick_2(joystick_2),
+    .joystick_3(joystick_3),
+
     .ps2_key(ps2_key)
 );
 
@@ -425,33 +434,18 @@ end
 
 
 //////////////////  Arcade Buttons/Interfaces   ///////////////////////////
-
-//Player 1
-wire m_up1      = joystick_0[3];
-wire m_down1    = joystick_0[2];
-wire m_left1    = joystick_0[1];
-wire m_right1   = joystick_0[0];
-wire m_btna1    = joystick_0[4];
-wire m_btnb1    = joystick_0[5];
-wire m_btnx1    = joystick_0[6];
-wire m_btny1    = joystick_0[7];
-
-//Player 2
-wire m_up2      = joystick_1[3];
-wire m_down2    = joystick_1[2];
-wire m_left2    = joystick_1[1];
-wire m_right2   = joystick_1[0];
-wire m_btna2    = joystick_1[4];
-wire m_btnb2    = joystick_1[5];
-wire m_btnx2    = joystick_1[6];
-wire m_btny2    = joystick_1[7];
+                       /*     A               B               X               Y               U               D               L               R    */
+wire [7:0] p1_input = { joystick_0[4], joystick_0[5], joystick_0[6], joystick_0[7], joystick_0[3], joystick_0[2], joystick_0[1], joystick_0[0] };
+wire [7:0] p2_input = { joystick_1[4], joystick_1[5], joystick_1[6], joystick_1[7], joystick_1[3], joystick_1[2], joystick_1[1], joystick_1[0] };
+wire [7:0] p3_input = { joystick_2[4], joystick_2[5], joystick_2[6], joystick_2[7], joystick_2[3], joystick_2[2], joystick_2[1], joystick_2[0] };
+wire [7:0] p4_input = { joystick_3[4], joystick_3[5], joystick_3[6], joystick_3[7], joystick_3[3], joystick_3[2], joystick_3[1], joystick_3[0] };
 
 //Start/coin
 wire m_start1   = joystick_0[8];
-wire m_start2   = joystick_1[8] | joy[10];
-wire m_coin1    = joy[9];
+wire m_start2   = joystick_1[8] | joystick_combined[10];
+wire m_coin1    = joystick_combined[9];
 wire m_coin2    = 0;
-wire m_pause    = joy[11];
+wire m_pause    = joystick_combined[11];
 
 //////////////////////////////////////////////////////////////////
 
@@ -476,16 +470,16 @@ m92 m92(
 
     .board_cfg(board_cfg),
 
-    .coin({~m_coin2, ~m_coin1}),
+    .coin({m_coin2, m_coin1}),
     
-    .start_buttons({~m_start2, ~m_start1}),
+    .start_buttons({m_start2, m_start1}),
     
-    .p1_joystick({~m_up1, ~m_down1, ~m_left1, ~m_right1}),
-    .p2_joystick({~m_up2, ~m_down2, ~m_left2, ~m_right2}),
-    .p1_buttons({~m_btna1, ~m_btnb1, ~m_btnx1, ~m_btny1}),
-    .p2_buttons({~m_btna2, ~m_btnb2, ~m_btnx2, ~m_btny2}),
-    
-    .dip_sw({~dip_sw[2], ~dip_sw[1], ~dip_sw[0]}),
+    .p1_input(p1_input),
+    .p2_input(p2_input),
+    .p3_input(p3_input),
+    .p4_input(p4_input),
+   
+    .dip_sw({dip_sw[2], dip_sw[1], dip_sw[0]}),
 
     .sdr_sprite_addr(sdr_sprite_addr),
     .sdr_sprite_dout(sdr_sprite_dout),
@@ -608,8 +602,8 @@ video_freak video_freak(
     .VIDEO_ARY(VIDEO_ARY),
 
     .VGA_DE_IN(VGA_DE_MIXER),
-    .ARX((!ar) ? 12'd4 : (ar - 1'd1)),
-    .ARY((!ar) ? 12'd3 : 12'd0),
+    .ARX((!ar) ? ( no_rotate ? 12'd4 : 12'd3 ) : (ar - 1'd1)),
+    .ARY((!ar) ? ( no_rotate ? 12'd3 : 12'd4 ) : 12'd0),
     .CROP_SIZE(crop_240p ? 240 : 0),
     .CROP_OFF(crop_offset),
     .SCALE(scale)
@@ -625,5 +619,7 @@ pause pause(
     .pause_cpu(system_pause),
     .OSD_STATUS(OSD_STATUS)
 );
+
+screen_rotate screen_rotate(.*);
 
 endmodule
