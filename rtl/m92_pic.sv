@@ -73,7 +73,6 @@ always_ff @(posedge clk or posedge reset) begin
         intp_latch <= 0;
         IRR <= 8'd0;
         ISR <= 8;
-        int_ack_prev <= int_ack;
     end else if (ce) begin
         if (cs & wr) begin
             if (~a0) begin
