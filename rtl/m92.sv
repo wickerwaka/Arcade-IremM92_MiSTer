@@ -52,7 +52,6 @@ module m92 (
     input [7:0] p3_input,
     input [7:0] p4_input,
 
-    input service_button,
     input [23:0] dip_sw,
 
     input pause_rq,
@@ -86,6 +85,18 @@ module m92 (
     input [19:0] bram_addr,
     input [4:0] bram_cs,
 
+    input ioctl_download,
+    input [15:0] ioctl_index,
+	input ioctl_wr,
+	input [26:0] ioctl_addr,
+	input [7:0] ioctl_dout,
+	
+    input ioctl_upload,
+    output [7:0] ioctl_upload_index,
+	output [7:0] ioctl_din,
+	input ioctl_rd,
+    output ioctl_upload_req,
+
     input [2:0] dbg_en_layers,
     input dbg_solid_sprites,
     input en_sprites,
@@ -97,6 +108,8 @@ module m92 (
     input [7:0] dbg_io_data,
     output reg dbg_io_wait
 );
+
+assign ioctl_upload_index = 8'd1;
 
 wire [15:0] rgb_color;
 assign R = { rgb_color[4:0], rgb_color[4:2] };
@@ -176,6 +189,7 @@ wire buffer_memrq;
 wire sprite_control_memrq;
 wire video_control_memrq;
 wire pf_vram_memrq;
+wire eeprom_memrq;
 wire banked_memrq;
 
 wire [7:0] snd_latch_dout;
@@ -313,6 +327,7 @@ end
 
 
 wire [15:0] ga21_dout, ga23_dout;
+wire [7:0] eeprom_dout;
 
 // mux io and memory reads
 always_comb begin
@@ -321,6 +336,7 @@ always_comb begin
 
     if (buffer_memrq) d16 = ga21_dout;
     else if(pf_vram_memrq) d16 = ga23_dout;
+    else if(eeprom_memrq) d16 = { eeprom_dout, eeprom_dout };
     else d16 = cpu_ram_rom_data;
     cpu_mem_in = word_shuffle(cpu_mem_addr, d16);
 
@@ -386,6 +402,7 @@ address_translator address_translator(
     .sprite_control_memrq(sprite_control_memrq),
     .video_control_memrq(video_control_memrq),
     .pf_vram_memrq(pf_vram_memrq),
+    .eeprom_memrq(eeprom_memrq),
 
     .bank_select(bank_select)
 );
@@ -674,5 +691,30 @@ sound sound(
 
 assign AUDIO_L = sound_sample;
 assign AUDIO_R = sound_sample;
+
+eeprom_28C64 eeprom(
+    .clk(clk_sys),
+    .reset(~reset_n),
+    .ce(1),
+    
+    .rd(MRD & eeprom_memrq),
+    .wr(MWR & eeprom_memrq),
+
+    .addr(cpu_mem_addr[13:1]),
+    .q(eeprom_dout),
+    .data(cpu_mem_out[7:0]),
+
+    .ready(),
+
+    .modified(ioctl_upload_req),
+    .ioctl_download(ioctl_download && (ioctl_index == 'd1)),
+	.ioctl_wr(ioctl_wr),
+	.ioctl_addr(ioctl_addr[12:0]),
+	.ioctl_dout(ioctl_dout),
+	
+    .ioctl_upload(ioctl_upload && (ioctl_index == 'd1)),
+	.ioctl_din(ioctl_din),
+	.ioctl_rd(ioctl_rd)
+);
 
 endmodule

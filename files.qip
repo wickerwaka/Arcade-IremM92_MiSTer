@@ -2,6 +2,8 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pkg.sv
 set_global_assignment -name SDC_FILE Arcade-IremM92.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE Arcade-IremM92.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/mame_keys.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/eeprom.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/dpramv.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/rom.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/pal.sv

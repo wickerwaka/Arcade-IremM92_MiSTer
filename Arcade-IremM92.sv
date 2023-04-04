@@ -229,6 +229,7 @@ localparam CONF_STR = {
 	"P1O[24:21],Analog Video V-Pos,0,-1,-2,-3,-4,-5,-6,-7,8,7,6,5,4,3,2,1;",
     "-;",
     "O[7],OSD Pause,Off,On;",
+    "O[8],Autosave Score Data,Off,On;",
     "-;",
     "DIP;",
     "-;",
@@ -254,16 +255,17 @@ wire ioctl_dbg_wait;
 
 wire        ioctl_download;
 wire        ioctl_upload;
-wire        ioctl_upload_req = 0;
+wire        ioctl_upload_req;
 wire  [7:0] ioctl_index;
+wire  [7:0] ioctl_upload_index;
 wire        ioctl_wr;
+wire        ioctl_rd;
 wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
-wire  [7:0] ioctl_din = 0;
+wire  [7:0] ioctl_din;
 wire        ioctl_wait = ioctl_rom_wait | ioctl_dbg_wait;
 
-wire [15:0] joystick_0, joystick_1, joystick_2, joystick_3;
-wire [15:0] joystick_combined = joystick_0 | joystick_1 | joystick_2 | joystick_3;
+wire [15:0] joystick_p1, joystick_p2, joystick_p3, joystick_p4;
 
 wire [21:0] gamma_bus;
 wire        direct_video;
@@ -271,6 +273,8 @@ wire        video_rotated;
 wire        no_rotate = ~status[10];
 wire        flip = 0;
 wire        rotate_ccw = 1;
+
+wire        autosave = status[8];
 
 wire        allow_crop_240p = ~forced_scandoubler && scale == 0;
 wire        crop_240p = allow_crop_240p & status[11];
@@ -295,18 +299,20 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
     .ioctl_download(ioctl_download),
     .ioctl_upload(ioctl_upload),
-    .ioctl_upload_req(ioctl_upload_req),
+    .ioctl_upload_index(ioctl_upload_index),
+    .ioctl_upload_req(ioctl_upload_req & autosave),
     .ioctl_wr(ioctl_wr),
+    .ioctl_rd(ioctl_rd),
     .ioctl_addr(ioctl_addr),
     .ioctl_dout(ioctl_dout),
     .ioctl_din(ioctl_din),
     .ioctl_index(ioctl_index),
     .ioctl_wait(ioctl_wait),
 
-    .joystick_0(joystick_0),
-    .joystick_1(joystick_1),
-    .joystick_2(joystick_2),
-    .joystick_3(joystick_3),
+    .joystick_0(joystick_p1),
+    .joystick_1(joystick_p2),
+    .joystick_2(joystick_p3),
+    .joystick_3(joystick_p4),
 
     .ps2_key(ps2_key)
 );
@@ -434,18 +440,45 @@ end
 
 
 //////////////////  Arcade Buttons/Interfaces   ///////////////////////////
+wire [15:0] keyboard_p1, keyboard_p2, keyboard_p3, keyboard_p4;
+
+wire [15:0] merged_p1 = keyboard_p1 | joystick_p1;
+wire [15:0] merged_p2 = keyboard_p2 | joystick_p2;
+wire [15:0] merged_p3 = keyboard_p3 | joystick_p3;
+wire [15:0] merged_p4 = keyboard_p4 | joystick_p4;
+
+wire [15:0] joystick_combined = joystick_p1 | joystick_p2 | joystick_p3 | joystick_p4;
+wire [3:0] key_coin, key_start;
+wire key_pause;
+
+mame_keys mame_keys(
+    .clk(clk_sys),
+    .reset(reset),
+
+    .ps2_key(ps2_key),
+
+    .start(key_start),
+    .coin(key_coin),
+
+    .p1(keyboard_p1),
+    .p2(keyboard_p2),
+    .p3(keyboard_p3),
+    .p4(keyboard_p4),
+
+    .pause(key_pause)
+);
                        /*     A               B               X               Y               U               D               L               R    */
-wire [7:0] p1_input = { joystick_0[4], joystick_0[5], joystick_0[6], joystick_0[7], joystick_0[3], joystick_0[2], joystick_0[1], joystick_0[0] };
-wire [7:0] p2_input = { joystick_1[4], joystick_1[5], joystick_1[6], joystick_1[7], joystick_1[3], joystick_1[2], joystick_1[1], joystick_1[0] };
-wire [7:0] p3_input = { joystick_2[4], joystick_2[5], joystick_2[6], joystick_2[7], joystick_2[3], joystick_2[2], joystick_2[1], joystick_2[0] };
-wire [7:0] p4_input = { joystick_3[4], joystick_3[5], joystick_3[6], joystick_3[7], joystick_3[3], joystick_3[2], joystick_3[1], joystick_3[0] };
+wire [7:0] p1_input = { merged_p1[4], merged_p1[5], merged_p1[6], merged_p1[7], merged_p1[3], merged_p1[2], merged_p1[1], merged_p1[0] };
+wire [7:0] p2_input = { merged_p2[4], merged_p2[5], merged_p2[6], merged_p2[7], merged_p2[3], merged_p2[2], merged_p2[1], merged_p2[0] };
+wire [7:0] p3_input = { merged_p3[4], merged_p3[5], merged_p3[6], merged_p3[7], merged_p3[3], merged_p3[2], merged_p3[1], merged_p3[0] };
+wire [7:0] p4_input = { merged_p4[4], merged_p4[5], merged_p4[6], merged_p4[7], merged_p4[3], merged_p4[2], merged_p4[1], merged_p4[0] };
 
 //Start/coin
-wire m_start1   = joystick_0[8];
-wire m_start2   = joystick_1[8] | joystick_combined[10];
-wire m_coin1    = joystick_combined[9];
+wire m_start1   = joystick_p1[8] | key_start[0];
+wire m_start2   = joystick_p2[8] | joystick_combined[10] | key_start[1];
+wire m_coin1    = joystick_combined[9] | |key_coin;
 wire m_coin2    = 0;
-wire m_pause    = joystick_combined[11];
+wire m_pause    = joystick_combined[11] | key_pause;
 
 //////////////////////////////////////////////////////////////////
 
@@ -469,6 +502,7 @@ m92 m92(
     .AUDIO_R(AUDIO_R),
 
     .board_cfg(board_cfg),
+
 
     .coin({m_coin2, m_coin1}),
     
@@ -509,6 +543,18 @@ m92 m92(
     .bram_data(bram_data),
     .bram_cs(bram_cs),
     .bram_wr(bram_wr),
+
+    .ioctl_download(ioctl_download),
+    .ioctl_index(ioctl_index),
+	.ioctl_wr(ioctl_wr),
+	.ioctl_addr(ioctl_addr),
+	.ioctl_dout(ioctl_dout),
+	
+    .ioctl_upload(ioctl_upload),
+    .ioctl_upload_index(ioctl_upload_index),
+	.ioctl_din(ioctl_din),
+	.ioctl_rd(ioctl_rd),
+    .ioctl_upload_req(ioctl_upload_req),
 
     .pause_rq(system_pause),
 

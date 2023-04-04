@@ -53,7 +53,8 @@ reg [7:0] MCW;
 reg [7:0] IRR;
 int ISR;
 
-assign int_req = ISR != 8;
+wire [7:0] IRQ = ( IRR & ~IMW );
+assign int_req = IRQ != 8'd0;
 
 wire iw4_write = IW1[0];
 wire iw4_not_written = ~IW1[0];
@@ -122,16 +123,14 @@ always_ff @(posedge clk or posedge reset) begin
 
             if (int_req) begin
                 if (int_ack) begin
-                    IRR[ISR] <= 1'b0;
-                    ISR <= 8;
-                end
-            end else begin
-                int p;
-                for ( p = 7; p >= 0; p = p - 1 ) begin
-                    if (IRR[p]) begin
-                        ISR <= p;
-                        int_vector <= {IW2[6:3], p[2:0], 2'b00};
-                    end
+                    if ( IRQ[0] ) begin int_vector <= {IW2[6:3], 3'd0, 2'b00}; IRR[0] <= 0; end
+                    else if ( IRQ[1] ) begin int_vector <= {IW2[6:3], 3'd1, 2'b00}; IRR[1] <= 0; end
+                    else if ( IRQ[2] ) begin int_vector <= {IW2[6:3], 3'd2, 2'b00}; IRR[2] <= 0; end
+                    else if ( IRQ[3] ) begin int_vector <= {IW2[6:3], 3'd3, 2'b00}; IRR[3] <= 0; end
+                    else if ( IRQ[4] ) begin int_vector <= {IW2[6:3], 3'd4, 2'b00}; IRR[4] <= 0; end
+                    else if ( IRQ[5] ) begin int_vector <= {IW2[6:3], 3'd5, 2'b00}; IRR[5] <= 0; end
+                    else if ( IRQ[6] ) begin int_vector <= {IW2[6:3], 3'd6, 2'b00}; IRR[6] <= 0; end
+                    else if ( IRQ[7] ) begin int_vector <= {IW2[6:3], 3'd7, 2'b00}; IRR[7] <= 0; end
                 end
             end
 
@@ -142,7 +141,7 @@ always_ff @(posedge clk or posedge reset) begin
             
             for( p = 0; p < 8; p = p + 1 ) begin
                 if (intp[p]) begin
-                    if (trig[p] & ~IMW[p]) begin
+                    if (trig[p]) begin
                         IRR[p] <= 1'b1;
                     end
                 end

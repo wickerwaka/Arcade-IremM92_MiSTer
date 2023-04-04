@@ -574,14 +574,11 @@ begin
                            fetchedSource1 <= '0';
                            fetchedSource2 <= '0';
                            memFirst       <= '1';
-                           if (irqExtern = '1') then
-                              irqvector   <= irqvector_in;
-                              irqrequest_ack <= '1';
-                           end if;
                            
                         elsif (irqrequest_in = '1' and irqBlocked = '0' and regs.FlagIrq = '1') then
                            
                            irqrequest <= '1';
+                           irqrequest_ack <= '1';
                            irqExtern  <= '1';
                            halt       <= '0';
                            
@@ -1592,10 +1589,22 @@ begin
                      
                   when CPUSTAGE_IRQVECTOR_REQ =>
                      if (ce = '1') then
-                        bus_addr      <= resize(irqvector, 20);
+                        if (irqExtern = '1') then
+                           if (memFirst = '1') then
+                              bus_addr      <= resize(irqvector_in, 20);
+                           else
+                              bus_addr      <= resize(irqvector_in + 2, 20);
+                           end if;
+                        else
+                           if (memFirst = '1') then
+                              bus_addr      <= resize(irqvector, 20);
+                           else
+                              bus_addr      <= resize(irqvector + 2, 20);
+                           end if;
+                        end if;
+
                         bus_read      <= '1';
                         prefetchAllow <= '0';
-                        irqvector     <= irqvector + 2;
                         cpustage      <= CPUSTAGE_IRQVECTOR_WAIT;
                      end if;
                      
