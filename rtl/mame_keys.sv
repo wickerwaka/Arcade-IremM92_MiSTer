@@ -18,6 +18,8 @@ module mame_keys(
 
 always_ff @(posedge clk) begin
     reg old_state;
+    bit p;
+		 
 
     if (reset) begin
         p1 <= 8'd0;
@@ -30,7 +32,7 @@ always_ff @(posedge clk) begin
 
         pause <= 0;
     end else begin
-        bit p = ps2_key[9];
+		p = ps2_key[9];
         
         old_state <= ps2_key[10];
         if(old_state != ps2_key[10]) begin

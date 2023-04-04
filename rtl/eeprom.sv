@@ -1,3 +1,78 @@
+module eeprom_28C64 #(parameter WRITE_CYCLES=0) (
+    // Hardware ports
+    input clk,
+	input reset,
+
+    input ce,
+    input wr,
+    input rd,
+
+    input  [12:0] addr,
+    input  [7:0]  data,
+    output [7:0]  q,
+
+    output ready,
+
+
+    // MiSTer support
+    output reg modified,
+    input ioctl_download,
+	input ioctl_wr,
+	input [12:0] ioctl_addr,
+	input [7:0] ioctl_dout,
+	
+    input ioctl_upload,
+	output [7:0] ioctl_din,
+	input ioctl_rd
+);
+
+wire [7:0] q0;
+
+dualport_ram #(8, 13) mem(
+    .clock_a(clk),
+    .wren_a(wr),
+    .address_a(addr),
+    .data_a(data),
+    .q_a(q0),
+
+    .clock_b(clk),
+    .wren_b(ioctl_download & ioctl_wr),
+    .address_b(ioctl_addr),
+    .data_b(ioctl_dout),
+    .q_b(ioctl_din)
+);
+
+wire busy;
+reg [31:0] write_timer;
+reg prev_upload;
+
+assign ready = write_timer == 32'd0;
+assign busy = ~ready;
+assign q = ready ? q0 : ( ~q0 );
+
+always_ff @(posedge clk) begin
+    if (reset) begin
+        write_timer <= 32'd0;
+        modified <= 0;
+    end else if (ce) begin
+        if (ioctl_upload & ~prev_upload) modified <= 0;
+        prev_upload <= ioctl_upload;
+
+        if (wr) modified <= 1;
+        if (busy) begin
+            write_timer <= write_timer - 32'd1;
+        end else if (wr) begin
+            write_timer <= WRITE_CYCLES;
+        end
+    end
+end
+
+endmodule
+
+
+// This is completely untested. I wrote it and then realized it was not the eeprom that the M92 uses.
+// Keeping it here in case it comes in useful at some point. It is an Atmel 28 series eeprom with 64
+// byte pages.
 module eeprom_28xx_paged(
     input clk,
 
@@ -42,7 +117,7 @@ always @(posedge clk) begin
         end else if (wr) begin
             write_timer <= 32'd0;
             write_queuing <= 1;
-            write_addr[write_index] <= addr[5:0];
+            write_addrs[write_index] <= addr[5:0];
             write_bytes[write_index] <= data;
             write_index <= write_index + 7'd1;
             write_page <= addr[13:6];
@@ -69,47 +144,6 @@ always @(posedge clk) begin
             end else begin
                 q <= mem[addr];
             end
-        end
-    end
-end
-
-endmodule
-
-module eeprom_28C64 #(parameter WRITE_CYCLES=0) (
-    input clk,
-
-    input ce,
-    input wr,
-    input rd,
-
-    input  [12:0] addr,
-    input  [7:0]  data,
-    output [7:0]  q,
-
-    output ready
-);
-
-reg [7:0] mem[8192];
-reg [7:0] q0;
-
-reg [31:0] write_timer;
-
-assign ready = write_timer == 32'd0;
-assign busy = ~ready;
-assign q = ready ? q0 : ( ~q0 );
-
-always_ff @(posedge clk) begin
-    if (reset) begin
-        write_timer <= 32'd0;
-    end else if (ce) begin
-        if (busy) begin
-            write_timer <= write_timer - 32'd1;
-        end else if (wr) begin
-            write_timer <= WRITE_CYCLES;
-            mem[addr] <= data;
-            q0 <= data;
-        end else if (rd) begin
-            q0 <= mem[addr];
         end
     end
 end
