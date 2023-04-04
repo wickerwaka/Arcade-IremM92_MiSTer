@@ -31,7 +31,7 @@ package m92_pkg;
     parameter region_t REGION_SOUND =   '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00010 };
     parameter region_t REGION_GA20 =    '{ base_addr:'h030_0000, reorder_64:0, bram_cs:5'b00000 };
     parameter region_t REGION_SPRITE =  '{ base_addr:'h040_0000, reorder_64:1, bram_cs:5'b00000 };
-    parameter region_t REGION_TILE =    '{ base_addr:'h080_0000, reorder_64:0, bram_cs:5'b00000 };
+    parameter region_t REGION_TILE =    '{ base_addr:'h0c0_0000, reorder_64:0, bram_cs:5'b00000 };
     parameter region_t REGION_CRYPT =   '{ base_addr:'h000_0000, reorder_64:0, bram_cs:5'b00001 };
 
     parameter region_t LOAD_REGIONS[6] = '{
