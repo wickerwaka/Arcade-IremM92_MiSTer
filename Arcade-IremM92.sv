@@ -467,18 +467,15 @@ mame_keys mame_keys(
 
     .pause(key_pause)
 );
-                       /*     A               B               X               Y               U               D               L               R    */
-wire [7:0] p1_input = { merged_p1[4], merged_p1[5], merged_p1[6], merged_p1[7], merged_p1[3], merged_p1[2], merged_p1[1], merged_p1[0] };
-wire [7:0] p2_input = { merged_p2[4], merged_p2[5], merged_p2[6], merged_p2[7], merged_p2[3], merged_p2[2], merged_p2[1], merged_p2[0] };
-wire [7:0] p3_input = { merged_p3[4], merged_p3[5], merged_p3[6], merged_p3[7], merged_p3[3], merged_p3[2], merged_p3[1], merged_p3[0] };
-wire [7:0] p4_input = { merged_p4[4], merged_p4[5], merged_p4[6], merged_p4[7], merged_p4[3], merged_p4[2], merged_p4[1], merged_p4[0] };
 
 //Start/coin
-wire m_start1   = joystick_p1[8] | key_start[0];
-wire m_start2   = joystick_p2[8] | joystick_combined[10] | key_start[1];
-wire m_coin1    = joystick_combined[9] | |key_coin;
+wire m_start1   = joystick_p1[10] | key_start[0];
+wire m_start2   = joystick_p2[10] | joystick_combined[12] | key_start[1];
+wire m_start3   = joystick_p3[10] | key_start[2];
+wire m_start4   = joystick_p4[10] | key_start[3];
+wire m_coin1    = joystick_combined[11] | |key_coin;
 wire m_coin2    = 0;
-wire m_pause    = joystick_combined[11] | key_pause;
+wire m_pause    = joystick_combined[13] | key_pause;
 
 //////////////////////////////////////////////////////////////////
 
@@ -503,15 +500,14 @@ m92 m92(
 
     .board_cfg(board_cfg),
 
-
-    .coin({m_coin2, m_coin1}),
+    .coin({2'd0, m_coin2, m_coin1}),
     
-    .start_buttons({m_start2, m_start1}),
+    .start_buttons({m_start4, m_start3, m_start2, m_start1}),
     
-    .p1_input(p1_input),
-    .p2_input(p2_input),
-    .p3_input(p3_input),
-    .p4_input(p4_input),
+    .p1_input(merged_p1[9:0]),
+    .p2_input(merged_p2[9:0]),
+    .p3_input(merged_p3[9:0]),
+    .p4_input(merged_p4[9:0]),
    
     .dip_sw({dip_sw[2], dip_sw[1], dip_sw[0]}),
 

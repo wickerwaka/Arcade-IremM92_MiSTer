@@ -43,14 +43,13 @@ module m92 (
     output [15:0] AUDIO_L,
     output [15:0] AUDIO_R,
 
-    input [1:0] coin,
-    input [1:0] start_buttons,
+    input [3:0] coin,
+    input [3:0] start_buttons,
     
-    // 4 button bits followed by directions, active high
-    input [7:0] p1_input,
-    input [7:0] p2_input,
-    input [7:0] p3_input,
-    input [7:0] p4_input,
+    input [9:0] p1_input,
+    input [9:0] p2_input,
+    input [9:0] p3_input,
+    input [9:0] p4_input,
 
     input [23:0] dip_sw,
 
@@ -275,15 +274,25 @@ reg [7:0] dbg_io_latch;
 
 reg [3:0] bank_select = 4'd0;
 
-wire [15:0] switches_p1_p2 = { ~p2_input, ~p1_input };
+
+wire [7:0] switches_p1 = board_cfg.kick_harness ? { p1_input[4], p1_input[5], p1_input[6], 1'b0,             p1_input[3], p1_input[2], p1_input[1], p1_input[0] }
+                                                : { p1_input[4], p1_input[5], 1'b0,        1'b0,             p1_input[3], p1_input[2], p1_input[1], p1_input[0] };
+wire [7:0] switches_p2 = board_cfg.kick_harness ? { p2_input[4], p2_input[5], p2_input[6], 1'b0,             p2_input[3], p2_input[2], p2_input[1], p2_input[0] }
+                                                : { p2_input[4], p2_input[5], 1'b0,        1'b0,             p2_input[3], p2_input[2], p2_input[1], p2_input[0] };
+wire [7:0] switches_p3 = board_cfg.kick_harness ? { 1'b0,        1'b0,        1'b0,        1'b0,             1'b0,        1'b0,        1'b0,        1'b0        }
+                                                : { p3_input[4], p3_input[5], coin[2],     start_buttons[2], p3_input[3], p3_input[2], p3_input[1], p3_input[0] };
+wire [7:0] switches_p4 = board_cfg.kick_harness ? { p2_input[9], p2_input[8], p2_input[7], 1'b0,             p1_input[9], p1_input[8], p1_input[7], 1'b0        }
+                                                : { p4_input[4], p4_input[5], coin[3],     start_buttons[3], p4_input[3], p4_input[2], p4_input[1], p4_input[0] };
+
+wire [15:0] switches_p1_p2 = { ~switches_p2, ~switches_p1 };
 
 `ifdef M92_DEBUG_IO
 wire [15:0] switches_p3_p4 = { dbg_io_latch, dbg_io_latch };
 `else
-wire [15:0] switches_p3_p4 = { ~p4_input, ~p3_input };
+wire [15:0] switches_p3_p4 = { ~switches_p4, ~switches_p3 };
 `endif 
 
-wire [15:0] flags = { ~dip_sw[23:16], ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, ~coin, ~start_buttons };
+wire [15:0] flags = { ~dip_sw[23:16], ~dma_busy, 1'b1, 1'b1 /*TEST*/, 1'b1 /*R*/, ~coin[1:0], ~start_buttons[1:0] };
 
 reg [7:0] sys_flags = 0;
 wire COIN0 = sys_flags[0];
