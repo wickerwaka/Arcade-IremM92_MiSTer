@@ -74,7 +74,7 @@ always_ff @(posedge clk) begin
     end
 end
 
-wire [20:0] rom_addr[3];
+wire [21:0] rom_addr[3];
 wire [31:0] rom_data[3];
 wire        rom_req[3];
 wire        rom_rdy[3];

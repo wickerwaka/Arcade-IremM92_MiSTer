@@ -19,14 +19,14 @@ module ga23_layer(
 
     // 
     input load,
-    input [10:0] attrib,
+    input [15:0] attrib,
     input [15:0] index,
 
     output prio_out,
     output [10:0] color_out,
 
     input [31:0] sdr_data,
-    output reg [20:0] sdr_addr,
+    output reg [21:0] sdr_addr,
     output reg sdr_req,
     input sdr_rdy,
 
@@ -58,7 +58,7 @@ always_ff @(posedge clk) begin
         cnt <= cnt + 4'd1;
         if (load & dbg_enabled) begin
             cnt <= 4'd0;
-            sdr_addr <= { index, flip_y ? ~y[2:0] : y[2:0], 2'b00 };
+            sdr_addr <= { attrib[15], index, flip_y ? ~y[2:0] : y[2:0], 2'b00 };
             sdr_req <= 1;
             palette <= attrib[6:0];
             prio <= attrib[8:7];

@@ -24,17 +24,17 @@ module ga23_sdram(
     input clk,
     input clk_ram,
 
-    input [20:0] addr_a,
+    input [21:0] addr_a,
     output reg [31:0] data_a,
     input req_a,
     output reg rdy_a,
 
-    input [20:0] addr_b,
+    input [21:0] addr_b,
     output reg [31:0] data_b,
     input req_b,
     output reg rdy_b,
 
-    input [20:0] addr_c,
+    input [21:0] addr_c,
     output reg [31:0] data_c,
     input req_c,
     output reg rdy_c,
