@@ -42,6 +42,8 @@ reg [7:0] reg_obj_ptr;
 reg [15:0] reg_copy_mode;
 
 wire [2:0] pal_addr_high = reg_copy_mode[10:8];
+wire layer_ordered_copy = reg_copy_mode[0];
+wire full_copy          = reg_copy_mode[7] & ~reg_copy_mode[0];
 
 reg obj_addr_high = 0;
 
@@ -63,6 +65,8 @@ reg [9:0] copy_pal_addr;
 reg [2:0] copy_obj_word;
 reg [8:0] copy_obj_idx;
 reg [10:0] next_buffer_addr;
+reg [2:0] copy_layer;
+reg copy_this_obj;
 
 reg copy_obj_we, copy_pal_we;
 
@@ -139,9 +143,10 @@ always_ff @(posedge clk or posedge reset) begin
             end
             INIT_COPY_OBJ: begin
                 copy_state <= COPY_OBJ;
+                copy_this_obj <= 0;
                 buffer_addr <= 11'd0;
-                copy_state <= COPY_OBJ;
                 copy_obj_word <= 2'd0;
+                copy_layer <= 3'd0;
                 copy_obj_idx <= 9'h100 - {1'b0, reg_obj_ptr};
             end
             COPY_OBJ: begin
@@ -149,27 +154,49 @@ always_ff @(posedge clk or posedge reset) begin
                 buffer_addr <= buffer_addr + 11'd1;
                 copy_obj_word <= copy_obj_word + 2'd1;
                 copy_obj_addr <= {1'b0, copy_obj_idx[7:0], copy_obj_word[1:0]}; 
-                copy_obj_we <= 1;
+                copy_obj_we <= copy_this_obj;
 
                 if (buffer_addr[1:0] == 2'b00) begin
-                    obj_y = buffer_din[8:0];
-                    obj_height = buffer_din[10:9];
-                    obj_log2_cols = buffer_din[12:11];
-                    obj_layer = buffer_din[15:13];
-                    obj_cols = 4'd1 << obj_log2_cols;
-
-                    next_obj_idx = copy_obj_idx - obj_cols;
-                    if (next_obj_idx[8]) begin // wrapped around
+                    if (copy_obj_idx == 9'd0) begin
                         copy_state <= IDLE;
                         copy_obj_we <= 0;
                     end else begin
-                        copy_obj_addr <= {1'b0, next_obj_idx, copy_obj_word[1:0]};
-                        copy_obj_idx <= next_obj_idx;
-                    end
+                        obj_y = buffer_din[8:0];
+                        obj_height = buffer_din[10:9];
+                        obj_log2_cols = buffer_din[12:11];
+                        obj_layer = buffer_din[15:13];
+                        obj_cols = 4'd1 << obj_log2_cols;
 
-                    next_buffer_addr <= buffer_addr + { obj_cols, 2'b00 };
+                        if (full_copy || (layer_ordered_copy == 0 && obj_layer != 3'd7) || (obj_layer == copy_layer)) begin
+                            copy_this_obj <= 1;
+                            copy_obj_we <= 1;
+
+                            next_obj_idx = copy_obj_idx - obj_cols;
+                            if (next_obj_idx[8]) begin // wrapped around
+                                copy_state <= IDLE;
+                                copy_obj_we <= 0;
+                            end else begin
+                                copy_obj_addr <= {1'b0, next_obj_idx, copy_obj_word[1:0]};
+                                copy_obj_idx <= next_obj_idx;
+                            end
+                        end else begin
+                            copy_this_obj <= 0;
+                            copy_obj_we <= 0;
+                        end
+
+                        next_buffer_addr <= buffer_addr + { obj_cols, 2'b00 };
+                    end
                 end else if (buffer_addr[1:0] == 2'b11) begin
-                    buffer_addr <= next_buffer_addr;                     
+                    if (next_buffer_addr[10]) begin // end of input
+                        if (layer_ordered_copy && (copy_layer != 3'd6)) begin
+                            copy_layer <= copy_layer + 3'd1;
+                            buffer_addr <= 11'd0;
+                        end else begin
+                            copy_state <= IDLE;
+                        end
+                    end else begin
+                        buffer_addr <= next_buffer_addr;
+                    end
                 end
             end
             endcase
