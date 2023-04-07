@@ -24,6 +24,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/palram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga20.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga20_cache.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/hiscore.sv
 
 set_global_assignment -name VHDL_FILE rtl/v30/cpu.vhd
 set_global_assignment -name VHDL_FILE rtl/v30/divider.vhd

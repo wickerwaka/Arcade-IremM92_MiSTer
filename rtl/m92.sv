@@ -54,6 +54,7 @@ module m92 (
     input [23:0] dip_sw,
 
     input pause_rq,
+    output cpu_paused,
 
     output [24:0] sdr_sprite_addr,
     input [63:0] sdr_sprite_dout,
@@ -116,6 +117,7 @@ assign G = { rgb_color[9:5], rgb_color[9:7] };
 assign B = { rgb_color[14:10], rgb_color[14:12] };
 
 reg paused = 0;
+assign cpu_paused = paused;
 
 always @(posedge clk_sys) begin
     if (pause_rq & ~paused) begin
