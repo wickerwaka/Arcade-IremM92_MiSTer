@@ -24,6 +24,8 @@ module GA23(
     output reg [15:0] vram_dout,
     output reg vram_we,
 
+    input large_tileset,
+
     input [63:0] sdr_data,
     output [24:0] sdr_addr,
     output sdr_req,
@@ -51,12 +53,12 @@ reg [9:0] hcnt, vcnt;
 reg [9:0] hint_line;
 
 assign hsync = hcnt < 10'd71 || hcnt > 10'd454;
-assign hblank = hcnt < 10'd104 || hcnt > 10'd423;
+assign hblank = hcnt < 10'd104 || hcnt > 10'd422;
 assign vblank = vcnt > 10'd113 && vcnt < 10'd136;
 assign vsync = vcnt > 10'd119 && vcnt < 10'd125;
 assign hpulse = hcnt == 10'd48;
 assign vpulse = (vcnt == 10'd124 && hcnt > 10'd260) || (vcnt == 10'd125 && hcnt < 10'd260);
-assign hint = vcnt == hint_line && hcnt > 10'd423 && ~paused;
+assign hint = vcnt == hint_line && hcnt > 10'd422 && ~paused;
 
 always_ff @(posedge clk) begin
     if (reset) begin
@@ -302,6 +304,7 @@ generate
             .ce_pix(ce),
 
             .NL(0),
+            .large_tileset(large_tileset),
 
             .x_ofs(_x_ofs),
             .y_ofs(_y_ofs),

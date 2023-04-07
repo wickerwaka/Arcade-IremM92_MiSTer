@@ -47,7 +47,7 @@ package m92_pkg;
 
     
     typedef struct packed {
-        bit       reserved;
+        bit       large_tileset;
         bit       kick_harness;
         bit       wide_sprites;
         bit       alt_map;

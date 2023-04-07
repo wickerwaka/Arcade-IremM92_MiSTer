@@ -4,6 +4,8 @@ module ga23_layer(
 
     input NL,
 
+    input large_tileset,
+
     // io registers
     input [9:0] x_ofs,
     input [9:0] y_ofs,
@@ -58,7 +60,7 @@ always_ff @(posedge clk) begin
         cnt <= cnt + 4'd1;
         if (load & dbg_enabled) begin
             cnt <= 4'd0;
-            sdr_addr <= { attrib[15], index, flip_y ? ~y[2:0] : y[2:0], 2'b00 };
+            sdr_addr <= { (large_tileset ? attrib[15] : 1'b0), index, flip_y ? ~y[2:0] : y[2:0], 2'b00 };
             sdr_req <= 1;
             palette <= attrib[6:0];
             prio <= attrib[8:7];

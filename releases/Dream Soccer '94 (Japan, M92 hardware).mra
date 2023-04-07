@@ -37,7 +37,7 @@
 
     <rom index="0" zip="dsoccr94.zip|dsoccr94j.zip" md5="None">
         <!-- board type -->
-        <part>06</part>
+        <part>86</part>
         
         <!-- maincpu -->
         <part>00 10 00 00</part>
