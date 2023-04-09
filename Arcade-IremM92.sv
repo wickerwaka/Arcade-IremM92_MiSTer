@@ -225,8 +225,8 @@ localparam CONF_STR = {
     "d1P1O[11],240p Crop,Off,On;",
     "d2P1O[16:12],Crop Offset,0,1,2,3,4,5,6,7,8,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1-;",
-    "P1O[20:17],Analog Video H-Pos,0,-1,-2,-3,-4,-5,-6,-7,8,7,6,5,4,3,2,1;",
-	"P1O[24:21],Analog Video V-Pos,0,-1,-2,-3,-4,-5,-6,-7,8,7,6,5,4,3,2,1;",
+    "P1O[21:17],Analog Video H-Pos,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1;",
+    "P1O[26:22],Analog Video V-Pos,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1;",
     "-;",
     "O[7],OSD Pause,Off,On;",
     "O[8],Autosave Score Data,Off,On;",
@@ -565,9 +565,9 @@ m92 m92(
 );
 
 // H/V offset
-wire [3:0]	hoffset = status[20:17];
-wire [3:0]	voffset = status[24:21];
-jtframe_resync jtframe_resync
+wire [4:0]	hoffset = status[21:17];
+wire [4:0]	voffset = status[26:22];
+jtframe_resync #(5) jtframe_resync
 (
 	.clk(CLK_VIDEO),
 	.pxl_cen(ce_pix),
@@ -575,8 +575,8 @@ jtframe_resync jtframe_resync
 	.vs_in(vs_core),
 	.LVBL(~VBlank),
 	.LHBL(~HBlank),
-	.hoffset(hoffset),
-	.voffset(voffset),
+	.hoffset(-hoffset), // flip the sign
+	.voffset(-voffset),
 	.hs_out(HSync),
 	.vs_out(VSync)
 );
