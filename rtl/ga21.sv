@@ -49,6 +49,7 @@ reg obj_addr_high = 0;
 
 enum {
     IDLE,
+    IDLE_DELAY,
     INIT_COPY_PAL,
     COPY_PAL,
     INIT_CLEAR_OBJ,
@@ -106,6 +107,7 @@ always_ff @(posedge clk or posedge reset) begin
             copy_pal_we <= 0;
 
             case(copy_state)
+            IDLE_DELAY: copy_state <= IDLE;
             IDLE: begin
             end
             INIT_COPY_PAL: begin
@@ -189,7 +191,7 @@ always_ff @(posedge clk or posedge reset) begin
                             copy_layer <= copy_layer + 3'd1;
                             buffer_src_addr <= 11'd0;
                         end else begin
-                            copy_state <= IDLE;
+                            copy_state <= IDLE_DELAY; // delay for one cycle so final write can complete
                         end
                     end else begin
                         buffer_src_addr <= next_buffer_src_addr;
