@@ -473,7 +473,7 @@ wire [1:0] bufram_cs =  ( ~bufram_addr[10] & ~dma_busy ) ? { 1'b0,        vid_ct
                         ( ~bufram_addr[10] &  dma_busy ) ? { 1'b0,        vid_ctrl[3] } :
                         (  bufram_addr[10] &  dma_busy ) ? { vid_ctrl[5], vid_ctrl[4] } : 2'b00;
 
-wire [15:0] bufram_q = bufram_cs == 2'b00 ? bufram_q00 : bufram_cs == 2'b01 ? bufram_q01 : bufram_cs == 2'b10 ? bufram_q10 : bufram_q11;
+wire [15:0] bufram_q;
 
 wire [12:0] ga21_palram_addr;
 wire ga21_palram_we, ga21_palram_cs;
@@ -483,38 +483,13 @@ wire [10:0] ga22_count;
 
 
 
-singleport_unreg_ram #(.widthad(11), .width(16)) bufram00(
+singleport_unreg_ram #(.widthad(13), .width(16), .name("BUFRAM")) bufram(
     .clock(clk_sys),
-    .address(bufram_addr),
-    .q(bufram_q00),
-    .wren(bufram_we && bufram_cs == 2'b00),
+    .address({bufram_cs, bufram_addr}),
+    .q(bufram_q),
+    .wren(bufram_we),
     .data(bufram_data)
 );
-
-singleport_unreg_ram #(.widthad(11), .width(16)) bufram01(
-    .clock(clk_sys),
-    .address(bufram_addr),
-    .q(bufram_q01),
-    .wren(bufram_we && bufram_cs == 2'b01),
-    .data(bufram_data)
-);
-
-singleport_unreg_ram #(.widthad(11), .width(16)) bufram10(
-    .clock(clk_sys),
-    .address(bufram_addr),
-    .q(bufram_q10),
-    .wren(bufram_we && bufram_cs == 2'b10),
-    .data(bufram_data)
-);
-
-singleport_unreg_ram #(.widthad(11), .width(16)) bufram11(
-    .clock(clk_sys),
-    .address(bufram_addr),
-    .q(bufram_q11),
-    .wren(bufram_we && bufram_cs == 2'b11),
-    .data(bufram_data)
-);
-
 
 palram palram(
     .clk(clk_sys),
@@ -612,7 +587,7 @@ wire [14:0] vram_addr;
 wire [15:0] vram_data, vram_q;
 wire vram_we;
 
-singleport_unreg_ram #(.widthad(15), .width(16)) vram
+singleport_unreg_ram #(.widthad(15), .width(16), .name("VRAM")) vram
 (
     .clock(clk_sys),
     .address(vram_addr),
@@ -648,7 +623,7 @@ GA23 ga23(
     .vram_we(vram_we),
 
     .large_tileset(board_cfg.large_tileset),
-    
+
     .sdr_data(sdr_bg_dout),
     .sdr_addr(sdr_bg_addr),
     .sdr_req(sdr_bg_req),

@@ -44,27 +44,19 @@ wire [12:0] full_cpu_addr = { vid_ctrl[10:8], cpu_addr[9:0] };
 wire [12:0] obj_addr = { vid_ctrl[15], obj_pal_bank, obj_color };
 wire [12:0] pf_addr = { vid_ctrl[15], vid_ctrl[14], pf_color };
 
-reg we = 0;
-reg [12:0] selected_addr;
-reg [15:0] din_reg;
+wire we = sel == 0 ? ga21_we : sel == 1 ? ga21_we : 0;
+wire [12:0] selected_addr = sel == 0 ? full_cpu_addr :
+                            sel == 1 ? ga21_addr :
+                            sel == 2 ? obj_addr :
+                            pf_addr;
 
-always_ff @(posedge clk) begin
-    case(sel)
-    0: begin selected_addr <= full_cpu_addr; we <= ga21_we; end
-    1: begin selected_addr <= ga21_addr; we <= ga21_we; end
-    2: begin selected_addr <= obj_addr; we <= 0; end
-    3: begin selected_addr <= pf_addr; we <= 0; end
-    endcase
-    din_reg <= din;
-end
-
-singleport_unreg_ram #(.widthad(13), .width(16)) ram
+singleport_unreg_ram #(.widthad(13), .width(16), .name("PALRAM")) ram
 (
     .clock(clk),
     .address(selected_addr),
     .q(dout),
     .wren(we),
-    .data(din_reg)
+    .data(din)
 );
 
 always_ff @(posedge clk) begin

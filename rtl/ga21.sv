@@ -20,8 +20,8 @@ module GA21(
     output [10:0] obj_addr,
     output obj_we,
 
-    output reg buffer_we,
-    output reg [10:0] buffer_addr,
+    output buffer_we,
+    output [10:0] buffer_addr,
     output [15:0] buffer_dout,
     input [15:0] buffer_din,
 
@@ -64,9 +64,11 @@ reg [10:0] copy_obj_addr;
 reg [9:0] copy_pal_addr;
 reg [2:0] copy_obj_word;
 reg [8:0] copy_obj_idx;
-reg [10:0] next_buffer_addr;
+reg [10:0] buffer_src_addr;
+reg [10:0] next_buffer_src_addr;
 reg [2:0] copy_layer;
 reg copy_this_obj;
+reg first_obj;
 
 reg copy_obj_we, copy_pal_we;
 
@@ -90,13 +92,6 @@ always_ff @(posedge clk or posedge reset) begin
         copy_obj_we <= 0;
         copy_pal_we <= 0;
     end else begin
-        if (~busy) begin
-            buffer_we <= (buf_cs & wr);
-            buffer_addr <= addr;
-        end else begin
-            buffer_we <= 0;
-        end
-
         if (reg_cs & wr) begin
             if (addr == 11'h0) reg_obj_ptr <= din[7:0];
             if (addr == 11'h1) reg_direct_access <= din[7:0];
@@ -114,15 +109,15 @@ always_ff @(posedge clk or posedge reset) begin
             IDLE: begin
             end
             INIT_COPY_PAL: begin
-                buffer_addr <= 11'h400;
+                buffer_src_addr <= 11'h400;
                 copy_pal_addr <= ~10'd0;
                 copy_state <= COPY_PAL;
             end
             COPY_PAL: begin
-                if (buffer_addr == 11'h000) begin
+                if (buffer_src_addr == 11'h000) begin
                     copy_state <= INIT_CLEAR_OBJ;
                 end else begin
-                    buffer_addr <= buffer_addr + 11'd1;
+                    buffer_src_addr <= buffer_src_addr + 11'd1;
                     copy_pal_addr <= copy_pal_addr + 10'd1;
                     copy_dout <= buffer_din;
                     copy_pal_we <= 1;
@@ -144,19 +139,20 @@ always_ff @(posedge clk or posedge reset) begin
             INIT_COPY_OBJ: begin
                 copy_state <= COPY_OBJ;
                 copy_this_obj <= 0;
-                buffer_addr <= 11'd0;
+                buffer_src_addr <= 11'd0;
                 copy_obj_word <= 2'd0;
                 copy_layer <= 3'd0;
+                first_obj <= 1;
                 copy_obj_idx <= 9'h100 - {1'b0, reg_obj_ptr};
             end
             COPY_OBJ: begin
                 copy_dout <= buffer_din;
-                buffer_addr <= buffer_addr + 11'd1;
+                buffer_src_addr <= buffer_src_addr + 11'd1;
                 copy_obj_word <= copy_obj_word + 2'd1;
                 copy_obj_addr <= {1'b0, copy_obj_idx[7:0], copy_obj_word[1:0]}; 
                 copy_obj_we <= copy_this_obj;
 
-                if (buffer_addr[1:0] == 2'b00) begin
+                if (buffer_src_addr[1:0] == 2'b00) begin
                     if (copy_obj_idx == 9'd0) begin
                         copy_state <= IDLE;
                         copy_obj_we <= 0;
@@ -170,12 +166,13 @@ always_ff @(posedge clk or posedge reset) begin
                         if (full_copy || (layer_ordered_copy == 0 && obj_layer != 3'd7) || (obj_layer == copy_layer)) begin
                             copy_this_obj <= 1;
                             copy_obj_we <= 1;
+                            first_obj <= 0;
 
                             next_obj_idx = copy_obj_idx - obj_cols;
                             if (next_obj_idx[8]) begin // wrapped around
                                 copy_state <= IDLE;
                                 copy_obj_we <= 0;
-                            end else begin
+                            end else if (~first_obj) begin
                                 copy_obj_addr <= {1'b0, next_obj_idx, copy_obj_word[1:0]};
                                 copy_obj_idx <= next_obj_idx;
                             end
@@ -184,18 +181,18 @@ always_ff @(posedge clk or posedge reset) begin
                             copy_obj_we <= 0;
                         end
 
-                        next_buffer_addr <= buffer_addr + { obj_cols, 2'b00 };
+                        next_buffer_src_addr <= buffer_src_addr + { obj_cols, 2'b00 };
                     end
-                end else if (buffer_addr[1:0] == 2'b11) begin
-                    if (next_buffer_addr[10]) begin // end of input
+                end else if (buffer_src_addr[1:0] == 2'b11) begin
+                    if (next_buffer_src_addr[10]) begin // end of input
                         if (layer_ordered_copy && (copy_layer != 3'd6)) begin
                             copy_layer <= copy_layer + 3'd1;
-                            buffer_addr <= 11'd0;
+                            buffer_src_addr <= 11'd0;
                         end else begin
                             copy_state <= IDLE;
                         end
                     end else begin
-                        buffer_addr <= next_buffer_addr;
+                        buffer_src_addr <= next_buffer_src_addr;
                     end
                 end
             end
@@ -207,6 +204,8 @@ end
 assign dout = buf_cs ? (direct_access_obj ? obj_din : (direct_access_pal ? pal_din : buffer_din)) : 16'd0;
 assign busy = copy_state != IDLE;
 
+assign buffer_we = ~busy & buf_cs & wr & ~direct_access_obj & ~direct_access_pal;
+assign buffer_addr = busy ? buffer_src_addr : addr;
 
 assign buffer_dout = din;
 

@@ -83,7 +83,7 @@ assign latch_dout = main_latch;
 wire [15:0] cpu_word_dout = cpu_addr[0] ? { cpu_dout[7:0], 8'h00 } : cpu_dout;
 wire [1:0] cpu_word_be = cpu_addr[0] ? { cpu_be[0], 1'b0 } : cpu_be;
 
-singleport_ram #(.widthad(13), .width(8)) ram_0(
+singleport_ram #(.widthad(13), .width(8), .name("SRA0")) ram_0(
     .clock(clk_sys),
     .wren(ram_cs & cpu_wr & cpu_word_be[0]),
     .address(cpu_addr[13:1]),
@@ -91,7 +91,7 @@ singleport_ram #(.widthad(13), .width(8)) ram_0(
     .q(ram_dout[7:0])
 );
 
-singleport_ram #(.widthad(13), .width(8)) ram_1(
+singleport_ram #(.widthad(13), .width(8), .name("SRA1")) ram_1(
     .clock(clk_sys),
     .wren(ram_cs & cpu_wr & cpu_word_be[1]),
     .address(cpu_addr[13:1]),
@@ -99,7 +99,7 @@ singleport_ram #(.widthad(13), .width(8)) ram_1(
     .q(ram_dout[15:8])
 );
 
-singleport_ram #(.widthad(16), .width(8)) rom_0(
+singleport_ram #(.widthad(16), .width(8), .name("SRO0")) rom_0(
     .clock(clk_sys),
     .wren(rom_wr & ~rom_addr[0]),
     .address(rom_wr ? rom_addr[16:1] : cpu_addr[16:1]),
@@ -107,7 +107,7 @@ singleport_ram #(.widthad(16), .width(8)) rom_0(
     .q(rom_dout[7:0])
 );
 
-singleport_ram #(.widthad(16), .width(8)) rom_1(
+singleport_ram #(.widthad(16), .width(8), .name("SRO1")) rom_1(
     .clock(clk_sys),
     .wren(rom_wr & rom_addr[0]),
     .address(rom_wr ? rom_addr[16:1] : cpu_addr[16:1]),
