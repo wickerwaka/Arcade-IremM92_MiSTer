@@ -69,7 +69,6 @@ reg [10:0] buffer_src_addr;
 reg [10:0] next_buffer_src_addr;
 reg [2:0] copy_layer;
 reg copy_this_obj;
-reg first_obj;
 
 reg copy_obj_we, copy_pal_we;
 
@@ -144,7 +143,6 @@ always_ff @(posedge clk or posedge reset) begin
                 buffer_src_addr <= 11'd0;
                 copy_obj_word <= 2'd0;
                 copy_layer <= 3'd0;
-                first_obj <= 1;
                 copy_obj_idx <= 9'h100 - {1'b0, reg_obj_ptr};
             end
             COPY_OBJ: begin
@@ -168,13 +166,12 @@ always_ff @(posedge clk or posedge reset) begin
                         if (full_copy || (layer_ordered_copy == 0 && obj_layer != 3'd7) || (obj_layer == copy_layer)) begin
                             copy_this_obj <= 1;
                             copy_obj_we <= 1;
-                            first_obj <= 0;
 
                             next_obj_idx = copy_obj_idx - obj_cols;
                             if (next_obj_idx[8]) begin // wrapped around
                                 copy_state <= IDLE;
                                 copy_obj_we <= 0;
-                            end else if (~first_obj) begin
+                            end else begin
                                 copy_obj_addr <= {1'b0, next_obj_idx, copy_obj_word[1:0]};
                                 copy_obj_idx <= next_obj_idx;
                             end
