@@ -30,25 +30,24 @@ module sound(
     input sdr_rdy
 );
 
-// TODO
-// Sample ROM -- Done
-// Sound RAM -- Done
-// YM2151 -- Done
-// GA20
-// Sample Filters
-// Output Filters
-// V35
-// Latches -- Done
-// Sound ROM -- Done
-// Clock dividers - Done
 
 wire [15:0] sample_out, fm_sample, fm_sample_flt;
 
-always_ff @(posedge clk_sys) begin
-    reg [16:0] sum;
+wire [11:0] fm_scale = int'(2.6 * 128);
+wire [11:0] pcm_scale = int'(1.95 * 128);
 
-    sum <= { sample_out[15], sample_out } + { fm_sample_flt[15], fm_sample_flt };
-    sample <= sum[16:1] + {sum[16], sum[16], sum[15:2]};
+always_ff @(posedge clk_sys) begin
+    reg [27:0] sum;
+    reg [27:0] fm;
+    reg [27:0] pcm;
+
+    fm  <= $signed(fm_sample_flt) * fm_scale;
+    pcm <= $signed(sample_out)    * pcm_scale;
+
+    sum <= fm + pcm;
+    if (&sum[27:22] || &(~sum[27:22])) sample <= sum[22:7];
+    else if (sum[27]) sample <= 16'h8000;
+    else sample <= 16'h7fff; 
 end
 
 wire ce_28m, ce_14m, ce_7m, ce_3_5m, ce_1_7m;

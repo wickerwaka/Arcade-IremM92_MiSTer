@@ -41,7 +41,7 @@ always_ff @(posedge clk) begin
         sample_s16 <= 16'h0000;
     end else begin
         if (cs & rd) begin
-            if (addr == 3'd3) dout <= { 7'd0, play[1] };
+            if (addr == 3'd7) dout <= { 7'd0, play[1] };
         end else if (cs & wr) begin
             case (addr)
             3'd0: start_addr[11:0] <= { din, 4'b0000 };
@@ -103,8 +103,22 @@ always_ff @(posedge clk) begin
     end
 end
 
-// 9865hz 2nd order 10749hz 1st order
-IIR_filter #( .use_params(1), .stereo(0), .coeff_x(0.00000741947949554119), .coeff_x0(3), .coeff_x1(3), .coeff_x2(1), .coeff_y0(-2.95726738834813529522), .coeff_y1(2.91526970775390958934), .coeff_y2(-0.95799698165074131939)) lpf_sample (
+// 9685hz 2nd order 10749hz 1st order
+localparam CX = 0.00000741947949554119;
+localparam CY0 = -2.95726738834813529522;
+localparam CY1 = 2.91526970775390958934;
+localparam CY2 = -0.95799698165074131939;
+
+IIR_filter #(
+    .use_params(1),
+    .stereo(0),
+    .coeff_x(CX),
+    .coeff_x0(3),
+    .coeff_x1(3),
+    .coeff_x2(1),
+    .coeff_y0(CY0),
+    .coeff_y1(CY1),
+    .coeff_y2(CY2)) lpf_sample (
 	.clk(clk),
 	.reset(reset),
 
