@@ -61,10 +61,7 @@ assign vpulse = (vcnt == 10'd124 && hcnt > 10'd260) || (vcnt == 10'd125 && hcnt 
 assign hint = vcnt == hint_line && hcnt > 10'd422 && ~paused;
 
 always_ff @(posedge clk) begin
-    if (reset) begin
-        hcnt <= 10'd48;
-        vcnt <= 10'd114;
-    end else if (ce) begin
+    if (ce) begin
         hcnt <= hcnt + 10'd1;
         if (hcnt == 10'd471) begin
             hcnt <= 10'd48;
