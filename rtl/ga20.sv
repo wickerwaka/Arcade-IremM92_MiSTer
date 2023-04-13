@@ -26,9 +26,7 @@ reg [19:0] start_addr, end_addr, cur_addr;
 reg [1:0] play;
 reg [8:0] rate_cnt;
 
-reg [15:0] sample_s16;
-wire [15:0] sample_flt_s16;
-
+reg [7:0] sample_s8;
 
 reg play_set;
 
@@ -38,7 +36,7 @@ always_ff @(posedge clk) begin
         play <= 2'd0;
         step <= 0;
         play_set <= 0;
-        sample_s16 <= 16'h0000;
+        sample_s8 <= 8'h00;
     end else begin
         if (cs & rd) begin
             if (addr == 3'd7) dout <= { 7'd0, play[1] };
@@ -77,9 +75,9 @@ always_ff @(posedge clk) begin
                 if (~play_set & play[1] & sample_valid) begin
                     if (sample_din == 8'd0) begin
                         play[1] <= 0;
-                        sample_s16 <= 16'h0000;
+                        sample_s8 <= 8'h00;
                     end else begin
-                        sample_s16 <= { (sample_din - 8'h80), 8'd0 };
+                        sample_s8 <= (sample_din - 8'h80);
 
                         if (rate_cnt[8]) begin
                             cur_addr <= cur_addr + 20'd1;
@@ -91,7 +89,7 @@ always_ff @(posedge clk) begin
                                     cur_addr <= start_addr;
                                     sample_addr <= start_addr;
                                 end else begin
-                                    sample_s16 <= 16'h0000;
+                                    sample_s8 <= 8'h00;
                                     play[1] <= 0;
                                 end
                             end
@@ -103,44 +101,13 @@ always_ff @(posedge clk) begin
     end
 end
 
-// 9685hz 2nd order 10749hz 1st order
-localparam CX = 0.00000741947949554119;
-localparam CY0 = -2.95726738834813529522;
-localparam CY1 = 2.91526970775390958934;
-localparam CY2 = -0.95799698165074131939;
-
-IIR_filter #(
-    .use_params(1),
-    .stereo(0),
-    .coeff_x(CX),
-    .coeff_x0(3),
-    .coeff_x1(3),
-    .coeff_x2(1),
-    .coeff_y0(CY0),
-    .coeff_y1(CY1),
-    .coeff_y2(CY2)) lpf_sample (
-	.clk(clk),
-	.reset(reset),
-
-	.ce(sample_ce),
-	.sample_ce(sample_ce),
-
-	.cx(), .cx0(), .cx1(), .cx2(), .cy0(), .cy1(), .cy2(),
-
-	.input_l(sample_s16),
-	.output_l(sample_flt_s16),
-
-    .input_r(),
-    .output_r()
-);
-
 // apply attenuation after filtering
 always_ff @(posedge clk) begin
-    reg signed [21:0] scaled;
+    bit [7:0] vol_one;
 
-    scaled <= $signed(sample_flt_s16) * $signed({1'b0, volume});
+    vol_one = { 2'd0, volume } + 8'd1; 
 
-    sample_out <= scaled[21:6];
+    sample_out <= $signed(sample_s8) * $signed(vol_one);
 end
 
 
@@ -166,7 +133,7 @@ module ga20(
     input sample_valid,
     input [7:0] sample_din,
 
-    output reg [15:0] sample_out
+    output [15:0] sample_out
 );
 
 reg [2:0] step;
@@ -216,12 +183,41 @@ always_ff @(posedge clk) begin
     end
 end
 
+reg [15:0] sample_combined;
+
+// 9685hz 2nd order 10749hz 1st order
+localparam CX = 0.00000741947949554119;
+localparam CY0 = -2.95726738834813529522;
+localparam CY1 = 2.91526970775390958934;
+localparam CY2 = -0.95799698165074131939;
+
+IIR_filter #(
+    .use_params(1),
+    .stereo(0),
+    .coeff_x(CX),
+    .coeff_x0(3),
+    .coeff_x1(3),
+    .coeff_x2(1),
+    .coeff_y0(CY0),
+    .coeff_y1(CY1),
+    .coeff_y2(CY2)) lpf_sample (
+	.clk(clk),
+	.reset(reset),
+
+	.ce(ce),
+	.sample_ce(ce),
+
+	.cx(), .cx0(), .cx1(), .cx2(), .cy0(), .cy1(), .cy2(),
+
+	.input_l(sample_combined),
+	.output_l(sample_out),
+
+    .input_r(),
+    .output_r()
+);
+
 always_ff @(posedge clk) begin
-    reg [17:0] combined;
-    if (ce) begin
-        combined <= { {2{sample_out0[15]}}, sample_out0 } + { {2{sample_out1[15]}}, sample_out1 } + { {2{sample_out2[15]}}, sample_out2 } + { {2{sample_out3[15]}}, sample_out3 };
-        sample_out <= combined[17:2];
-    end 
+    sample_combined <= sample_out0 + sample_out1 + sample_out2 + sample_out3;
 end
 
 endmodule
