@@ -1,0 +1,30 @@
+; JED2EQN -- JEDEC file to Boolean Equations disassembler (Version V063)
+; Copyright (c) National Semiconductor Corporation 1990-1993
+; Disassembled from B-7H.JED. Date: 2-19-123
+;$GALMODE MEDIUM
+
+chip B-7H GAL16V8
+
+i1=1 CPU_MIO=2 n_LS245_EN=3 A19=4 A18=5 A17=6 A16=7 A15=8 A14=9 GND=10 !nc11=11 
+o12=12 o13=13 o14=14 o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20 
+
+i1=1 CPU_MIO=2 n_LS245_EN=3 A19=4 A18=5 A17=6 A16=7 A15=8 A14=9 GND=10 !nc11=11 
+o12=12 o13=13 o14=14 o15=15 o16=16 o17=17 o18=18 o19=19 VCC=20 
+
+@ues 47414c3136563800
+@ptd unused
+
+equations
+
+// 0xc0000 - 0xdffff
+o19 = CPU_MIO & !i1 & A19 & A18 & !A17
+
+// 7
+!o14 = CPU_MIO & !i1 & A18 & A17 & A16 & A15 & A14 0xfc000 - 0xfffff
+    # CPU_MIO & !i1 & !A19 & A18  // 0x40000 - 0x7ffff
+
+// 0x00000 - 0x3ffff
+!o13 = CPU_MIO & !i1 & !A19 & !A18
+
+!o12 = CPU_MIO & !i1 & !n_LS245_EN & A19 & A18 & A17 & A16 & A15 & A14 // 0xfc000 - 0xfffff
+    # CPU_MIO & !i1 & !n_LS245_EN & !A19 // 0x00000 - 0x7ffff
