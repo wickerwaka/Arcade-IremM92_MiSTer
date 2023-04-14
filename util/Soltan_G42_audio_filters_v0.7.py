@@ -105,11 +105,8 @@ tf = []
 
 # --------------------------------------------------------------------------- #
 
-addSingleFilter("sample_a", "sample_a", 9685, 2, fs = 3579545)
-addSingleFilter("sample_b", "sample_b", 10749, 2, fs = 3579545)
-addCombinedFilter("sample_com", "sample_com", 10749, 9685, fs= 3579545)
-addCombinedFilter("sample_c", "sample_c", 19020, 8707, fs = 3579545)
-addCombinedFilter("sample_d", "sample_d", 8707, 19020, fs = 3579545)
+addCombinedFilter("pcm_filter", "Low pass filter for PCM output", 10749, 9685, fs= 3579545)
+addCombinedFilter("fm_filter", "Low pass filter for YM2151 output", 19020, 8707, fs = 3579545)
 
 
 # --------------------------------------------------------------------------- #
