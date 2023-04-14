@@ -232,6 +232,8 @@ localparam CONF_STR = {
     "-;",
     "O[8],Autosave Score Data,Off,On;",
     "-;",
+    "O[9],Turbo VRAM,Off,On;",
+    "-;",
     "DIP;",
     "-;",
     "P2,Debug;",
@@ -284,6 +286,7 @@ wire        autosave = status[8];
 wire        allow_crop_240p = ~forced_scandoubler && scale == 0;
 wire        crop_240p = allow_crop_240p & status[11];
 wire [4:0]  crop_offset = status[16:12] < 9 ? {status[16:12]} : ( status[16:12] + 5'd15 );
+wire        turbo_mode = status[9];
 
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
@@ -561,6 +564,8 @@ m92 m92(
     .p4_input(merged_p4[9:0]),
    
     .dip_sw({dip_sw[2], dip_sw[1], dip_sw[0]}),
+
+    .turbo_mode(turbo_mode),
 
     .sdr_sprite_addr(sdr_sprite_addr),
     .sdr_sprite_dout(sdr_sprite_dout),

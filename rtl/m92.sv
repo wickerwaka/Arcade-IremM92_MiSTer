@@ -53,6 +53,8 @@ module m92 (
 
     input [23:0] dip_sw,
 
+    input turbo_mode,
+
     input pause_rq,
     output cpu_paused,
 
@@ -589,13 +591,22 @@ wire [14:0] vram_addr;
 wire [15:0] vram_data, vram_q;
 wire vram_we;
 
-singleport_unreg_ram #(.widthad(15), .width(16), .name("VRAM")) vram
+wire [15:0] ga23_turbo_dout, ga23_slow_dout;
+assign ga23_dout = turbo_mode ? ga23_turbo_dout : ga23_slow_dout;
+
+dualport_unreg_ram #(.widthad(15), .width(16)) vram
 (
     .clock(clk_sys),
-    .address(vram_addr),
-    .q(vram_q),
-    .wren(vram_we),
-    .data(vram_data)
+
+    .address_a(vram_addr),
+    .q_a(vram_q),
+    .wren_a(vram_we),
+    .data_a(vram_data),
+
+    .address_b(cpu_mem_addr[16:1]),
+    .q_b(ga23_turbo_dout),
+    .wren_b(pf_vram_memrq & MWR & turbo_mode),
+    .data_b(cpu_mem_out)
 );
 
 GA23 ga23(
@@ -608,7 +619,7 @@ GA23 ga23(
 
     .paused(paused),
 
-    .mem_cs(pf_vram_memrq),
+    .mem_cs(pf_vram_memrq & ~turbo_mode),
     .mem_wr(MWR),
     .mem_rd(MRD),
     .io_wr(IOWR),
@@ -617,7 +628,7 @@ GA23 ga23(
 
     .addr(IOWR ? {8'd0, cpu_io_addr} : cpu_mem_addr),
     .cpu_din(IOWR ? {8'd0, cpu_io_out} : cpu_mem_out),
-    .cpu_dout(ga23_dout),
+    .cpu_dout(ga23_slow_dout),
     
     .vram_addr(vram_addr),
     .vram_din(vram_q),
