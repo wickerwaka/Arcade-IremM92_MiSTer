@@ -1,7 +1,5 @@
 //============================================================================
-//  Irem M92 for MiSTer FPGA - Background layer SDRAM interface
-//
-//  Copyright (C) 2022 Martin Donlon
+//  Copyright (C) 2023 Martin Donlon
 //
 //  This program is free software; you can redistribute it and/or modify it
 //  under the terms of the GNU General Public License as published by the Free
