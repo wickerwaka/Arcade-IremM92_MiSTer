@@ -40,7 +40,7 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
-set_global_assignment -name LAST_QUARTUS_VERSION "17.0.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "17.0.2 Lite Edition"
 
 set_global_assignment -name GENERATE_RBF_FILE ON
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
@@ -74,6 +74,8 @@ set_global_assignment -name ECO_OPTIMIZE_TIMING ON
 set_global_assignment -name PERIPHERY_TO_CORE_PLACEMENT_AND_ROUTING_OPTIMIZATION ON
 set_global_assignment -name PHYSICAL_SYNTHESIS_ASYNCHRONOUS_SIGNAL_PIPELINING ON
 
+set_global_assignment -name VERILOG_MACRO "M92_DEBUG_IO=1"
+
 set_global_assignment -name VERILOG_MACRO "MISTER_FB=1"
 
 #enable it only if 8bit indexed mode is used in core
@@ -83,10 +85,10 @@ set_global_assignment -name VERILOG_MACRO "MISTER_FB=1"
 #set_global_assignment -name VERILOG_MACRO "MISTER_DEBUG_NOHDMI=1"
 
 # disable bilinear filtering when downscaling
-#set_global_assignment -name VERILOG_MACRO "MISTER_DOWNSCALE_NN=1"
+set_global_assignment -name VERILOG_MACRO "MISTER_DOWNSCALE_NN=1"
 
 # disable adaptive scanline filtering
-#set_global_assignment -name VERILOG_MACRO "MISTER_DISABLE_ADAPTIVE=1"
+set_global_assignment -name VERILOG_MACRO "MISTER_DISABLE_ADAPTIVE=1"
 
 #use only 1MB per frame for scaler to free ~21MB DDR3 RAM
 #set_global_assignment -name VERILOG_MACRO "MISTER_SMALL_VBUF=1"
@@ -315,10 +317,757 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED_*
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to BTN_*
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to BTN_*
 source files.qip
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/hiscore.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/eeprom.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/mame_keys.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga20.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga20_cache.sv
+set_global_assignment -name VHDL_FILE rtl/v35/core.vhd
+set_global_assignment -name VHDL_FILE rtl/v35/divider.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/v35/v35.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pkg.sv
+set_global_assignment -name SDC_FILE "Arcade-IremM92.sdc"
+set_global_assignment -name SYSTEMVERILOG_FILE "Arcade-IremM92.sv"
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/dpramv.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/rom.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pal.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_frac_cen.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/jtframe_resync.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pause.v
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/m92_pic.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga21.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga22.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga22_linebuffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23_sdram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23_shifter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ga23_layer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/objram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/palram.sv
+set_global_assignment -name VHDL_FILE rtl/v30/cpu.vhd
+set_global_assignment -name VHDL_FILE rtl/v30/divider.vhd
+set_global_assignment -name QIP_FILE rtl/jt51/jt51.qip
 set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
 
 set_global_assignment -name FITTER_AGGRESSIVE_ROUTABILITY_OPTIMIZATION NEVER
 set_global_assignment -name ADVANCED_PHYSICAL_OPTIMIZATION OFF
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING OFF
 
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE video.stp
+set_global_assignment -name SIGNALTAP_FILE video.stp
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "emu:emu|m92:m92|cpu:v30|clk" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "emu:emu|m92:m92|cpu:v30|RegBus_rden" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "emu:emu|m92:m92|cpu:v30|RegBus_wren" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "emu:emu|m92:m92|cpu:v30|bus_addr[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "emu:emu|m92:m92|cpu:v30|bus_addr[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "emu:emu|m92:m92|cpu:v30|bus_addr[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "emu:emu|m92:m92|cpu:v30|bus_addr[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "emu:emu|m92:m92|cpu:v30|bus_addr[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "emu:emu|m92:m92|cpu:v30|bus_addr[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "emu:emu|m92:m92|cpu:v30|bus_addr[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "emu:emu|m92:m92|cpu:v30|bus_addr[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "emu:emu|m92:m92|cpu:v30|bus_addr[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "emu:emu|m92:m92|cpu:v30|bus_addr[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "emu:emu|m92:m92|cpu:v30|bus_addr[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "emu:emu|m92:m92|cpu:v30|bus_addr[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "emu:emu|m92:m92|cpu:v30|bus_addr[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "emu:emu|m92:m92|cpu:v30|bus_addr[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "emu:emu|m92:m92|cpu:v30|bus_addr[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "emu:emu|m92:m92|cpu:v30|bus_addr[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "emu:emu|m92:m92|cpu:v30|bus_addr[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "emu:emu|m92:m92|cpu:v30|bus_addr[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "emu:emu|m92:m92|cpu:v30|bus_addr[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "emu:emu|m92:m92|cpu:v30|bus_addr[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "emu:emu|m92:m92|cpu:v30|bus_be[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "emu:emu|m92:m92|cpu:v30|bus_be[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "emu:emu|m92:m92|cpu:v30|bus_read" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "emu:emu|m92:m92|cpu:v30|bus_write" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "emu:emu|m92:m92|cpu:v30|ce" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "emu:emu|m92:m92|cpu:v30|ce_4x" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "emu:emu|m92:m92|cpu:v30|irqCS[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "emu:emu|m92:m92|cpu:v30|irqCS[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "emu:emu|m92:m92|cpu:v30|irqCS[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "emu:emu|m92:m92|cpu:v30|irqCS[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "emu:emu|m92:m92|cpu:v30|irqCS[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "emu:emu|m92:m92|cpu:v30|irqCS[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "emu:emu|m92:m92|cpu:v30|irqCS[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "emu:emu|m92:m92|cpu:v30|irqCS[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "emu:emu|m92:m92|cpu:v30|irqCS[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "emu:emu|m92:m92|cpu:v30|irqCS[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "emu:emu|m92:m92|cpu:v30|irqCS[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "emu:emu|m92:m92|cpu:v30|irqCS[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "emu:emu|m92:m92|cpu:v30|irqCS[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "emu:emu|m92:m92|cpu:v30|irqCS[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "emu:emu|m92:m92|cpu:v30|irqCS[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "emu:emu|m92:m92|cpu:v30|irqCS[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "emu:emu|m92:m92|cpu:v30|irqExtern" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "emu:emu|m92:m92|cpu:v30|irqIP[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "emu:emu|m92:m92|cpu:v30|irqIP[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "emu:emu|m92:m92|cpu:v30|irqIP[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "emu:emu|m92:m92|cpu:v30|irqIP[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "emu:emu|m92:m92|cpu:v30|irqIP[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "emu:emu|m92:m92|cpu:v30|irqIP[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "emu:emu|m92:m92|cpu:v30|irqIP[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "emu:emu|m92:m92|cpu:v30|irqIP[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "emu:emu|m92:m92|cpu:v30|irqIP[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "emu:emu|m92:m92|cpu:v30|irqIP[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "emu:emu|m92:m92|cpu:v30|irqIP[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "emu:emu|m92:m92|cpu:v30|irqIP[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "emu:emu|m92:m92|cpu:v30|irqIP[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "emu:emu|m92:m92|cpu:v30|irqIP[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "emu:emu|m92:m92|cpu:v30|irqIP[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "emu:emu|m92:m92|cpu:v30|irqIP[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "emu:emu|m92:m92|cpu:v30|irqrequest" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "emu:emu|m92:m92|cpu:v30|irqrequest_ack" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "emu:emu|m92:m92|cpu:v30|irqrequest_in" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "emu:emu|m92:m92|cpu:v30|irqvector[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "emu:emu|m92:m92|cpu:v30|irqvector[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "emu:emu|m92:m92|cpu:v30|irqvector[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "emu:emu|m92:m92|cpu:v30|irqvector[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "emu:emu|m92:m92|cpu:v30|irqvector[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "emu:emu|m92:m92|cpu:v30|irqvector[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "emu:emu|m92:m92|cpu:v30|irqvector[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "emu:emu|m92:m92|cpu:v30|irqvector[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "emu:emu|m92:m92|cpu:v30|irqvector[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "emu:emu|m92:m92|cpu:v30|irqvector[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[167] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[168] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[169] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "emu:emu|m92:m92|cpu:v30|RegBus_Adr[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "emu:emu|m92:m92|cpu:v30|RegBus_Din[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "emu:emu|m92:m92|cpu:v30|RegBus_Dout[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "emu:emu|m92:m92|cpu:v30|RegBus_rden" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "emu:emu|m92:m92|cpu:v30|RegBus_wren" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "emu:emu|m92:m92|cpu:v30|bus_addr[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "emu:emu|m92:m92|cpu:v30|bus_addr[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "emu:emu|m92:m92|cpu:v30|bus_addr[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "emu:emu|m92:m92|cpu:v30|bus_addr[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "emu:emu|m92:m92|cpu:v30|bus_addr[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "emu:emu|m92:m92|cpu:v30|bus_addr[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "emu:emu|m92:m92|cpu:v30|bus_addr[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "emu:emu|m92:m92|cpu:v30|bus_addr[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "emu:emu|m92:m92|cpu:v30|bus_addr[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "emu:emu|m92:m92|cpu:v30|bus_addr[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "emu:emu|m92:m92|cpu:v30|bus_addr[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "emu:emu|m92:m92|cpu:v30|bus_addr[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "emu:emu|m92:m92|cpu:v30|bus_addr[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "emu:emu|m92:m92|cpu:v30|bus_addr[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "emu:emu|m92:m92|cpu:v30|bus_addr[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "emu:emu|m92:m92|cpu:v30|bus_addr[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "emu:emu|m92:m92|cpu:v30|bus_addr[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "emu:emu|m92:m92|cpu:v30|bus_addr[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "emu:emu|m92:m92|cpu:v30|bus_addr[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "emu:emu|m92:m92|cpu:v30|bus_addr[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "emu:emu|m92:m92|cpu:v30|bus_be[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "emu:emu|m92:m92|cpu:v30|bus_be[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "emu:emu|m92:m92|cpu:v30|bus_dataread[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "emu:emu|m92:m92|cpu:v30|bus_datawrite[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "emu:emu|m92:m92|cpu:v30|bus_read" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "emu:emu|m92:m92|cpu:v30|bus_write" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "emu:emu|m92:m92|cpu:v30|ce" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "emu:emu|m92:m92|cpu:v30|ce_4x" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "emu:emu|m92:m92|cpu:v30|irqCS[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "emu:emu|m92:m92|cpu:v30|irqCS[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "emu:emu|m92:m92|cpu:v30|irqCS[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "emu:emu|m92:m92|cpu:v30|irqCS[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "emu:emu|m92:m92|cpu:v30|irqCS[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "emu:emu|m92:m92|cpu:v30|irqCS[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "emu:emu|m92:m92|cpu:v30|irqCS[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "emu:emu|m92:m92|cpu:v30|irqCS[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "emu:emu|m92:m92|cpu:v30|irqCS[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "emu:emu|m92:m92|cpu:v30|irqCS[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "emu:emu|m92:m92|cpu:v30|irqCS[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "emu:emu|m92:m92|cpu:v30|irqCS[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "emu:emu|m92:m92|cpu:v30|irqCS[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "emu:emu|m92:m92|cpu:v30|irqCS[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "emu:emu|m92:m92|cpu:v30|irqCS[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "emu:emu|m92:m92|cpu:v30|irqCS[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "emu:emu|m92:m92|cpu:v30|irqExtern" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "emu:emu|m92:m92|cpu:v30|irqIP[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "emu:emu|m92:m92|cpu:v30|irqIP[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "emu:emu|m92:m92|cpu:v30|irqIP[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "emu:emu|m92:m92|cpu:v30|irqIP[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "emu:emu|m92:m92|cpu:v30|irqIP[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "emu:emu|m92:m92|cpu:v30|irqIP[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "emu:emu|m92:m92|cpu:v30|irqIP[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "emu:emu|m92:m92|cpu:v30|irqIP[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "emu:emu|m92:m92|cpu:v30|irqIP[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "emu:emu|m92:m92|cpu:v30|irqIP[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "emu:emu|m92:m92|cpu:v30|irqIP[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "emu:emu|m92:m92|cpu:v30|irqIP[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "emu:emu|m92:m92|cpu:v30|irqIP[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "emu:emu|m92:m92|cpu:v30|irqIP[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "emu:emu|m92:m92|cpu:v30|irqIP[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "emu:emu|m92:m92|cpu:v30|irqIP[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "emu:emu|m92:m92|cpu:v30|irqrequest" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "emu:emu|m92:m92|cpu:v30|irqrequest_ack" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "emu:emu|m92:m92|cpu:v30|irqrequest_in" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "emu:emu|m92:m92|cpu:v30|irqvector[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "emu:emu|m92:m92|cpu:v30|irqvector[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "emu:emu|m92:m92|cpu:v30|irqvector[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "emu:emu|m92:m92|cpu:v30|irqvector[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "emu:emu|m92:m92|cpu:v30|irqvector[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "emu:emu|m92:m92|cpu:v30|irqvector[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "emu:emu|m92:m92|cpu:v30|irqvector[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "emu:emu|m92:m92|cpu:v30|irqvector[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "emu:emu|m92:m92|cpu:v30|irqvector[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "emu:emu|m92:m92|cpu:v30|irqvector[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to "emu:emu|m92:m92|cpu:v30|opcodebyte[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to "emu:emu|m92:m92|cpu:v30|regs.reg_cs[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[167] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[168] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[169] -to "emu:emu|m92:m92|cpu:v30|regs.reg_ip[9]" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334534" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[170] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[171] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[172] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[173] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[174] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[175] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[176] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[177] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[170] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[171] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[172] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[173] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[174] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[175] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[176] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[177] -to "emu:emu|m92:m92|m92_pic:m92_pic|IMW[7]" -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[178] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[179] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[180] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[181] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[182] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[183] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[184] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[185] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[186] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[187] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[188] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[189] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[190] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[191] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[192] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[193] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[194] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[195] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[196] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[197] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[198] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[20]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[199] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[21]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[200] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[22]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[201] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[23]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[202] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[24]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[203] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[25]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[204] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[26]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[205] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[27]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[206] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[28]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[207] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[29]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[208] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[209] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[30]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[210] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[31]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[211] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[212] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[213] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[214] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[215] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[216] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[217] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[218] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[219] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[220] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[221] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[222] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[223] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[224] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[225] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[226] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[227] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[228] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[229] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[230] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[231] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[232] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[233] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[234] -to "emu:emu|m92:m92|m92_pic:m92_pic|a0" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[235] -to "emu:emu|m92:m92|m92_pic:m92_pic|ce" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[236] -to "emu:emu|m92:m92|m92_pic:m92_pic|cs" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[237] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[238] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[239] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[240] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[241] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[242] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[243] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[244] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[245] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[246] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[247] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[248] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[249] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[250] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[251] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[252] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[253] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[254] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[255] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[256] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[257] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[20]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[258] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[21]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[259] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[22]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[260] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[23]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[261] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[24]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[262] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[25]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[263] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[26]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[264] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[27]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[265] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[28]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[266] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[29]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[267] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[268] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[30]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[269] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[31]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[270] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[271] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[272] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[273] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[274] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[275] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[276] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[277] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[278] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[279] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[280] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[281] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[282] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[283] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[284] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[285] -to "emu:emu|m92:m92|m92_pic:m92_pic|rd" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[286] -to "emu:emu|m92:m92|m92_pic:m92_pic|wr" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[287] -to "emu:emu|m92:m92|v30:v30|cpu_halt" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[178] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[179] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[180] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[181] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[182] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[183] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[184] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[185] -to "emu:emu|m92:m92|m92_pic:m92_pic|IRR[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[186] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[187] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[188] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[189] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[190] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[191] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[192] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[193] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[194] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[195] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[196] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[197] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[198] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[20]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[199] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[21]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[200] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[22]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[201] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[23]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[202] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[24]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[203] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[25]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[204] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[26]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[205] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[27]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[206] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[28]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[207] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[29]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[208] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[209] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[30]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[210] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[31]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[211] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[212] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[213] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[214] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[215] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[216] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[217] -to "emu:emu|m92:m92|m92_pic:m92_pic|ISR[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[218] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[219] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[220] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[221] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[222] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[223] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[224] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[225] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW1[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[226] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[227] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[228] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[229] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[230] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[231] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[232] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[233] -to "emu:emu|m92:m92|m92_pic:m92_pic|IW2[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[234] -to "emu:emu|m92:m92|m92_pic:m92_pic|a0" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[235] -to "emu:emu|m92:m92|m92_pic:m92_pic|ce" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[236] -to "emu:emu|m92:m92|m92_pic:m92_pic|cs" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[237] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[238] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[239] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[240] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[241] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[242] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[243] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[244] -to "emu:emu|m92:m92|m92_pic:m92_pic|din[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[245] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[246] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[247] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[248] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[249] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[250] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[251] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[252] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[16]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[253] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[17]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[254] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[18]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[255] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[19]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[256] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[257] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[20]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[258] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[21]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[259] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[22]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[260] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[23]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[261] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[24]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[262] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[25]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[263] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[26]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[264] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[27]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[265] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[28]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[266] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[29]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[267] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[268] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[30]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[269] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[31]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[270] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[271] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[272] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[273] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[274] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[275] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[276] -to "emu:emu|m92:m92|m92_pic:m92_pic|init_state[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[277] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[278] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[279] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[280] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[281] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[282] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[283] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[284] -to "emu:emu|m92:m92|m92_pic:m92_pic|intp[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[285] -to "emu:emu|m92:m92|m92_pic:m92_pic|rd" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[286] -to "emu:emu|m92:m92|m92_pic:m92_pic|wr" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[287] -to "emu:emu|m92:m92|v30:v30|cpu_halt" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=2048" -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=2048" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[288] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_CHECKDATAREADY" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[289] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_DECODEOP" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[290] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_EXECUTE" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[291] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA1_16" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[292] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA1_8" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[293] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA2_16" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[294] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA2_8" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[295] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[296] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[297] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[298] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IDLE" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[299] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[300] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[301] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[302] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_MODRM" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[303] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[304] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[305] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[306] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_PUSH" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[307] -to "emu:emu|m92:m92|v30:v30|irqBlocked" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[308] -to "emu:emu|m92:m92|v30:v30|regs.FlagIrq" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[309] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[310] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[311] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[312] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[313] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[314] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[315] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[316] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[317] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[318] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[319] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[320] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[321] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[322] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[323] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[324] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[9]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[288] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_CHECKDATAREADY" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[289] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_DECODEOP" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[290] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_EXECUTE" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[291] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA1_16" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[292] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA1_8" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[293] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA2_16" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[294] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHDATA2_8" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[295] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[296] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[297] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_FETCHMEM_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[298] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IDLE" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[299] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[300] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[301] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_IRQVECTOR_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[302] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_MODRM" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[303] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_REC" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[304] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_REQ" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[305] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_POP_WAIT" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[306] -to "emu:emu|m92:m92|v30:v30|cpustage.CPUSTAGE_PUSH" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[307] -to "emu:emu|m92:m92|v30:v30|irqBlocked" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[308] -to "emu:emu|m92:m92|v30:v30|regs.FlagIrq" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[309] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[0]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[310] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[10]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[311] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[11]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[312] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[12]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[313] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[13]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[314] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[14]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[315] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[15]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[316] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[1]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[317] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[2]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[318] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[3]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[319] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[4]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[320] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[5]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[321] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[6]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[322] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[7]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[323] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[8]" -section_id auto_signaltap_6
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[324] -to "emu:emu|m92:m92|v30:v30|regs.reg_sp[9]" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=325" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=325" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=325" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_6
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=1000" -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_6|gnd -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to auto_signaltap_6|vcc -section_id auto_signaltap_6
+set_global_assignment -name SLD_FILE db/video_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
