@@ -1,3 +1,6 @@
+# This repository is archived. Future core work has been moved to the MiSTer FPGA organization. https://github.com/MiSTer-devel/Arcade-IremM92_MiSTer
+
+
 # Irem M92 Core
 
 ![](docs/header-small.png)
